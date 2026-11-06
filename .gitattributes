@@ -1,0 +1,5 @@
+# DOS batch files are the byte path: COMMAND.COM needs CRLF, and a
+# normalising checkout hands it a trailing CR on every last argument.
+# Case matters here -- these files are named BUILD.BAT, not build.bat.
+*.bat -text
+*.BAT -text
