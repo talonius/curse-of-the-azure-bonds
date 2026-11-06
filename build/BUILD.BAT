@@ -3,7 +3,7 @@ rem Curse of the Azure Bonds v1.3 whole-image build.
 rem C: Turbo Pascal 6.0 with the 1990 RTL; D: this version tree; E: TASM.
 rem F: Microsoft EXEPACK. Compiler and library hashes are pinned by the host.
 rem
-rem Keep the short PATH selected by gametools/build.sh; invoke other tools by drive.
+rem Keep PATH short; invoke the other tools by drive.
 rem Compiler options come from src\TPC.CFG in the working directory:
 rem   /U.              Search this source directory for units.
 rem   /$F+             Far routines.
