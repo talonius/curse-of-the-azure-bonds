@@ -55,8 +55,7 @@ procedure DeleteIfPresent(name: Types.TStr80);
 { Asks for the overlay disk until GAME.OVR can be found. }
 procedure OverlayPrompt;
 
-{ Reads a drive's volume label. The FindFirst status is not checked: the name buffer is cleared first, so a failed
-  search leaves it empty.
+{ Reads a drive's volume label.
   @param(drive The drive letter.)
   @returns(The label, or an empty string when it has none.) }
 function GetVolumeLabel(drive: Types.TStr2): Types.TStr40;

@@ -17,7 +17,7 @@ uses Types, GDConsts, GDVars, C_Keys, C_Class, C_Stat, C_Status, C_Effect, C_Gbv
   @param(creature The creature taking its turn.) }
 procedure CombatAiControl(creature: Types.PCreature);
 
-{ Calls the priming entry of each overlay this unit uses, so the overlay manager loads them. }
+{ Calls the priming entry of each overlay the AI uses, so the overlay manager loads them. }
 procedure PrimeCombatAi;
 
 implementation

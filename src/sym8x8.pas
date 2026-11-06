@@ -1,6 +1,6 @@
 { Loads the five 8x8 symbol sets and draws their wall, map and border glyphs, using TImgBuf image buffers. }
-{$O+,F+,A+}
-{$I-}
+{$O+,F+}
+{$I-,A+}
 unit Sym8x8;
 
 interface
@@ -23,7 +23,7 @@ procedure Load8x8Set(fileId, setId: Byte);
   @param(useMask Apply the transparency mask when drawing into the view buffer.) }
 procedure Put8x8Sym(col, row: ShortInt; symbol: Word; useViewBuffer, useMask: Boolean);
 
-{ Does nothing; calling it loads this overlay. }
+{ Empty entry; calling it loads this overlay. }
 procedure PrimeSym8x8;
 
 implementation

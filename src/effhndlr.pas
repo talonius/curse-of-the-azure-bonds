@@ -13,10 +13,10 @@ uses Types, FxEngine, ViewChar, CbtMap, Pathing, CharHlp, CbtActs, ClassCal, Ecl
   90, 128, 131 and 132 get no handler. EffGrantItemEffect becomes the override handler. }
 procedure InitEffectHandlers;
 
-{ Calls the priming entry of each overlay this unit uses, so the overlay manager loads them. }
+{ Calls the priming entries of CharHlp, ClassCal, EclTrace and FxEngine, so the overlay manager loads those overlays. }
 procedure PrimeEffHndlr;
 
-{ Cancels the pending effect and the damage when the given effect is 0 or is the effect being applied.
+{ Cancels the pending effect and the damage when effId is 0 or effId is the effect being applied.
   @param(effId The effect to cancel, or 0 for whichever effect is pending.) }
 procedure NullifyAttack(effId: Byte);
 
@@ -47,20 +47,21 @@ procedure AddRollBonus(cr: Types.PCreature; effect: Pointer; removed: Boolean);
   @param(removed Unused.) }
 procedure EffBless(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Applies the curse effect: takes 5 from morale (not below 0) and 1 from the attack roll.
+{ Effect 2 (Curse): takes 5 from morale (not below 0) and 1 from the attack roll.
   @param(cr Unused.)
   @param(effect Unused.)
   @param(removed Unused.) }
 procedure EffCurse(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Applies sticks to snakes: the snakes use up the creature's attacks this round, taking them off the effect's strength
-  (the effect ends when it runs out); the creature is shown fighting with snakes and its actions end.
-  @param(cr The creature carrying the effect.)
-  @param(effect The effect's node.)
+{ Effect 3 (Sticks to Snakes): counts the strength down by curAttacks[1] + curAttacks[2], removing the effect when it
+  runs out, and reports the creature fighting snakes, which ends its actions for the round.
+  @param(cr The creature that carries the effect.)
+  @param(effect The effect's node on the creature.)
   @param(removed Unused.) }
 procedure EffSticksToSnakes(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Applies Dispel Evil: takes 7 from the attack roll when the current creature has creature-type flag bit 0.
+{ Effect 4 (Dispel Evil): takes 7 from the attack roll when the current creature has creature-type flag bit 0
+  (creatureTypeFlags).
   @param(cr Unused.)
   @param(effect Unused.)
   @param(removed Unused.) }
@@ -73,9 +74,9 @@ procedure EffDispelEvil(cr: Types.PCreature; effect: Pointer; removed: Boolean);
   @param(removed Unused.) }
 procedure EffFlameTongue(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Applies Faerie Fire: raises the creature's two armor class values by 2; values from 58 up become 60, including any
-  above 60. Note: a higher stored armor class value is a better armor class, so the outlined creature becomes harder to
-  hit, not easier.
+{ Effect 7 (Faerie Fire): raises the creature's AC and acCur[1] by 2; values from 58 up become 60 ($3C), including any
+  above 60. Note: a higher stored AC is a better armor class, so the outlined creature becomes harder to hit, not
+  easier.
   @param(cr The creature that carries the effect.)
   @param(effect Unused.)
   @param(removed Unused.) }
@@ -110,14 +111,14 @@ procedure EffResistCold(cr: Types.PCreature; effect: Pointer; removed: Boolean);
   @param(removed True when the effect is being removed.) }
 procedure EffCharm(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Does nothing for the enlarge and strength effects.
+{ Effects 12 (Enlarge) and 38 (Strength): nothing to do.
   @param(cr Unused.)
   @param(effect Unused.)
   @param(removed Unused.) }
 procedure EffStrengthBonus(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Engulfed: each call counts the strength down by 1, and a call that finds it already 0 kills the creature, which
-  suffocates.
+{ Effect 13: each call counts the strength down by 1, and a call that finds it already 0 kills the creature
+  ("Suffocates").
   @param(cr The creature that carries the effect.)
   @param(effect The effect's node on the creature.)
   @param(removed Unused.) }
@@ -296,7 +297,7 @@ function FindDamagingWeapon(attacker: Types.PCreature): Pointer;
   @param(removed Unused.) }
 procedure EffProtNormalMissiles(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Applies slow: halves movement and attacks.
+{ Effect 42 (Slow): halves movement.
   @param(cr Unused.)
   @param(effect Unused.)
   @param(removed Unused.) }
@@ -322,8 +323,7 @@ procedure EffDiseaseHitPoints(cr: Types.PCreature; effect: Pointer; removed: Boo
   @param(removed Unused.) }
 procedure EffDwarfGiantDefense(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Applies the gnome's defensive bonus: takes 4 from the attack roll when the current creature is of creature type 1 with
-  icon size 2.
+{ Effect 48: takes 4 from the attack roll when the current creature is of creature type 1 with icon size 2.
   @param(cr Unused.)
   @param(effect Unused.)
   @param(removed Unused.) }
@@ -336,15 +336,15 @@ procedure EffGnomeBugDefense(cr: Types.PCreature; effect: Pointer; removed: Bool
   @param(removed Passed on to AddRollBonus.) }
 procedure EffPrayer(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Applies fire vulnerability: adds 2 to the saving throw against cold, and doubles fire damage when the saving throw
-  failed.
+{ Effect 50: adds 2 to the saving-throw roll against cold, and doubles fire damage when the saving throw failed.
   @param(cr Unused.)
   @param(effect Unused.)
   @param(removed Unused.) }
 procedure EffFireVulnerable(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Applies cold vulnerability: adds 2 to the saving throw against fire, and doubles cold damage. Note: the doubling tests
-  recentlySaved, the game's save flag, instead of the saving throw's result.
+{ Effect 54: adds 2 to the saving-throw roll against fire, and doubles cold damage while recentlySaved is 0. Note: the
+  cold test reads recentlySaved, the flag set when the game is saved, where EffFireVulnerable reads the saving-throw
+  result, so the doubling ignores the creature's save and stops while the game counts as just saved.
   @param(cr Unused.)
   @param(effect Unused.)
   @param(removed Unused.) }
@@ -394,7 +394,7 @@ procedure EffNormalFireImmunity(cr: Types.PCreature; effect: Pointer; removed: B
   @param(removed Unused.) }
 procedure EffConRegeneration(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Applies minor globe of invulnerability: cancels spells below level 4.
+{ Effect 63 (Minor Globe of Invulnerability): cancels spells below level 4.
   @param(cr Unused.)
   @param(effect Unused.)
   @param(removed Unused.) }
@@ -435,15 +435,15 @@ procedure EffMildPoisonAttack(cr: Types.PCreature; effect: Pointer; removed: Boo
   @param(removed Unused.) }
 procedure EffParalyzingHit(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Applies Feeblemind: sets Intelligence and Wisdom to 7 ("is stupid"); in combat the creature can no longer cast and
-  loses the spell it was casting.
+{ Effect 68: sets Intelligence and Wisdom to 7 ("is stupid"); in combat the creature can no longer cast and loses the
+  spell it was casting.
   @param(cr The creature that carries the effect.)
   @param(effect Unused.)
   @param(removed Unused.) }
 procedure EffFeeblemind(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Applies Invisible to Animals: an attacker of creature type 19 takes 4 from its attack roll and, without See Invisible,
-  cannot attack the creature.
+{ Effect 69: against a current creature of type $13, takes 4 from the attack roll, and forbids the attack unless that
+  creature has See Invisible.
   @param(cr Unused.)
   @param(effect Unused.)
   @param(removed Unused.) }
@@ -467,7 +467,7 @@ procedure EffDustOfDisappearance(cr: Types.PCreature; effect: Pointer; removed: 
   @param(removed Unused.) }
 procedure EffCamouflage(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Applies breath immunity: cancels the effect and the damage of attacks with damage-type bit $20 ("is unaffected").
+{ Effect 73: cancels the effect and the damage of attacks with damage-type bit $20 ("is unaffected").
   @param(cr The creature that carries the effect.)
   @param(effect Unused.)
   @param(removed Unused.) }
@@ -492,9 +492,9 @@ procedure EffDragonSlayer(cr: Types.PCreature; effect: Pointer; removed: Boolean
   @param(removed Unused.) }
 procedure EffBaneWeapon(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Applies berserk: makes the creature a quick fighter with NPC value $B3 ($B2 for an NPC above $7F other than $B3). In
-  combat it also targets the first other creature in its target list, joins the opposing team, stops casting and "goes
-  berzerk". On removal $B3 is cleared and it returns to team 0.
+{ Effect 77 (berserk): makes the creature a quick fighter with NPC value $B3 ($B2 for an NPC above $7F other than $B3).
+  In combat it also targets the first other creature in its target list, joins the opposing team, stops casting and
+  "goes berzerk". On removal $B3 is cleared and it returns to team 0.
   @param(cr The creature that carries the effect.)
   @param(effect Unused.)
   @param(removed True when the effect is being removed.) }
@@ -518,14 +518,14 @@ procedure EffFireTouch(cr: Types.PCreature; effect: Pointer; removed: Boolean);
   @param(removed Unused.) }
 procedure EffAcidTouch(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Halves the damage.
+{ Effect 81: halves the damage.
   @param(cr Unused.)
   @param(effect Unused.)
   @param(removed Unused.) }
 procedure EffHalfDamage(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Resistance to fire and cold: against either, a saving throw (type 4) negates the damage when the current spell allows
-  a save, and otherwise the damage is halved.
+{ Effect 82: against fire or cold, a saving throw (type 4) negates the damage when the current spell allows a save, and
+  otherwise the damage is halved.
   @param(cr The creature that carries the effect.)
   @param(effect Unused.)
   @param(removed Unused.) }
@@ -539,14 +539,14 @@ procedure EffFireColdResistance(cr: Types.PCreature; effect: Pointer; removed: B
   @param(removed Unused.) }
 procedure EffPetrifyingGaze(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Absorbs electricity: the effect and damage are canceled and the creature gains 8 hit points, with no limit. Note: a d8
-  is rolled and its result discarded.
+{ Effect 84: absorbs electricity: the effect and damage are cancelled and the creature gains 8 hit points, with no
+  limit. Note: a d8 is rolled and its result discarded.
   @param(cr The creature that carries the effect.)
   @param(effect Unused.)
   @param(removed Unused.) }
 procedure EffAbsorbElectricity(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Makes weapons of weapon class 1 deal 1 damage.
+{ Effect 85: weapons of weapon class 1 deal 1 damage.
   @param(cr Unused.)
   @param(effect Unused.)
   @param(removed Unused.) }
@@ -559,9 +559,9 @@ procedure EffResistPiercing(cr: Types.PCreature; effect: Pointer; removed: Boole
   @param(removed Unused.) }
 procedure EffDisplaced(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Ends the caster's Cloudkill: finds the creature's cloud, numbered by its strength div 16, in the Cloudkill list. If
-  found, restores its nine cells (the downed-body tile $1F where a body lies, else the saved tile), unlinks and frees
-  it, and draws the cloud tile $1C on the cells of the remaining clouds.
+{ Effect 91 (the caster's Cloudkill): finds the creature's cloud number strength div 16 in the Cloudkill list. If found,
+  restores its nine cells (the downed-body tile $1F where a body lies, else the saved tile), unlinks and frees it, and
+  draws the cloud tile $1C on the cells of the remaining clouds.
   @param(cr The creature that carries the effect.)
   @param(effect The effect's node on the creature.)
   @param(removed Unused.) }
@@ -573,7 +573,7 @@ procedure EffClearCloudkill(cr: Types.PCreature; effect: Pointer; removed: Boole
   @param(removed Unused.) }
 procedure EffHalfFire(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Halves damage from weapons whose weapon class has bit 0 or bit 7 set.
+{ Effect 94: halves damage from weapons whose weapon class has bit 0 or bit 7 set.
   @param(cr Unused.)
   @param(effect Unused.)
   @param(removed Unused.) }
@@ -624,7 +624,7 @@ procedure EffTrollHeal(cr: Types.PCreature; effect: Pointer; removed: Boolean);
   @param(removed Unused.) }
 procedure EffTrollReturn(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Adds 1d6 fire damage against a target without effects 20, 54 and 61.
+{ Effect 103: adds 1d6 damage against a target without effects 20, 54 and 61.
   @param(cr The creature that carries the effect.)
   @param(effect Unused.)
   @param(removed Unused.) }
@@ -672,7 +672,7 @@ procedure EffImmuneSleepCharm(cr: Types.PCreature; effect: Pointer; removed: Boo
   @param(removed Unused.) }
 procedure EffImmuneParalysis(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Applies cold immunity: cancels the effect and the damage of cold attacks.
+{ Effect 110: cancels the effect and the damage of cold attacks.
   @param(cr Unused.)
   @param(effect Unused.)
   @param(removed Unused.) }
@@ -684,7 +684,7 @@ procedure EffImmuneCold(cr: Types.PCreature; effect: Pointer; removed: Boolean);
   @param(removed Unused.) }
 procedure EffImmuneParalysisPoison(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Applies fire immunity: cancels the effect and the damage of fire attacks.
+{ Effect 112: cancels the effect and the damage of fire attacks.
   @param(cr Unused.)
   @param(effect Unused.)
   @param(removed Unused.) }
@@ -753,7 +753,7 @@ procedure EffSpitAcid(cr: Types.PCreature; effect: Pointer; removed: Boolean);
   @param(removed Unused.) }
 procedure EffParalyzingTouch(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Deals 2d8 magical cold damage to the creature's target.
+{ Effect 123: deals 2d8 cold and magic damage to the creature's target.
   @param(cr The creature that carries the effect.)
   @param(effect Unused.)
   @param(removed Unused.) }
@@ -784,10 +784,10 @@ procedure EffParalyzingGaze(cr: Types.PCreature; effect: Pointer; removed: Boole
   @param(removed Unused.) }
 procedure EffImmuneMagic(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ An attack with quarrels (item type $1C) of name part 135 removes the creature outright (gone), removes its effects
+{ Effect 130: an attack with item type $1C named $87 removes the creature outright (status 8, gone), removes its effects
   that end at 0 hit points, triggers its condition-13 effects and marks it downed if it is still disabled. Note: the
   item's type is read before the item is checked for nil.
-  @param(cr The creature the effect is on.)
+  @param(cr The creature that carries the effect.)
   @param(effect Unused.)
   @param(removed Unused.) }
 procedure EffBanishByWeapon(cr: Types.PCreature; effect: Pointer; removed: Boolean);
@@ -799,14 +799,14 @@ procedure EffBanishByWeapon(cr: Types.PCreature; effect: Pointer; removed: Boole
   @param(removed True when the effect is being removed.) }
 procedure EffGrantItemEffect(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Cancels fear, effects 29 and 68, and attacks with damage-type bit $40.
+{ Effect 133: cancels effects 142, 29 and 68 ($8E, $1D, $44) and attacks with damage-type bit $40.
   @param(cr Unused.)
   @param(effect Unused.)
   @param(removed Unused.) }
 procedure EffImmuneDebilitation(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Applies the ranger damage bonus: adds the creature's ranger level to the damage when its target has creature-type flag
-  bit 3.
+{ Effect 134: adds the creature's ranger level (classLevels[4]) to the damage when its target has creature-type flag bit
+  3.
   @param(cr The creature that carries the effect.)
   @param(effect Unused.)
   @param(removed Unused.) }
@@ -824,34 +824,35 @@ procedure EffImmuneElectricity(cr: Types.PCreature; effect: Pointer; removed: Bo
   @param(removed Unused.) }
 procedure EffEntangle(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Applies berserk from confusion: the creature fights under AI control (NPC value $B3, or $B2 for an NPC above $7F other
-  than $B3), takes the second creature of a full target list as its target and joins the side opposed to it. On removal
-  a $B3 creature's NPC value is cleared and its side comes from the effect's strength.
-  @param(cr The creature carrying the effect.)
-  @param(effect The effect's node.)
+{ Effect 137: makes the creature a quick fighter with NPC value $B3 ($B2 for an NPC above $7F other than $B3), targeting
+  the first other creature in its target list and joining the opposing team. On removal $B3 is cleared and its team
+  comes back from the strength.
+  @param(cr The creature that carries the effect.)
+  @param(effect The effect's node on the creature.)
   @param(removed True when the effect is being removed.) }
 procedure EffConfusedBerserk(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Applies lasting invisibility: makes the creature invisible, with duration and strength $FF.
+{ Effect 138: makes the creature invisible (effect 25, duration and strength $FF).
   @param(cr The creature that carries the effect.)
   @param(effect Unused.)
   @param(removed Unused.) }
 procedure EffLastingInvisibility(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Applies the recent-cure effect: on removal, sets the paladin's cures left to (paladin level - 1) div 5 + 1.
+{ Effect 141: on removal, sets the disease count to (paladin level - 1) div 5 + 1.
   @param(cr The creature that carries the effect.)
   @param(effect Unused.)
   @param(removed True when the effect is being removed.) }
 procedure EffRecentCure(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Applies fear: on removal a $B3 creature leaves AI control and the creature is no longer forced to flee.
-  @param(cr The creature carrying the effect.)
+{ Effect 142: on removal, clears the charmed NPC value $B3 (and quick fight with it) and the turned flag.
+  @param(cr The creature that carries the effect.)
   @param(effect Unused.)
   @param(removed True when the effect is being removed.) }
 procedure EffFear(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Zaps an adjacent attacker (the current character): it 'gets zapped' for twice the pending damage, as magic.
-  @param(cr The creature carrying the effect.)
+{ Effect 143: a current creature that hits from CharHlp.CalcDistance below 2 "gets zapped" for double the damage as
+  magic damage.
+  @param(cr The creature that carries the effect.)
   @param(effect Unused.)
   @param(removed Unused.) }
 procedure EffZapAttacker(cr: Types.PCreature; effect: Pointer; removed: Boolean);
@@ -866,7 +867,7 @@ procedure EffDispelEvilTouch(cr: Types.PCreature; effect: Pointer; removed: Bool
 { Empty routine with no callers. }
 procedure NoopEffHndlrB;
 
-{ Does nothing.
+{ Effects 5, 19, 24, 92, 127, 140 and 146: nothing to do.
   @param(cr Unused.)
   @param(effect Unused.)
   @param(removed Unused.) }

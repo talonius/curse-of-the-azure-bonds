@@ -219,8 +219,8 @@ procedure MoveExtremes(var fastest, slowest: Byte);
   @param(creature The creature.) }
 procedure EclInflictDamage(dmg: Word; creature: Pointer);
 
-{ Calls the priming entries of SaveLoad, Portrait, FxEngine, MapView, ViewChar, CharHlp, MenuCore, MapTiles and the
-  trace overlay, so the overlay manager loads them; View3D and ClassCal, also used, are not primed. }
+{ Calls the priming entries of SaveLoad, Portrait, FxEngine, MapView, ViewChar, CharHlp, EclTrace, MenuCore and
+  MapTiles, so the overlay manager loads them; View3D and ClassCal, also used, are not primed. }
 procedure PrimeEclMenu;
 
 implementation

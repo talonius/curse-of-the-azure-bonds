@@ -20,13 +20,13 @@ SEQJT:     ; Score command jump table, 0FAh to 0FFh.
         dw      offset seq_c_zero, offset seq_c_ret, offset seq_c_call, offset seq_c_clear, offset seq_c_loop
         dw      offset seq_c_set
 VOICEBLKS: ; Voice blocks, frequency tables, and score data.
-        db 00h, 00h, 00h, 00h, 0Bh, 31h, 30h, 20h, 66h, 74h, 2Eh, 20h, 00h, 00h, 1Ah, 00h
-        db 18h, 00h, 12h, 00h, 00h, 00h, 00h, 00h, 00h, 0Bh, 35h, 30h, 00h, 00h, 14h, 00h
-        db 00h, 00h, 8Ah, 18h, 00h, 00h, 4Eh, 00h, 00h, 00h, 14h, 00h, 00h, 00h, 08h, 00h
-        db 00h, 00h, 22h, 00h, 00h, 00h, 0B4h, 00h, 00h, 00h, 14h, 00h, 00h, 00h, 12h, 00h
-        db 00h, 00h, 24h, 01h, 00h, 00h, 04h, 00h, 00h, 00h, 04h, 00h, 00h, 00h, 0Ah, 00h
-        db 00h, 00h, 0Eh, 00h, 00h, 00h, 44h, 16h, 00h, 00h, 0Eh, 00h, 00h, 00h, 68h, 00h
-        db 00h, 00h, 02h, 09h, 00h, 00h, 84h, 00h, 00h, 00h, 00h, 00h, 06h, 30h, 4Ch, 00h
+        db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 04h, 42h, 6Ch, 75h, 65h, 00h, 00h, 00h, 00h
+        db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 05h, 50h, 65h, 61h
+        db 72h, 6Ch, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+        db 00h, 0Dh, 50h, 6Fh, 77h, 65h, 72h, 6Ch, 65h, 73h, 73h, 6Eh, 65h, 73h, 73h, 00h
+        db 00h, 00h, 00h, 00h, 00h, 00h, 06h, 56h, 65h, 72h, 6Dh, 69h, 6Eh, 00h, 00h, 00h
+        db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 05h, 50h, 69h, 70h, 65h
+        db 73h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 06h, 30h, 4Ch, 00h
         db 00h, 00h, 07h, 00h, 06h, 30h, 48h, 00h, 00h, 00h, 0Fh, 00h, 06h, 30h, 50h, 00h
         db 00h, 00h, 14h, 00h, 00h, 50h, 08h, 00h, 00h, 00h, 28h, 00h, 02h, 30h, 60h, 00h
         db 00h, 00h, 2Dh, 00h, 08h, 90h, 10h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 1Ch, 00h
@@ -42,34 +42,34 @@ VOICEBLKS: ; Voice blocks, frequency tables, and score data.
         db 00h, 00h, 11h, 00h, 08h, 90h, 10h, 00h, 01h, 00h, 14h, 00h, 08h, 90h, 10h, 00h
         db 02h, 00h, 18h, 00h, 08h, 90h, 10h, 00h, 00h, 00h, 1Dh, 00h, 00h, 00h, 10h, 00h
         db 00h, 00h, 26h, 00h, 00h, 00h, 18h, 00h, 00h, 00h, 2Dh, 00h, 00h, 00h, 1Ch, 00h
-        db 00h, 00h, 34h, 00h, 00h, 90h, 00h, 00h, 00h, 00h, 05h, 00h, 16h, 00h, 00h, 00h
-        db 06h, 43h, 6Ch, 65h, 72h, 69h, 63h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+        db 00h, 00h, 34h, 00h, 00h, 90h, 00h, 00h, 00h, 00h, 05h, 00h, 07h, 54h, 72h, 69h
+        db 64h, 65h, 6Eh, 74h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
         db 84h, 8Eh, 84h, 86h, 0F7h, 7Eh, 0D7h, 77h, 4Fh, 71h, 0C4h, 6Ah, 0C6h, 64h, 1Eh, 5Fh
-        db 0C7h, 59h, 0BDh, 54h, 0FCh, 4Fh, 7Eh, 4Bh, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
-        db 00h, 00h, 00h, 00h, 00h, 00h, 07h, 46h, 69h, 67h, 68h, 74h, 65h, 72h, 00h, 00h
+        db 0C7h, 59h, 0BDh, 54h, 0FCh, 4Fh, 7Eh, 4Bh, 00h, 00h, 6Ch, 00h, 00h, 00h, 00h, 00h
+        db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 05h, 57h, 69h, 6Eh, 67h
+        db 73h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+        db 04h, 56h, 69h, 61h, 6Ch, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+        db 00h, 00h, 00h, 00h, 00h, 07h, 4Ch, 61h, 6Eh, 74h, 65h, 72h, 6Eh, 00h, 00h, 00h
         db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
-        db 00h, 07h, 50h, 61h, 6Ch, 61h, 64h, 69h, 6Eh, 00h, 00h, 00h, 00h, 00h, 00h, 00h
-        db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 06h, 52h, 61h, 6Eh
-        db 67h, 65h, 72h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
-        db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 0Ah, 4Dh, 61h, 67h, 69h, 63h, 2Dh, 55h, 73h
-        db 65h, 72h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
-        db 00h, 00h, 05h, 54h, 68h, 69h, 65h, 66h, 00h, 00h, 00h, 00h, 00h, 00h, 14h, 00h
+        db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 0Ch
+        db 46h, 6Ch, 61h, 73h, 6Bh, 20h, 6Fh, 66h, 20h, 4Fh, 69h, 6Ch, 00h, 00h, 00h, 00h
+        db 00h, 00h, 00h, 00h, 0Bh, 31h, 30h, 20h, 66h, 74h, 2Eh, 20h, 00h, 00h, 1Ah, 00h
+        db 18h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 0Bh, 35h, 30h, 00h, 00h, 14h, 00h
         db 00h, 00h, 8Ah, 18h, 00h, 00h, 4Eh, 00h, 00h, 00h, 14h, 00h, 00h, 00h, 08h, 00h
         db 00h, 00h, 22h, 00h, 00h, 00h, 0B4h, 00h, 00h, 00h, 14h, 00h, 00h, 00h, 12h, 00h
         db 00h, 00h, 24h, 01h, 00h, 00h, 04h, 00h, 00h, 00h, 04h, 00h, 00h, 00h, 0Ah, 00h
-        db 00h, 00h, 0Eh, 00h, 00h, 00h, 44h, 16h, 00h, 00h, 0Eh, 00h, 00h, 00h, 68h, 00h
-        db 00h, 00h, 02h, 09h, 00h, 00h, 84h, 00h, 69h, 63h, 2Fh, 46h, 00h, 00h, 06h, 0C4h
+        db 00h, 00h, 0Eh, 00h, 00h, 00h, 44h, 16h, 00h, 00h, 0Eh, 00h, 00h, 00h, 06h, 0C4h
         db 3Eh, 0Eh, 00h, 90h, 00h, 00h, 00h, 00h, 02h, 00h, 02h, 00h, 06h, 31h, 0C0h, 04h
-        db 26h, 06h, 89h, 05h, 02h, 12h, 67h, 00h, 00h, 0Dh, 00h, 02h, 00h, 19h, 00h, 12h
-        db 68h, 00h, 02h, 04h, 55h, 06h, 89h, 0E5h, 02h, 06h, 89h, 0ECh, 04h, 5Dh, 04h, 0CBh
-        db 02h, 12h, 66h, 00h, 00h, 27h, 00h, 00h, 20h, 00h, 00h, 2Dh, 00h, 14h, 00h, 01h
-        db 00h, 02h, 12h, 5Ch, 00h, 00h, 33h, 00h, 02h, 06h, 0C6h, 06h, 0Eh, 08h, 90h, 10h
-        db 00h, 02h, 00h, 04h, 01h, 02h, 12h, 5Dh, 00h, 00h, 4Dh, 00h, 02h, 06h, 80h, 3Eh
-        db 0Eh, 08h, 90h, 10h, 00h, 00h, 00h, 04h, 02h, 02h, 00h, 61h, 00h, 0Ah, 75h, 8Ah
-        db 00h, 14h, 01h, 00h, 00h, 02h, 0Ah, 0EBh, 10h, 01h, 19h, 01h, 72h, 00h, 02h, 00h
-        db 6Eh, 00h, 00h, 7Ah, 00h, 0Ch, 18h, 01h, 02h, 12h, 5Eh, 00h, 00h, 83h, 00h, 02h
-        db 04h, 0Eh, 04h, 0E8h, 0Eh, 00h, 00h, 10h, 00h, 00h, 00h, 02h, 12h, 5Fh, 00h, 00h
-        db 94h, 00h, 02h, 06h, 31h, 0C0h, 04h, 50h, 02h, 00h, 0C0h, 0FFh, 40h, 0F1h, 0C0h, 0E3h
+        db 26h, 06h, 89h, 05h, 02h, 00h, 0Dh, 00h, 02h, 04h, 55h, 06h, 89h, 0E5h, 02h, 06h
+        db 89h, 0ECh, 04h, 5Dh, 04h, 0CBh, 02h, 00h, 1Dh, 00h, 00h, 19h, 00h, 00h, 23h, 00h
+        db 14h, 04h, 0A2h, 0Eh, 08h, 90h, 10h, 00h, 01h, 00h, 02h, 06h, 0C6h, 06h, 0Eh, 08h
+        db 90h, 10h, 00h, 02h, 00h, 04h, 01h, 02h, 06h, 80h, 3Eh, 0Eh, 08h, 90h, 10h, 00h
+        db 00h, 00h, 04h, 02h, 02h, 00h, 4Ch, 00h, 0Ah, 75h, 75h, 00h, 14h, 01h, 00h, 00h
+        db 02h, 0Ah, 0EBh, 0D9h, 00h, 19h, 01h, 5Dh, 00h, 02h, 00h, 59h, 00h, 00h, 65h, 00h
+        db 0Ch, 18h, 01h, 02h, 04h, 0Eh, 04h, 0E8h, 0Eh, 00h, 00h, 10h, 00h, 00h, 00h, 02h
+        db 06h, 31h, 0C0h, 04h, 50h, 02h, 00h, 84h, 00h, 04h, 0Eh, 04h, 0E8h, 0Eh, 00h, 00h
+        db 18h, 00h, 00h, 00h, 02h, 06h, 31h, 0C0h, 04h, 50h, 02h, 00h, 99h, 00h, 04h, 0Eh
+        db 04h, 0E8h, 0Eh, 00h, 00h, 1Ch, 00h, 00h, 00h, 02h, 0C0h, 0FFh, 40h, 0F1h, 0C0h, 0E3h
         db 00h, 0D7h, 40h, 0CBh, 80h, 0BFh, 0C0h, 0B4h, 80h, 0AAh, 00h, 0A1h, 00h, 98h, 80h, 8Fh
         db 40h, 87h, 0B4h, 0Ah, 0B4h, 0Ah, 0B4h, 0Ah, 0B4h, 0Ah, 0BCh, 0Ah, 0B4h, 0Ah, 0B4h, 0Ah
         db 0B4h, 0Ah, 0B4h, 09h, 0B4h, 0Ah, 0B4h, 0Ah, 0B4h, 0Ah, 24h, 0Ah, 0B4h, 0Ah, 0B4h, 0Ah
@@ -541,7 +541,7 @@ VOICEBLKS: ; Voice blocks, frequency tables, and score data.
         db 00h, 00h, 00h, 00h, 00h, 00h, 80h, 0BBh, 0FFh, 0FFh, 0C0h, 0E0h, 06h, 00h, 00h, 00h
         db 0FFh, 0FFh, 00h, 00h, 00h, 00h
 OLDVEC8:   ; Saved BIOS timer interrupt vector, restored when playback stops.
-        db 43h, 6Fh, 6Eh, 74h
+        db 70h, 20h, 44h, 65h
 
 REENTRY    EQU  TICKDIV+1        ; ISR reentrancy guard
 LOOPCTR    EQU  TICKDIV+2        ; voice loop counter

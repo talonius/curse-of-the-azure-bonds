@@ -28,15 +28,15 @@ procedure InstallSoundTimer; external;
 { Restores the BIOS timer interrupt and its rate, and silences the speaker and the Tandy voices. }
 procedure UninstallSoundTimer; external;
 
-{ Starts a sound on the PC-speaker voices; sound 0 silences them.
-  @param(song The sound number.) }
+{ Starts a song on the PC-speaker voices; song 0 silences them.
+  @param(song The song number.) }
 procedure ProgramSpeakerVoices(song: Word); external;
 
-{ Starts a sound on the Tandy voices; sound 0 silences them.
-  @param(song The sound number.) }
+{ Starts a song on the Tandy voices; song 0 silences them.
+  @param(song The song number.) }
 procedure ProgramTandyVoices(song: Word); external;
 
-{ Sets the voice byte; while it is 0 the timer interrupt keeps both banks quiet.
+{ Sets the voice byte; while it is 0 the timer interrupt keeps the speaker and the Tandy voices quiet.
   @param(latchValue The new voice byte, in its low byte.) }
 procedure SetVoiceByte(latchValue: Word); external;
 

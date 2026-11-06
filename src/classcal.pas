@@ -20,8 +20,9 @@ uses Types, GDConsts, GDVars, C_Keys, C_Race, C_Class, C_Stat, C_Spell, MenuCore
 procedure RecalcClassStats(cr: Types.PCreature);
 
 { Adds the Wisdom bonus cleric slots when the character has cleric levels, counting its earlier cleric levels once it
-  has passed them. Wisdom above 12 and above 13 each add a first-level slot, above 14 and above 15 each a second-level
-  slot, above 16 a third-level slot and above 17 a fourth-level slot, each only to a spell level that already has slots.
+  has passed them (EarlierClassActive). Wisdom above 12 and above 13 each add a first-level slot, above 14 and above 15
+  each a second-level slot, above 16 a third-level slot and above 17 a fourth-level slot, each only to a spell level
+  that already has slots.
   @param(cr The character to update.)
   @param(rebuild True to rebuild the cleric slots from the cleric progression before adding the bonus.) }
 procedure RecalcClericSlots(cr: Types.PCreature; rebuild: Boolean);
@@ -73,13 +74,13 @@ function FirstCurrentClass(cr: Types.PCreature): Byte;
   @returns(That level; 0 for a non-human or a human with no level.) }
 function CurrentDualClassLevel(cr: Types.PCreature): ShortInt;
 
-{ Tells whether a human's current class level exceeds the level it had when it changed class, which lets its earlier
-  class's abilities count again.
+{ Tells whether a dual-class character's current class level exceeds the level it had when it changed class
+  (levelAtChange), which lets its earlier class's abilities count again.
   @param(cr The character to check.)
   @returns(1 when the earlier class counts again, 0 otherwise.) }
 function EarlierClassActive(cr: Types.PCreature): ShortInt;
 
-{ Calls the priming entry of each overlay this unit uses, so the overlay manager loads them. }
+{ Calls the priming entries of EclTrace and MenuCore, so the overlay manager loads them. }
 procedure PrimeClassCal;
 
 implementation
@@ -100,12 +101,12 @@ end;
 procedure RecalcSpellSlots(cr: Types.PCreature); forward;
 
 { Rebuilds a character's spell slots from its class levels, using an earlier class's level instead once a dual-class
-  character has passed it. A cleric gets one first-level slot plus the cleric progression for each level above 1, the
-  Wisdom bonus slots, and knows each cleric spell of a level it has slots for, except Animate Dead. A paladin above
-  level 8 adds its cleric slots for levels 9 up and knows each cleric spell of a level it has slots for. A ranger above
-  level 7 adds its druid slots (spell levels 1 to 3) and magic-user slots (spell levels 1 and 2) for levels 8 up and
-  knows each druid spell. A magic-user gets one first-level slot plus its progression. Each equipped item that doubles
-  magic-user slots doubles those of spell levels 1 to 3.
+  character has passed it (EarlierClassActive). A cleric gets one first-level slot plus the cleric progression for each
+  level above 1, the Wisdom bonus slots (RecalcClericSlots), and knows each cleric spell of a level it has slots for,
+  except spell 36. A paladin above level 8 adds its cleric slots for levels 9 up and knows each cleric spell of a level
+  it has slots for. A ranger above level 7 adds its druid slots (spell levels 1 to 3) and magic-user slots (spell levels
+  1 and 2) for levels 8 up and knows each druid spell. A magic-user gets one first-level slot plus its progression. Each
+  equipped item with special $81 doubles the magic-user slots of spell levels 1 to 3.
   @param(cr The character to update.) }
 procedure RecalcSpellSlots(cr: Types.PCreature);
 var

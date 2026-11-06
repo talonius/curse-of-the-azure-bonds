@@ -53,8 +53,8 @@ begin
   Halt(0);
 end;
 
-{ Writes one line per effect on a creature to the debug log: its name and the effect's id.
-  @param(creature The creature.) }
+{ Writes the id of each of a creature's effects to the debug log.
+  @param(creature The creature whose effects are listed.) }
 procedure DumpSpells(creature: Types.PCreature);
 var
   cur: Types.PEffect;

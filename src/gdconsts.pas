@@ -86,9 +86,11 @@ const
      (lo: 2; hi: 9), (lo: 3; hi: 10), (lo: 4; hi: 10)));
   { Column offsets of the four neighbors (north, east, south, west) that CombatSt's room decorator turns into feature
     tiles around a placed feature. }
-  featureDx: array[1..4] of ShortInt = (0, 1, 0, -1);
+  featureDx: array[1..4] of ShortInt = (
+    0, 1, 0, -1);
   { Row offsets of the four neighbors (north, east, south, west) that go with featureDx. }
-  featureDy: array[1..4] of ShortInt = (-1, 0, 1, 0);
+  featureDy: array[1..4] of ShortInt = (
+    -1, 0, 1, 0);
   { Feature-class bits of each wilderness terrain character, read by TerrainClassOf; bits $10 and $20 raise the arena
     generators' fill thresholds. The terrain character is not range-checked, so higher characters read the bytes after
     this table. }
@@ -748,12 +750,14 @@ const
     set's base. }
   wallThreshold: Word = 45;
   { Unused: the last symbol of sets 1..4. }
-  symbolSetLimits: array[1..4] of Word = (115, 185, 255, 295);
+  symbolSetLimits: array[1..4] of Word = (
+    115, 185, 255, 295);
   { Column step of each direction 0..7 (north first, clockwise), with 8 for no step. }
   directionDx: array[0..8] of ShortInt = (
     0, 1, 1, 1, 0, -1, -1, -1, 0);
   { Row step of each direction 0..7 (north first, clockwise), with 8 for no step. }
-  directionDy: array[0..8] of ShortInt = (-1, -1, 0, 1, 1, 1, 0, -1, 0);
+  directionDy: array[0..8] of ShortInt = (
+    -1, -1, 0, 1, 1, 1, 0, -1, 0);
   { Combat terrain by terrain number: movement cost (255 impassable), clearance, blocking, and the tile drawn for it. }
   terrainInfo: array[1..65] of Types.TTerrain = (
     (cost: 255; clearance: 1; blocking: 2; tileId: 0),

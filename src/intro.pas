@@ -10,7 +10,7 @@ interface
   with the flag off the first picture is left allocated. }
 procedure Introduction;
 
-{ Does nothing; nothing calls it. }
+{ Empty routine with no callers. }
 procedure NoopIntro;
 
 implementation

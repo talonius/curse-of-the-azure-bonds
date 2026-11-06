@@ -14,8 +14,8 @@ interface
 procedure GameLoop;
 
 { Calls the priming entries of ViewChar, Portrait, MapTiles, GameTime, MenuCore, SaveLoad, FxEngine, Explore, CharHlp,
-  MapView, EclMenu, Money, ClassCal, CopyProt and the trace overlay, so the overlay manager loads them; the other
-  overlays this unit uses are not primed here. }
+  MapView, EclMenu, Money, EclTrace, ClassCal and CopyProt, so the overlay manager loads them; the combat, shop, temple,
+  camp, map-view and character-creation overlays are primed by the commands that enter them. }
 procedure PrimeEclVm;
 
 implementation
@@ -193,9 +193,9 @@ begin
     EclMenu.WriteGbvmString(address, GDVars.scriptStrings[1]);
 end;
 
-{ LOAD CHARACTER: makes the party member its argument names (low 7 bits, counting from 0) the current character, or sets
-  the character-not-found flag when there is none; EXIT restores the previous one. With bit 7 set and both removal flags
-  raised, it removes that character from the party and redraws the party. }
+{ LOAD CHARACTER: makes party member idx (low 7 bits, from 0) the current character, or sets the character-not-found
+  flag; EXIT restores the previous one. With bit 7 set and both dump flags raised, the character is removed from the
+  party. }
 procedure EclLoadCharacter;
 var
   p: Types.PCreature;
@@ -711,8 +711,8 @@ begin
   end;
 end;
 
-{ PARTYSTRENGTH: stores the party's strength: for each member (hit points + 5 per point of stored armor class above 60 +
-  5 per point of stored THAC0 above 39 + 8 per magic-user level + 4 per cleric level) div 10, summed into a byte. }
+{ PARTYSTRENGTH: stores the party's strength: for each member (hit points + 5 per point of stored AC above 60
+  + 5 per point of stored THAC0 above 39 + 8 per magic-user level + 4 per cleric level) div 10, summed into a byte. }
 procedure EclPartyStrength;
 var
   hp: Byte;
@@ -1775,8 +1775,8 @@ begin
   CharHlp.DisplayNoncombatInterface;
 end;
 
-{ DUMP, opcode $3E: removes the current character from the party, keeps the character that becomes current as the saved
-  character to restore, and redraws the party. }
+{ DUMP: removes the current character from the party; the character that becomes current is kept as the one to
+  restore. }
 procedure EclDump;
 var
   { Unused in this version; see the other implementations of this routine. }
@@ -1788,8 +1788,7 @@ begin
   CharHlp.DisplayParty(GDVars.curChar);
 end;
 
-{ FIND SPECIAL, opcode $3F: clears the compare flags, then sets the equal flag when the current character has the effect
-  in its argument, the not-equal flag otherwise. }
+{ FIND SPECIAL: sets the equal flag when the current character has the given effect, else not-equal. }
 procedure EclFindSpecial;
 var
   node: Types.PEffect;

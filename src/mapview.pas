@@ -15,7 +15,7 @@ uses EclTrace, Portrait, View3D, MapTiles, GDConsts, GDVars, C_Pic, C_Gbvm;
   is cleared after a redraw, and on entry when the village picture is loaded. }
 procedure DisplayMapView;
 
-{ Calls the priming entries of MapTiles, Portrait and the trace overlay (not View3D), so the overlay manager loads those
+{ Calls the priming entries of MapTiles, EclTrace and Portrait (not View3D), so the overlay manager loads those
   overlays. }
 procedure PrimeMapView;
 

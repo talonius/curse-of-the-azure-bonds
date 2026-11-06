@@ -22,9 +22,8 @@ procedure ResolveMovement;
   @returns(The key that ended the menu: E for Encamp, L for Look, the up arrow's scan code for a step.) }
 function MapMainMenu: Char;
 
-{ Calls the priming entries of FxEngine, CharHlp, ViewChar, MapView, SaveLoad, MapTiles, Portrait, GameTime, MenuCore,
-  ClassCal and the trace overlay, so the overlay manager loads them; the other overlays this unit uses are not primed
-  here. }
+{ Calls the priming entries of FxEngine, CharHlp, ViewChar, MapView, SaveLoad, MapTiles, Portrait, GameTime, EclTrace,
+  MenuCore and ClassCal, so the overlay manager loads them; Camp and View3D, also used, are not primed. }
 procedure PrimeExplore;
 
 implementation

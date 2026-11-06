@@ -62,9 +62,9 @@ procedure LoadPortraitBufs(headId, bodyId: Byte);
   @param(anim The sprite animation.) }
 procedure Show3DSprite(dist: Byte; anim: Types.TAnimRec);
 
-{ Frees the big animation, then loads a picture from BIGPIC<disk>.DAX into the big picture buffer unless it is the one
-  already loaded.
-  @param(id Picture number.) }
+{ Frees the picture-window animation (GDVars.animData), then loads a full-screen picture from BIGPIC<disk>.DAX unless it
+  is already loaded.
+  @param(id The picture's block id.) }
 procedure LoadBigPic(id: Byte);
 
 { Draws the full-screen picture frame and shows the loaded big picture in it. }

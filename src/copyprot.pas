@@ -11,7 +11,7 @@ interface
   once. }
 procedure CopyProtection;
 
-{ Calls the trace overlay's priming entry, so the overlay manager loads it. }
+{ Calls EclTrace's priming entry, so the overlay manager loads it. }
 procedure PrimeCopyProt;
 
 { Checks START.EXE against its stored checksum: the sum of every byte except the last four must equal the four-byte
@@ -22,8 +22,7 @@ function VerifyChecksum: Boolean;
 
 implementation
 
-uses Blit, MapTiles, SoundDrv, Crt, Dos, GameIo, TextRend, Border, EclTrace, CharHlp, MenuCore,
-  GDConsts, GDVars;
+uses Blit, MapTiles, SoundDrv, Crt, Dos, GameIo, TextRend, Border, EclTrace, CharHlp, MenuCore, GDConsts, GDVars;
 
 procedure PrimeCopyProt;
 begin

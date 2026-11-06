@@ -51,8 +51,7 @@ procedure SaveChar(cr: Types.PCharRecord; fname: Types.TStr8);
   age, takes the Hillsfar gold as platinum when that is worth more, sets the cleric, fighter, magic-user and thief
   levels to 1 or 0 from the Hillsfar class flags, and takes the hit points from the Hillsfar record. Its .swg items and
   .fx effects follow (from Pool also some .spc effects), and its stats are recalculated. Note: the Pool conversion's
-  exceptional-Strength check tests and raises Charisma, the last ability the loop left behind, to the race's
-  exceptional-Strength limit.
+  exceptional-Strength check raises Strength, not exceptional Strength, to the race's exceptional-Strength limit.
   @param(name The file name, with its extension.)
   @param(cr Receives the character.)
   @param(savedGame Unused.)
@@ -89,8 +88,8 @@ procedure AddCharToParty(cr: Types.PCharRecord);
 { Does nothing. }
 procedure NoopSaveLoad;
 
-{ Calls the priming entries of MapTiles, ClassCal, FxEngine, CharHlp and the trace overlay, so the overlay manager loads
-  them; the other overlays this unit uses are not primed here. }
+{ Calls the priming entries of MapTiles, EclTrace, ClassCal, FxEngine and CharHlp (which prime MenuCore, Portrait and
+  MapView in turn), so the overlay manager loads them; ViewChar, View3D, Money and CharGen are not primed. }
 procedure PrimeSaveLoad;
 
 implementation
@@ -545,7 +544,7 @@ var
   nameLen: Byte;
 
   {$F+}
-  { Tells whether the save directory holds an ext file whose stored name is name15. }
+  { Checks the save directory for an ext file whose stored name is name15. }
   function SavedNameExists: Boolean;
   var
     sr: SearchRec;
@@ -619,8 +618,10 @@ var
         stats[i].current := stats[i].permanent;
       end;
       exStrCur := Types.PCharRecord(savedBuf)^.strExc;
-      if stats[i].permanent < GDConsts.raceAbilityLimits[race].exStrMax[gender] then
-        stats[i].permanent := GDConsts.raceAbilityLimits[race].exStrMax[gender];
+      if GDConsts.raceAbilityLimits[race].exStrMax[gender] >
+          stats[C_Stat.STRENGTH].permanent then
+        stats[C_Stat.STRENGTH].permanent :=
+          GDConsts.raceAbilityLimits[race].exStrMax[gender];
       exStrBase := Types.PCharRecord(savedBuf)^.strExc;
       thac0Base := Types.PCharRecord(savedBuf)^.thac0Base;
       charClass := Types.PCharRecord(savedBuf)^.charClass;
@@ -1207,7 +1208,7 @@ end;
 
 procedure SaveGame;
 
-  { Returns the bytes the members' files need: a record each plus its items and effects. }
+  { Returns the bytes the members' files need: 422 each plus 63 per item and 9 per effect. }
   function ComputePartySaveSize: Word;
   var
     cr: Types.PCreature;

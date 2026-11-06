@@ -129,11 +129,12 @@ procedure AddItemCopy(tgt: Types.PCreature; it: Types.PItem);
   @param(msg The message.) }
 procedure PrintBottomLine(msg: Types.TStr40);
 
-{ Shows a creature's name and a message: in combat in the side panel, otherwise in the lower text window.
+{ Shows a creature's name and a message: in combat (interface state 5) in the side panel, otherwise in the lower text
+  window.
   @param(cr The creature to name.)
   @param(msg The message.)
   @param(row The first side-panel row, in combat.)
-  @param(pause Waits and then clears the message area.) }
+  @param(pause Waits and then clears the message area (ClearMessageWindow).) }
 procedure PrintCreatureMessage(cr: Types.PCreature; msg: String; row: Byte; pause: Boolean);
 
 { Clears the message area: the side panel's rows 10..21 in combat, otherwise rows 18..22. }
@@ -157,15 +158,15 @@ procedure CopyIconFacing(slot, fromFrame, toFrame, mirrored: Byte);
   @param(slot The icon slot.) }
 procedure BuildIconFacings(slot: Byte);
 
-{ Flies the combat view picture from one arena cell to another along a third-cell path, cycling its frames and keeping
-  it in view: the view stays put when both ends are visible, is centered between them when they lie within 6 cells of
-  each other, and otherwise follows the picture and finishes at the target. With a pause of 0 the picture is drawn on
-  cell edges and skipped between them. Paths of fewer than four steps are not drawn.
+{ Flies the combat effect sprite from one arena cell to another along a third-cell path (Pathing.PathFind), cycling its
+  frames and keeping it in view: the view stays put when both ends are visible, is centered between them when they lie
+  within 6 cells of each other, and otherwise follows the sprite and finishes at the target. With stepDelay 0 the sprite
+  is drawn on cell edges and skipped between them. Paths of fewer than four steps are not drawn.
   @param(x1 Start column.)
   @param(y1 Start row.)
   @param(x2 Target column.)
   @param(y2 Target row.)
-  @param(frames The number of picture frames to cycle.)
+  @param(frames The number of sprite frames to cycle.)
   @param(stepDelay Milliseconds to pause on each drawn step.) }
 procedure CombatAnimateMovingIcon(x1, y1, x2, y2: Integer; frames, stepDelay: Byte);
 
@@ -197,9 +198,9 @@ procedure InflictDamage(cr: Types.PCreature; dmg: Byte);
   @param(cr The healed creature.) }
 procedure AnnounceHealStatus(cr: Types.PCreature);
 
-{ Tells whether a creature is on the party's side.
+{ Checks whether a creature is on the party's side (hostile = 0).
   @param(cr The creature.)
-  @returns(True when its hostile flag is 0.) }
+  @returns(True when it is not hostile.) }
 function NotHostile(cr: Types.PCreature): Boolean;
 
 { Recounts the enabled creatures on each side. }
@@ -285,15 +286,15 @@ function AtLevelCap(cr: Types.PCreature; cls: ShortInt): Boolean;
 { Calls the priming entry of each overlay this unit uses, so the overlay manager loads them. }
 procedure PrimeCharHlp;
 
-{ Allocates a zeroed item record and fills it from the parameters.
-  @param(itemType The item type.)
-  @param(name1 The first name part.)
-  @param(name2 The second name part.)
-  @param(name3 The third name part.)
-  @param(plus The magic bonus.)
+{ Allocates a zeroed item and sets each field from the parameter of the same name.
+  @param(itemType The base item type.)
+  @param(name1 The first name component.)
+  @param(name2 The second name component.)
+  @param(name3 The third name component.)
+  @param(plus The magical plus.)
   @param(saveBonus The saving-throw bonus.)
   @param(equipped Nonzero when readied.)
-  @param(unidMask Bits of the name parts still unidentified.)
+  @param(unidMask Bits of the name components not yet identified.)
   @param(cursed Nonzero when cursed.)
   @param(weight The weight.)
   @param(quantity The quantity, 0 for a single item.)
@@ -305,10 +306,9 @@ procedure PrimeCharHlp;
 function MakeItem(itemType, name1, name2, name3, plus, saveBonus, equipped, unidMask, cursed: Byte; weight: Word;
                   quantity: Byte; value: Word; charges, effect, special: Byte): Types.PItem;
 
-{ Tells whether any party member (a side-0 player or non-player character) is dying. With `bandage` set, the first dying
-  member found is bandaged: it becomes unconscious, its overkill is cleared and the bandaging is announced.
-  @param(bandage Set to bandage the first dying member.)
-  @returns(True when a member is dying.) }
+{ Checks whether any party member is dying.
+  @param(bandage Bandages the first one found: it becomes unconscious with no overkill.)
+  @returns(True when one is dying.) }
 function BandageDying(bandage: Boolean): Boolean;
 
 implementation
@@ -341,12 +341,13 @@ begin
   ClassCal.PrimeClassCal;
 end;
 
-{ Sets the readied weapon's THAC0 and damage. THAC0 starts from its base, plus the Dexterity missile adjustment for a
-  missile weapon and the Strength to-hit bonus for a weapon that uses Strength, which also adds the Strength damage
-  bonus. The damage modifier starts from the weapon's small-target modifier. The weapon's plus and its ammunition's plus
-  (the readied quarrels or arrows it fires) are added to both the damage modifier and THAC0; an elf adds 1 more to THAC0
-  alone with the bows and item types 36 and 37. The damage dice are the small-target dice. Does nothing without a
-  readied weapon.
+{ Sets the readied weapon's THAC0 and damage. THAC0 (thac0Cur) starts from thac0Base, plus the Dexterity missile
+  adjustment for a missile weapon (props bit 1) and the Strength to-hit bonus for a weapon that uses Strength (props bit
+  2), which also adds the Strength damage bonus. The damage modifier (curMod[1]) starts from the weapon's small-target
+  modifier. The weapon's plus and its ammunition's plus (quarrels, slot 12, for props bit 7; arrows, slot 11, for props
+  bit 0) are added to both the damage modifier and THAC0; an elf (race 2) adds 1 more to THAC0 alone with the bows (item
+  types 41..44) and item types 36 and 37. The damage dice are the small-target dice. Does nothing without a readied
+  weapon.
   @param(cr The character.) }
 procedure WeaponAdjust(cr: Types.PCreature);
 var
@@ -403,9 +404,9 @@ begin
   end;
 end;
 
-{ Adds one readied item's armor-class part: a shield sets the first part; an item with armor code 0 adds its plus to the
-  second part (rings keep the best ring plus in the third part instead) and its save bonus to the wearer's save bonus;
-  other armor keeps the best code plus its plus in the fourth part. Items without an armor code add nothing.
+{ Adds one readied item's armor-class part: a shield (slot 1) sets acc[1]; an item with armor code 0 adds its plus to
+  acc[2] (rings, slot 9, keep the best ring plus in acc[3] instead) and its save bonus to saveBonus; other armor keeps
+  the best code + plus in acc[4]. Items without an armor code (acDescr bit 7 clear) add nothing.
   @param(cr The wearer.)
   @param(item A readied item.)
   @param(acc The armor-class parts being collected.)

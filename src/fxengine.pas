@@ -196,18 +196,18 @@ function RestoreHitPoints(creature: Types.PCreature; hp: Byte; bypassRot: Boolea
   @returns(True when it revived.) }
 function ReviveDeadCreature(creature: Types.PCreature; hp: Byte): Boolean;
 
-{ Recomputes the current value of one ability of a creature from its permanent value, its equipped magic items and its
-  effects. Items can raise or lower an ability or force it to 3 or 7. Strength keeps the best of the items, effect 146,
-  Enlarge and the Strength effect, which adds its decoded Strength to a creature at 18/99 or less and turns each point
-  above 18 into 10 exceptional points for a fighter, paladin or ranger (18 for other classes). Constitution recomputes
-  the maximum hit points from the rolled hit points and the Constitution bonus of the class levels, moves the current
-  hit points by the change, and keeps effect 62 on while it is 20 or more. Intelligence and Wisdom drop to 3 under
-  Feeblemind unless an item forces 7 or 3, and Charisma adds the strength of effect 14.
+{ Recomputes the current value of one ability of cr from its permanent value, its equipped magic items and its effects.
+  Items can raise or lower an ability or force it to 3 or 7. Strength keeps the best of the items, effect 146, Enlarge
+  and C_Effect.STRENGTH, which adds its decoded Strength to a creature at 18/99 or less and turns each point above 18
+  into 10 exceptional points for a fighter, paladin or ranger (18 for other classes). Constitution recomputes the
+  maximum hit points from the rolled hit points and the Constitution bonus of the class levels, moves the current hit
+  points by the change, and keeps effect 62 on while it is 20 or more. Intelligence and Wisdom drop to 3 under effect 68
+  unless an item forces 7 or 3, and Charisma adds the strength of effect 14.
   @param(cr Creature recalculated.)
   @param(ability Ability, a C_Stat index from STRENGTH to CHARISMA.) }
 procedure RecalcAbility(cr: Types.PCreature; ability: ShortInt);
 
-{ Calls the priming entries of CharHlp, ClassCal and the trace overlay, so the overlay manager loads those overlays. }
+{ Calls the priming entries of CharHlp, EclTrace and ClassCal so that the overlay manager loads those overlays. }
 procedure PrimeFxEngine;
 
 implementation
@@ -496,15 +496,16 @@ begin
   end;
 end;
 
-{ Finds the caster of the cloud covering a combat cell. Note: the direction table is read from index 1 against a table
-  that starts at index 0, so with four cells per cloud the last cell checked comes from the byte after the table.
+{ Finds the cloud covering a combat cell. Note: tbl is read from index 1, but stinkingCloudList starts at the first
+  stinking-cloud direction, so that cloud's cells are checked as east, southeast and south of its corner and then the
+  cell itself, read past the table's end from the cloudkill directions that follow.
   @param(x Column of the cell.)
   @param(y Row of the cell.)
   @param(start First cloud node to check.)
   @param(count Number of cells checked per cloud.)
-  @param(tbl Directions from a cloud's corner to its cells, read from index 1.)
-  @returns(The caster of the first cloud, from the given node on, that has one of its checked cells live at the cell;
-    the head of the creature list when there is none.) }
+  @param(tbl Directions from a cloud's upper-left cell to its cells, read from index 1.)
+  @returns(The caster of the first cloud from start on that has one of its first count cells live at (x, y);
+    GDVars.partyHead when there is none.) }
 function FindCreatureAtCell(x, y: ShortInt; start: Types.PCloudNode; count: Byte; var tbl: TDirs): Types.PCreature;
 var
   p: Types.PCloudNode;
@@ -800,7 +801,7 @@ var
   enc: Byte;
   count: Byte;
 
-  { Raises the strength being built to the candidate when higher, comparing exceptional strength only at 18. }
+  { Keeps the candidate Strength (baseStr, excStr) when it beats the best so far. }
   procedure StrClamp;
   begin
     if (baseStr > statVal) or ((baseStr = 18) and (excStr > strExc)) then begin

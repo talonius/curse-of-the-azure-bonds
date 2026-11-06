@@ -287,7 +287,7 @@ procedure AttackHug(cr: Types.PCreature; effect: Pointer; removed: Boolean);
   @returns(True when the cheat ran.) }
 function VictoryCheat: Boolean;
 
-{ Calls the priming entry of each overlay this unit uses, so the overlay manager loads them. }
+{ Calls the priming entry of each overlay the combat actions use, so the overlay manager loads them. }
 procedure PrimeCbtActs;
 
 implementation

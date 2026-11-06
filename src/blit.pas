@@ -271,7 +271,7 @@ procedure BlitCellTandy(screenX, screenY: Integer; tileIdx: Byte; gfx, dest: Typ
   FlushView.
   @param(screenX Left edge, in character columns.)
   @param(screenY Top edge, in character rows of eight scanlines.)
-  @param(tileIdx Frame of the source graphic to draw.)
+  @param(tileIdx Frame within gfx to draw.)
   @param(gfx Source graphic.)
   @param(dest Buffer drawn into, normally the view buffer.) }
 procedure BlitCellTandyMasked(screenX, screenY: Integer; tileIdx: Byte; gfx, dest: Types.PImgBuf); external;

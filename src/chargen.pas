@@ -21,9 +21,8 @@ type
   adventuring and Exit, offered by whether a character is selected and whether a training hall is open. Home and End
   change the current character. Remove saves a non-NPC before removing it and drops an NPC. Any key but E or S marks the
   party unsaved, and Exit offers to save an unsaved party. J toggles free training when the second command-line
-  parameter equals the shared command text. Loading a game whose zone-0 victory flag is set reports that Tyranthraxus is
-  already defeated and quits. Begin needs a party (or demo mode); it restores the interface state, redraws the view
-  frame, closes the training hall and returns. }
+  parameter equals the shared command text. Begin needs a party whose zone-0 victory flag is clear (or demo mode); it
+  restores the interface state, redraws the view frame, closes the training hall and returns. }
 procedure MainMenu;
 
 { Adds saved characters from Curse, Pool or Hillsfar (GDVars.importMode) to the party. A pick not yet marked is loaded
@@ -247,18 +246,12 @@ begin
               CharGen.DropCharacterMenu;
           end;
         'L':
-          if GDConsts.characterVerticalMenus[8].enabled then begin
-            SaveLoad.LoadGame;
-            if GDVars.zone0^[C_Gbvm.GAME_WON] <> 0 then begin
-              TextRend.DisplayAndPause(Yellow, 0, 'You''ve already defeated Tyranthraxus.');
-              GameIo.ExitGame;
-            end;
-          end;
+          if GDConsts.characterVerticalMenus[8].enabled then SaveLoad.LoadGame;
         'S':
           if (GDConsts.characterVerticalMenus[9].enabled) and (GDVars.partyHead <> nil) then SaveLoad.SaveGame;
         'B':
           if GDConsts.characterVerticalMenus[10].enabled then
-            if (GDVars.partyHead <> nil) or GDVars.demoMode then begin
+            if ((GDVars.partyHead <> nil) and (GDVars.zone0^[C_Gbvm.GAME_WON] = 0)) or GDVars.demoMode then begin
               GDVars.ifcState := stateB;
               if not GDVars.loadedSavedGame and (GDVars.loadedPicId <> C_Pic.VILLAGE) then begin
                 if GDVars.ifcState = C_Ifc.OVERLAND then
@@ -837,9 +830,9 @@ begin
   end;
 end;
 
-{ Computes the current character's Constitution hit-point adjustment for a class: -2 at Constitution 3, -1 at 4 to 6, 0
-  at 7 to 14, +1 at 15, +2 at 16, and at 17 to 19 the Constitution less 14 for fighters, rangers and paladins or +2 for
-  others. Note: a Constitution outside 3 to 19 leaves the result undefined.
+{ Computes the current character's Constitution hit-point adjustment for a class: -2 at Con 3, -1 at 4..6, 0 at 7..14,
+  +1 at 15, +2 at 16, and at 17..19 Con - 14 for fighters, rangers and paladins or +2 for others. Note: a Con outside
+  3..19 leaves the result undefined.
   @param(cls The class level index.)
   @returns(The hit-point adjustment per level.) }
 function ClassConAdj(cls: Byte): ShortInt;

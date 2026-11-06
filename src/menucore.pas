@@ -89,8 +89,8 @@ procedure AllocStringList(count: Integer; var list: Types.PItem);
   @param(list The list's first member, or nil.) }
 procedure FreeStringList(var list: Types.PItem);
 
-{ Calls the priming entries of Portrait and the trace overlay, so the overlay manager loads them; the other overlays
-  this unit uses are not primed here. }
+{ Calls the priming entries of Portrait and EclTrace, so the overlay manager loads them; MapCurs, also used, is not
+  primed. }
 procedure PrimeMenuCore;
 
 implementation

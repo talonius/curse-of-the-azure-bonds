@@ -82,16 +82,16 @@ function CreatureCoinValueInGold(creature: Types.PCreature): LongInt;
   @returns(The chosen spell, or 0.) }
 function SpellMenu(menuType, selType: Byte; var idx: Integer; var notEmpty: Boolean): Byte;
 
-{ Tells whether a character can lay on hands: a paladin, or a former paladin with its earlier class active, okay,
-  outside combat, and not within a day of its last healing.
+{ Tells whether a paladin (or a dual-class character whose earlier paladin levels are active) may lay on hands now:
+  outside combat, okay, and more than a day after the last time.
   @param(cr The character.)
-  @returns(True when it can heal.) }
+  @returns(True when it may.) }
 function CanHeal(cr: Types.PCreature): Boolean;
 
-{ Tells whether a character can cure disease: a paladin, or a former paladin with its earlier class active, okay,
-  outside combat, with a cure left.
+{ Tells whether a paladin (or a dual-class character whose earlier paladin levels are active) may cure disease now:
+  outside combat, okay, with cures left (cureDiseaseUses).
   @param(cr The character.)
-  @returns(True when it can cure.) }
+  @returns(True when it may.) }
 function CanCure(cr: Types.PCreature): Boolean;
 
 { Lays on hands: the party member the player picks regains 2 hit points per paladin level of the healer (earlier paladin
@@ -108,8 +108,8 @@ procedure PaladinCureDisease(cr: Types.PCreature);
   @param(it The item.) }
 procedure ViewItemDetail(it: Types.PItem);
 
-{ Calls the priming entries of MenuCore, Portrait, Magic, FxEngine, Money, GameTime, MapView, CharHlp, ClassCal and the
-  trace overlay, so the overlay manager loads them; CbtMap, which this unit also uses, is not primed. }
+{ Calls the priming entries of MenuCore, Portrait, Magic, FxEngine, Money, GameTime, MapView, CharHlp, EclTrace and
+  ClassCal, so the overlay manager loads them; CbtMap, which this unit also uses, is not primed. }
 procedure PrimeViewChar;
 
 implementation

@@ -21,7 +21,7 @@ procedure DrawCursor;
 { Puts back the background saved by DrawCursor, erasing the cursor. }
 procedure RestoreCursorBackground;
 
-{ Does nothing; calling it loads this overlay. }
+{ Empty entry; EclVm calls it to load this overlay before returning to the overland view. }
 procedure PrimeMapCurs;
 
 { Empty routine with no callers. }

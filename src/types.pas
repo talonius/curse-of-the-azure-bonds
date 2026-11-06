@@ -410,13 +410,50 @@ type
     movementCur: Byte;
   end;
 
-  TArenaLoc = record x: ShortInt; y: ShortInt; aux: Byte; size: Byte; end;
-  TArenaLocationHead = record x: ShortInt; y: ShortInt; aux: Byte; end;
-  TCombatGridStorage = record rows: array[0..23, 0..49] of Byte; finalRow: array[0..45] of Byte; end;
-  TBandRec = record lo: ShortInt; hi: ShortInt; end;
-  TRuleAge = record base: Word; num: Byte; sides: Byte; end;
-  THitDice = record num: Byte; sides: Byte; end;
-  TAlignmentRow = record count: ShortInt; choices: array[1..9] of ShortInt; end;
+  TBandRec = record lo: ShortInt; hi: ShortInt end;
+  TArenaLoc = record x: ShortInt; y: ShortInt; aux: Byte; size: Byte end;
+  TArenaLocationHead = record x: ShortInt; y: ShortInt; aux: Byte end;
+  TCombatGridStorage = record rows: array[0..23, 0..49] of Byte; finalRow: array[0..45] of Byte end;
+  PArena = ^TArena;
+  TArena = record
+    { reserved }
+    header: array[0..1] of Byte;
+    { top-left corner of the combat view }
+    focusX: ShortInt;
+    focusY: ShortInt;
+    { draw the combat cursor when nonzero }
+    cursorOn: Byte;
+    { cursor icon geometry }
+    focusSize: Byte;
+    { bypass terrain blocking (WalkLine) when nonzero }
+    distMode: Byte;
+    cells: array[0..24, 0..49] of Byte;
+  end;
+  { An effect handler: applies (removed False) or removes (removed True) an effect on cr; effectNode is the effect node
+    or the item that grants it. }
+  TEffectHandler = procedure(cr: PCreature; effectNode: Pointer; removed: Boolean);
+
+  { A stinking cloud or Cloudkill on the combat map, one node per casting. A stinking cloud uses only cells 1..4. }
+  PCloudNode = ^TCloudNode;
+  TCloudNode = record
+    { the creature that cast it }
+    caster: PCreature;
+    { the next cloud of the same kind }
+    next: PCloudNode;
+    { the terrain under each cell, put back when the cloud clears }
+    under: array[1..9] of Byte;
+    { nonzero for each cell the cloud covers }
+    exists: array[1..9] of Byte;
+    { the origin cell; each cell lies one direction step from it }
+    ulX: ShortInt;
+    ulY: ShortInt;
+    { the cloud's number among its caster's clouds, matched against the cast effect's strength div 16 }
+    idx: Byte;
+    { set when the cloud survives a resistance check; later checks skip it }
+    resolved: Byte;
+  end;
+  TRuleAge = record base: Word; num: Byte; sides: Byte end;
+  THitDice = record num: Byte; sides: Byte end;
   { One race's ability limits. The strength limits are indexed by gender. }
   TRaceAbilityLimit = record
     strMin: array[0..1] of Byte;
@@ -434,13 +471,15 @@ type
     chaMax: Byte;
   end;
   { The classes one race may take: how many, then the class values. }
-  TRaceClassRow = record count: ShortInt; choices: array[1..13] of ShortInt; end;
+  TRaceClassRow = record count: ShortInt; choices: array[1..13] of ShortInt end;
+  TAlignmentRow = record count: ShortInt; choices: array[1..9] of ShortInt end;
   { One class's experience table: the experience needed for each level 2..12 (-1 where the class cannot reach the
     level), and the spell slots the class gains at each of those levels, by spell level. }
   TRuleXp = record
     thresholds: array[2..12] of LongInt;
     slots: array[2..12, 1..5] of Byte;
   end;
+
   { Terrain properties used for placement and arena generation. }
   TTerrain = record
     cost: Byte;
@@ -545,44 +584,6 @@ type
     { Frame shown, counting from 1; LoadAnimation sets it to 1 and the animation loops advance it. }
     current: Byte;
     frames: array[1..8] of TAnimFrame;
-  end;
-  PArena = ^TArena;
-  TArena = record
-    { reserved }
-    header: array[0..1] of Byte;
-    { top-left corner of the combat view }
-    focusX: ShortInt;
-    focusY: ShortInt;
-    { draw the combat cursor when nonzero }
-    cursorOn: Byte;
-    { cursor icon geometry }
-    focusSize: Byte;
-    { bypass terrain blocking (WalkLine) when nonzero }
-    distMode: Byte;
-    cells: array[0..24, 0..49] of Byte;
-  end;
-  { An effect handler: applies (removed False) or removes (removed True) an effect on cr; effectNode is the effect node
-    or the item that grants it. }
-  TEffectHandler = procedure(cr: PCreature; effectNode: Pointer; removed: Boolean);
-
-  { A stinking cloud or Cloudkill on the combat map, one node per casting. A stinking cloud uses only cells 1..4. }
-  PCloudNode = ^TCloudNode;
-  TCloudNode = record
-    { the creature that cast it }
-    caster: PCreature;
-    { the next cloud of the same kind }
-    next: PCloudNode;
-    { the terrain under each cell, put back when the cloud clears }
-    under: array[1..9] of Byte;
-    { nonzero for each cell the cloud covers }
-    exists: array[1..9] of Byte;
-    { the origin cell; each cell lies one direction step from it }
-    ulX: ShortInt;
-    ulY: ShortInt;
-    { the cloud's number among its caster's clouds, matched against the cast effect's strength div 16 }
-    idx: Byte;
-    { set when the cloud survives a resistance check; later checks skip it }
-    resolved: Byte;
   end;
   TTargetRec = record
     { creature slot, doubled distance, direction toward it }

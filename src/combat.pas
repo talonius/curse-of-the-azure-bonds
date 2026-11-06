@@ -13,7 +13,7 @@ interface
   initiative order, and end the round. Afterwards it cleans up and sets typingDelayOn. }
 procedure CombatMain;
 
-{ Calls the priming entry of each overlay this unit uses, so the overlay manager loads them. }
+{ Calls the priming entry of each overlay the combat code uses, so the overlay manager loads them. }
 procedure PrimeCombat;
 
 implementation

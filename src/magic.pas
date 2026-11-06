@@ -78,8 +78,8 @@ procedure SpellRemoveCurse;
   last target, and sets the inventory-redraw flag. }
 procedure InitSpellFns;
 
-{ Calls the priming entries of CharHlp, ClassCal, FxEngine, MenuCore and the trace overlay, so the overlay manager loads
-  them; the other overlays this unit uses are not primed. }
+{ Calls the priming entries of CharHlp, ClassCal, FxEngine, MenuCore and EclTrace, so the overlay manager loads them;
+  CbtMap and Pathing, which this unit also uses, are not primed. }
 procedure PrimeMagic;
 
 implementation
@@ -208,8 +208,8 @@ begin
   MenuCore.FreeStringList(GDVars.spellList);
 end;
 
-{ Appends a spell to the scroll spell list (and its id list), with a level heading when its level differs from the last
-  spell's.
+{ Appends spell to the scroll spell list (and spellIds), with a level heading when its level differs from the last
+  spell's; " *" marks bit 7.
   @param(spell The spell; bit 7 marks it with " *".) }
 procedure AddScrollSpellLine(spell: Byte);
 var
@@ -649,10 +649,9 @@ begin
     Border.ClearBox(0, 23, 39, 23);
 end;
 
-{ Fills the spell targets with the creatures, other than the caster, on a line from the origin through the aimed cell,
-  extended to the cone's length and cut short by walls, and with two or three rays on one or two more lines to cells
-  beside its end; each creature once. Note: once a creature has been met twice on the main line, no later creature on it
-  is added.
+{ Fills the spell targets with the creatures, other than the caster, on a line from (ox, oy) through (tx, ty) extended
+  to reach cells and cut short by walls, and with rays 2 or 3 on one or two more lines to cells beside its end; each
+  creature once.
   @param(ox The column of the cone's origin.)
   @param(oy The row of the cone's origin.)
   @param(tx The column of the aimed cell.)
@@ -700,7 +699,7 @@ var
     else if cy < 0 then cy := 0;
   end;
 
-  { Adds each creature on the rest of the walked line to the list, once. }
+  { Adds each creature on the rest of req's line to list, once. }
   procedure CollectAlong;
   var
     j: Byte;
@@ -810,9 +809,8 @@ begin
     until list[listCount] = 0;
 end;
 
-{ Applies the current spell's effect to each target, drawing a bolt to all but the last, with a save at the given
-  modifier. Large or non-person targets always save (except against spell 94), and for spells 79 and 81 the last target
-  always saves.
+{ Applies the current spell's effect to each target, drawing a bolt to all but the last, with a save at saveMod. Large
+  or non-person targets always save (except against spell 94), and for spells 79 and 81 the last target always saves.
   @param(saveMod The saving-throw modifier.)
   @param(msg Reports the effect on each target.) }
 procedure ApplyEffectToTargets(saveMod: ShortInt; msg: Types.TStr40);
@@ -879,7 +877,7 @@ begin
   Magic.CastOneSide(ShortInt(CharHlp.NotHostile(Types.PCreature(GDVars.curChar))), 'is Cursed');
 end;
 
-{ Casts Cure Light Wounds: restores 1d8 hit points to the first target. }
+{ Spell 3 (Cure Light Wounds): heals the target 1d8. }
 procedure SpellCureLightWounds;
 begin
   if GDVars.spellTargetCount = 0 then
@@ -894,19 +892,19 @@ begin
   Magic.ResolveSpell(GDVars.spellId, 0, False, FxEngine.RollDamageDice(1, 8), 8, '');
 end;
 
-{ Applies a detection spell's effect to the targets. }
+{ Spells 5, 11, 18, 22, 29 and 77: apply the spell's effect ("is affected"). }
 procedure SpellDetection;
 begin
   Magic.ResolveSpell(GDVars.spellId, 0, False, 0, 0, 'is affected');
 end;
 
-{ Applies a protection spell's effect to the targets. }
+{ Spells 6, 7, 16, 17, 52, 53, 54 and 69: apply the spell's effect ("is protected"). }
 procedure SpellProtection;
 begin
   Magic.ResolveSpell(GDVars.spellId, 0, False, 0, 0, 'is protected');
 end;
 
-{ Applies Resist Cold's effect to the targets. }
+{ Spell 8 (Resist Cold). }
 procedure SpellResistCold;
 begin
   Magic.ResolveSpell(GDVars.spellId, 0, False, 0, 0, 'is cold-resistant');
@@ -936,9 +934,8 @@ begin
   end;
 end;
 
-{ Casts Enlarge: Strength by caster level (18 at level 1, 18/01, 18/51, 18/76, 18/91 and 18/100 at 2 to 6, 19 to 21 at 7
-  to 9, 22 at 10 and 11, and 18 at any other level) as the Enlarge effect, when that beats the target's own ("is
-  stronger"). }
+{ Spell 12 (Enlarge): Strength by caster level (18 at level 1, 18/01 to 18/100 at 2 to 6, 19 to 21 at 7 to 9, 22 at 10
+  and 11, and 18 at any other level) as effect Enlarge, when that beats the target's own ("is stronger"). }
 procedure SpellEnlarge;
 var
   enc: Byte;
@@ -1003,7 +1000,7 @@ begin
   Magic.ResolveSpell(GDVars.spellId, 0, False, cl div 2 + FxEngine.RollDamageDice(cl div 2, 4), 8, '');
 end;
 
-{ Applies Shield's effect to the targets. }
+{ Spell 19 (Shield). }
 procedure SpellShield;
 begin
   Magic.ResolveSpell(GDVars.spellId, 0, False, 0, 0, 'is shielded');
@@ -1067,13 +1064,13 @@ begin
   Magic.ApplyEffectToTargets(smod, 'is held');
 end;
 
-{ Applies Resist Fire's effect to the targets. }
+{ Spell 24 (Resist Fire). }
 procedure SpellResistFire;
 begin
   Magic.ResolveSpell(GDVars.spellId, 0, False, 0, 0, 'is fire resistant');
 end;
 
-{ Applies Silence's effect to the targets. }
+{ Spell 25 (Silence). }
 procedure SpellSilence;
 begin
   Magic.ResolveSpell(GDVars.spellId, 0, False, 0, 0, 'is silenced');
@@ -1125,7 +1122,7 @@ begin
   FxEngine.CallEffectHandler(C_Effect.SPIRITUAL_HAMMER, Pointer(GDVars.spellTargets[1]), nil, False);
 end;
 
-{ Applies the Invisibility spells' effect to the targets. }
+{ Spells 30 and 50 (Invisibility). }
 procedure SpellInvisibility;
 begin
   Magic.ResolveSpell(GDVars.spellId, 0, False, 0, 0, 'is invisible');
@@ -1339,9 +1336,9 @@ begin
   Magic.ResolveSpell(GDVars.spellId, 0, False, 0, 0, 'is blind');
 end;
 
-{ Removes the first target's diseases under the effect lock: Diseased, the Strength-draining disease (with its hit-point
-  and helpless effects) and rot (with mummy rot).
-  @returns(True when any of the three was present.) }
+{ Removes the target's diseases, with the effect lock set: Diseased, the Strength disease (with the hit-point disease
+  and helplessness), and effect 50 (with effect 57).
+  @returns(True when one was removed.) }
 function RemoveDiseaseEffects: Boolean;
 begin
   RemoveDiseaseEffects := False;
@@ -1369,7 +1366,7 @@ begin
   cured := Magic.RemoveDiseaseEffects;
 end;
 
-{ Applies Cause Disease's effect to the targets. }
+{ Spell 40 (Cause Disease). }
 procedure SpellCauseDisease;
 begin
   Magic.ResolveSpell(GDVars.spellId, 0, True, 0, 0, 'is diseased');
@@ -1777,7 +1774,7 @@ begin
     Magic.ResolveSpell(GDVars.spellId, 0, False, 0, 0, 'is Speedy');
 end;
 
-{ Casts Cure Serious Wounds: heals the target 2d8 + 1. }
+{ Spell 58 (Cure Serious Wounds): heals the target 2d8 + 1. }
 procedure SpellCureSeriousWounds;
 begin
   if GDVars.spellTargetCount = 0 then
@@ -1810,13 +1807,13 @@ begin
   Magic.LightningPath(3, 20, 4, False);
 end;
 
-{ Applies the Wand of Paralyzation's effect to the targets ("is paralyzed"). }
+{ Spell 61 (wand of paralyzation). }
 procedure SpellWandOfParalyzation;
 begin
   Magic.ResolveSpell(GDVars.spellId, 0, False, 0, 0, 'is paralyzed');
 end;
 
-{ Heals the first target 2d4 + 2 hit points for the Potion of Healing. }
+{ Spell 62 (potion of healing): heals the target 2d4 + 2. }
 procedure SpellPotionOfHealing;
 begin
   if FxEngine.RestoreHitPoints(Pointer(GDVars.spellTargets[1]), FxEngine.RollDice(2, 4) + 2, False) then
@@ -1835,13 +1832,13 @@ begin
   Magic.ResolveSpell(GDVars.spellId, 0, False, FxEngine.RollDamageDice(2, 4) + 2, 8, '');
 end;
 
-{ Casts Cause Serious Wounds: deals 2d8 + 1 magic damage. }
+{ Spell 66 (Cause Serious Wounds): 2d8 + 1 magic damage. }
 procedure SpellCauseSeriousWounds;
 begin
   Magic.ResolveSpell(GDVars.spellId, 0, False, FxEngine.RollDamageDice(2, 8) + 1, 8, '');
 end;
 
-{ Casts Neutralize Poison: cures the poison of a target that is not animated (Poisoned and both slow-poison effects
+{ Spell 67 (Neutralize Poison): cures the poison of a target that is not animated (Poisoned and both Slow Poison effects
   removed with the effect lock), raising 0 hit points to 1 and setting it okay; an unpoisoned target "is unaffected". }
 procedure SpellNeutralizePoison;
 var
@@ -1866,8 +1863,8 @@ begin
     CharHlp.PrintCreatureMessage(Types.PCreature(tgt), 'is unaffected', 10, True);
 end;
 
-{ Casts Poison: applies the spell, then, unless the effects of the caster's target cancel the poison attack, runs the
-  poison attack's handler (a poison bite) for the caster. }
+{ Spell 68 (poison): applies the spell, then, unless the effects of the caster's target cancel effect 64, runs effect
+  64's handler (a poison bite) for the caster. }
 procedure SpellPoison;
 var
   eff: Types.PEffect;
@@ -1881,7 +1878,7 @@ begin
     FxEngine.CallEffectHandler(64, Pointer(GDVars.curChar), eff, False);
 end;
 
-{ Casts Sticks to Snakes: a target below attack level 6 fights snakes, with the caster level as the effect's strength; a
+{ Spell 70 (Sticks to Snakes): a target below attack level 6 fights snakes (effect 3, strength the caster level); a
   stronger one "smashes them flat". }
 procedure SpellSticksToSnakes;
 var
@@ -1895,7 +1892,7 @@ begin
     CharHlp.PrintCreatureMessage(Types.PCreature(GDVars.spellTargets[1]), 'smashes them flat', 10, True);
 end;
 
-{ Casts Cure Critical Wounds: heals the target 3d8 + 3. }
+{ Spell 71 (Cure Critical Wounds): heals the target 3d8 + 3. }
 procedure SpellCureCriticalWounds;
 begin
   if GDVars.spellTargetCount = 0 then
@@ -1904,20 +1901,20 @@ begin
     CharHlp.AnnounceHealStatus(Types.PCreature(GDVars.spellTargets[1]));
 end;
 
-{ Casts Cause Critical Wounds: deals 3d8 + 3 magic damage. }
+{ Spell 72 (Cause Critical Wounds): 3d8 + 3 magic damage. }
 procedure SpellCauseCriticalWounds;
 begin
   Magic.ResolveSpell(GDVars.spellId, 0, False, FxEngine.RollDamageDice(3, 8) + 3, 8, '');
 end;
 
-{ Casts Dispel Evil: gives the caster the dispel evil effect for the spell's duration and applies the spell. }
+{ Spell 73 (Dispel Evil): gives the caster effect 4 for the spell's duration and applies the spell. }
 procedure SpellDispelEvil;
 begin
   FxEngine.AddEffectWithMessage(Pointer(GDVars.curChar), 4, Magic.CalcSpellDuration(73), 0, False, False, False, '');
   Magic.ResolveSpell(GDVars.spellId, 0, False, 0, 0, 'is affected');
 end;
 
-{ Casts Flame Strike: deals 6d8 fire damage. }
+{ Spell 74 (Flame Strike): 6d8 fire damage. }
 procedure SpellFlameStrike;
 begin
   Magic.ResolveSpell(GDVars.spellId, 0, False, FxEngine.RollDamageDice(6, 8), 9, '');
@@ -1945,8 +1942,8 @@ begin
   end;
 end;
 
-{ Casts Slay Living: unless the target's effects cancel it, a failed save (type 4) kills the target and a made one costs
-  2d8 + 1 magic damage. }
+{ Spell 76 (Slay Living): unless the target's effects cancel it, a failed save (type 4) kills the target and a made one
+  costs 2d8 + 1 magic damage. }
 procedure SpellSlayLiving;
 var
   tgt: Types.PCreature;
@@ -1966,8 +1963,8 @@ begin
     CharHlp.PrintCreatureMessage(Types.PCreature(Pointer(tgt)), 'is unaffected', 10, True);
 end;
 
-{ Casts Entangle, which works only outside 3D maps: each target saves (type 4) or is entangled. Note: the duration is
-  computed for spell 136, past the end of the spell table. }
+{ Spell 78 (Entangle): outside 3D maps only, each target saves (type 4) or is entangled (effect 136). Note: the duration
+  is computed for spell 136, past the end of the spell table. }
 procedure SpellEntangle;
 var
   tgt: Types.PCreature;
@@ -1985,19 +1982,19 @@ begin
     end;
 end;
 
-{ Casts Faerie Fire: ApplyEffectToTargets ("is highlighted"). }
+{ Spell 79 (Faerie Fire): ApplyEffectToTargets ("is highlighted"). }
 procedure SpellFaerieFire;
 begin
   Magic.ApplyEffectToTargets(0, 'is highlighted');
 end;
 
-{ Casts Invisibility to Animals: makes the targets invisible to animals. }
+{ Spell 80 (Invisibility to Animals). }
 procedure SpellInvisibilityToAnimals;
 begin
   Magic.ResolveSpell(GDVars.spellId, 0, False, 0, 0, 'is invisible');
 end;
 
-{ Casts Charm Monsters: ApplyEffectToTargets ("is charmed"), then the charm handler for each charmed target. }
+{ Spell 81 (Charm Monsters): ApplyEffectToTargets, then the charm handler for each charmed target. }
 procedure SpellCharmMonsters;
 var
   i: Byte;
@@ -2013,7 +2010,7 @@ begin
       FxEngine.CallEffectHandler(C_Effect.CHARM, Pointer(GDVars.spellTargets[i]), eff, False);
 end;
 
-{ Casts Confusion: up to 2d8 targets save (type 4) or are confused. }
+{ Spell 82 (Confusion): up to 2d8 targets save (type 4) or are confused (effect 35). }
 procedure SpellConfusion;
 var
   i: Byte;
@@ -2137,9 +2134,8 @@ begin
   until done;
 end;
 
-{ Casts Fumble: a first target that fails a save (type 4) becomes clumsy ('is clumsy'), one that saves is slowed ('is
-  slowed'), each effect with its handler run; then the spell's table effect is resolved on the targets as well ('is
-  clumsy'). }
+{ Spell 86 (Fumble): a target that fails its save (type 4) becomes clumsy (effect 27), one that saves is slowed; then
+  the spell's own effect applies. }
 procedure SpellFumble;
 var
   tgt: Types.PCreature;
@@ -2161,22 +2157,21 @@ begin
   Magic.ResolveSpell(GDVars.spellId, 0, True, 0, 0, 'is clumsy');
 end;
 
-{ Casts Ice Storm: deals 3d10 cold damage. }
+{ Spell 87 (Ice Storm): 3d10 cold damage. }
 procedure SpellIceStorm;
 begin
   Magic.ResolveSpell(GDVars.spellId, 0, False, FxEngine.RollDamageDice(3, 10), 10, '');
 end;
 
-{ Casts Minor Globe of Invulnerability: applies its effect to the targets. }
+{ Spell 88 (Minor Globe of Invulnerability). }
 procedure SpellMinorGlobeOfInvulnerability;
 begin
   Magic.ResolveSpell(GDVars.spellId, 0, False, 0, 0, 'is protected');
 end;
 
-{ Casts Cloudkill: a 3x3 cloud at the target cell, built like Stinking Cloud on the Cloudkill list and tracked by an
-  effect on the caster; a cell under another cloud of either kind keeps the terrain beneath it. Note: after the loop the
-  last cell's terrain is saved and its tile set a second time. Note: the count of the caster's clouds skips the list's
-  last node. }
+{ Spell 91 (Cloudkill): a 3x3 cloud at the target cell, built like Stinking Cloud on the Cloudkill list (tracked by
+  effect 91 on the caster, cloud tile C_Terr.CLOUDKILL); a cell under another cloud of either kind keeps the terrain
+  beneath it. Note: after the loop the last cell's terrain is saved and its tile set a second time. }
 procedure SpellCloudkill;
 var
   otherCloud: Types.PCloudNode;
@@ -2284,8 +2279,7 @@ begin
       FxEngine.ConsiderTerrainEffects(Pointer(GDVars.combatCreatures[crIdx[k]]), 1);
 end;
 
-{ Casts Cone of Cold: a cone of 2 rays toward the target cell, reaching (caster level + 1) div 2 cells, at least 1,
-  deals caster level + caster-level d4 cold damage. }
+{ Spell 92 (Cone of Cold): a 2-ray cone of (caster level + 1) div 2 cells, caster-level d4 + caster level cold. }
 procedure SpellConeOfCold;
 var
   p: Types.PCreature;
@@ -2302,8 +2296,8 @@ begin
   Magic.ResolveSpell(GDVars.spellId, 0, False, lvl + FxEngine.RollDamageDice(lvl, 4), 10, '');
 end;
 
-{ Casts Feeblemind: applies the spell with the target's saving throw against spells shifted for the save by its class
-  (cleric -1, magic-user +4, others +2), then runs the feeblemind effect's handler. }
+{ Spell 93 (Feeblemind): applies the spell with the target's spell saving throw (saves[4]) shifted by its charClass (0:
+  -1, 5: +4, others +2) for the save, then runs effect 68's handler. }
 procedure SpellFeeblemind;
 var
   oldSpellSave: Byte;
@@ -2324,7 +2318,7 @@ begin
   tgt^.saves[4] := oldSpellSave;
 end;
 
-{ Gives the targets the spell's effect, immunity to breath. }
+{ Spell 95: applies its effect. }
 procedure SpellImmuneBreath;
 begin
   Magic.ResolveSpell(GDVars.spellId, 0, False, 0, 0, '');
@@ -2336,13 +2330,13 @@ begin
   Magic.ResolveSpell(GDVars.spellId, 0, False, 0, 0, '');
 end;
 
-{ Casts the invisibility spell by applying its effect. }
+{ Spell 97: applies its effect. }
 procedure SpellTurnInvisible;
 begin
   Magic.ResolveSpell(GDVars.spellId, 0, False, 0, 0, '');
 end;
 
-{ Casts a cone of 1 ray and 3 cells dealing 6d6 damage; creatures of type 18 take it in full, the others as if saved. }
+{ Spell 98: a 1-ray cone of 3 cells, 6d6 damage; creatures of type 18 take it in full, the others as if saved. }
 procedure SpellConeBlast;
 var
   i: Byte;
@@ -2437,11 +2431,10 @@ begin
     CharHlp.PrintCreatureMessage(Types.PCreature(cr), 'Spits Acid and Misses', 10, True);
 end;
 
-{ Breathes acid: three breaths a fight, counted in the effect's strength. Aims a cone (one ray, reach 6) and, when it
-  catches no one on the creature's own side, breathes the stored damage as acid on each target, a save for half, and
-  ends the creature's turn.
-  @param(cr The breathing creature.)
-  @param(effect The effect node.)
+{ Effect 90: an acid breath cone (1 ray, 6 cells) for its breath damage, halved on a save (type 3), only when every
+  target is on the other side; three times per battle.
+  @param(cr The creature that carries the effect.)
+  @param(effect The effect's node on the creature.)
   @param(removed Unused.) }
 procedure EffBreatheAcid(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 var
@@ -2486,10 +2479,10 @@ begin
   turnDone := CharHlp.EndActions(Types.PCreature(cr));
 end;
 
-{ Fire breath, effect 128: three breaths a fight, counted in the effect's strength. It aims a cone (as spell 61, three
-  rays, reach 9) and breathes the stored damage as fire on each target, a save for half, ending the creature's turn.
-  @param(cr The breathing creature.)
-  @param(effect The effect's node.)
+{ Effect 128: a fire breath cone (3 rays, 9 cells) for its breath damage, halved on a save (type 3); three times per
+  battle.
+  @param(cr The creature that carries the effect.)
+  @param(effect The effect's node on the creature.)
   @param(removed Unused.) }
 procedure EffBreatheFire(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 var
@@ -2529,9 +2522,9 @@ begin
   end;
 end;
 
-{ Breathes fire at close range: on 1 to 50 of 1d100 at an adjacent target, ends the turn and breathes 7 fire damage,
-  with a saving throw for half.
-  @param(cr The breathing creature.)
+{ Effect 131: a 50% chance, at an adjacent target (CalcDistance below 2), to breathe fire for 7, halved on a save (type
+  3).
+  @param(cr The creature that carries the effect.)
   @param(effect Unused.)
   @param(removed Unused.) }
 procedure EffBreatheFireAdjacent(cr: Types.PCreature; effect: Pointer; removed: Boolean);
@@ -2555,9 +2548,8 @@ begin
                                   FxEngine.RollSavingThrow(Pointer(GDVars.combatTarget), 3, 0));
 end;
 
-{ Lightning throwing, effect 132, in the first four rounds: aims (as spell 51) and throws 16d6 at the aim cell and
-  another 16d6 along a ten-cell path; the creature turns visible and its turn ends.
-  @param(cr The throwing creature.)
+{ Effect 132: in the first four rounds, throws lightning: 16d6 at the target cell and a 10-cell bolt of a fresh 16d6.
+  @param(cr The creature that carries the effect.)
   @param(effect Unused.)
   @param(removed Unused.) }
 procedure EffThrowLightning(cr: Types.PCreature; effect: Pointer; removed: Boolean);
@@ -2580,9 +2572,10 @@ begin
   blocked := CharHlp.EndActions(Types.PCreature(Pointer(cr)));
 end;
 
-{ Paralyzing gaze, effect 126: aims (as spell 36) and gazes at the target, which saves or is held for 60 ('is
-  paralyzed').
-  @param(cr The gazing creature.)
+{ Effect 126: a paralyzing gaze at the target picked as for spell 36 ("gazes..."), which saves (type 1) or is paralyzed
+  (effect 52) for 60. EffHndlr.InitEffectHandlers, which runs after InitSpellFns, replaces it with EffParalyzingGaze, so
+  it never runs.
+  @param(cr The creature that carries the effect.)
   @param(effect Unused.)
   @param(removed Unused.) }
 procedure EffAimedParalyzingGaze(cr: Types.PCreature; effect: Pointer; removed: Boolean);

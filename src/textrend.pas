@@ -146,7 +146,7 @@ const
 
 {$L TEXTREND.OBJ}
 {$F-}
-{ Draws one character cell on CGA from the glyph rows that RenderChar staged.
+{ Draws one character cell on CGA from the glyph rows RenderChar staged in glyphBits.
   @param(col The cell column.)
   @param(row The cell row.)
   @param(ink The color of the glyph's set pixels.)
@@ -154,7 +154,7 @@ const
   @param(glyphIndex Unused.) }
 procedure CgaGlyph(col, row: Word; ink, paper, glyphIndex: Byte); external;
 
-{ Draws one character cell on EGA from the glyph rows that RenderChar staged.
+{ Draws one character cell on EGA from the glyph rows RenderChar staged in glyphBits.
   @param(col The cell column.)
   @param(row The cell row.)
   @param(ink The color of the glyph's set pixels.)
@@ -162,7 +162,7 @@ procedure CgaGlyph(col, row: Word; ink, paper, glyphIndex: Byte); external;
   @param(glyphIndex Unused.) }
 procedure EgaGlyph(col, row: Word; ink, paper, glyphIndex: Byte); external;
 
-{ Draws one character cell on Tandy from the glyph rows that RenderChar staged.
+{ Draws one character cell on Tandy from the glyph rows RenderChar staged in glyphBits.
   @param(col The cell column.)
   @param(row The cell row.)
   @param(ink The color of the glyph's set pixels.)

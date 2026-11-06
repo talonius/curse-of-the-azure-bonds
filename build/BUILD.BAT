@@ -1,5 +1,5 @@
 @echo off
-rem Curse of the Azure Bonds v1.0 whole-image build.
+rem Curse of the Azure Bonds v1.1 whole-image build.
 rem C: Turbo Pascal 5.0; D: this version tree; E: TASM.
 rem
 rem Keep the short PATH selected by gametools/build.sh; invoke other tools by drive.
