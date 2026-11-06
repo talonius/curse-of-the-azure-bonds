@@ -19,7 +19,8 @@ procedure PrimeCombat;
 implementation
 
 uses Crt, Types, MenuCore, CbtMap, Pathing, FxEngine, Blit, GameIo, CharHlp, CbtActs, CombatSt, CombatAi, GameTime,
-  Magic, ViewChar, MapTiles, EclTrace, Border, ClassCal, GDConsts, GDVars, C_Keys, C_Status, C_Ifc, C_Gbvm, C_Class;
+  Magic, ViewChar, MapTiles, EclTrace, Border, ClassCal, GDConsts, GDVars, C_Keys, C_Status,
+  C_Ifc, C_Gbvm, C_Class;
 
 const
   { Alt-Q and Alt-R, extended codes (the letter key's scan code) }
@@ -84,7 +85,7 @@ begin
     FreeMem(GDVars.cloudkillHead, SizeOf(GDVars.cloudkillHead^));
     GDVars.cloudkillHead := p;
   end;
-  FreeMem(GDVars.combatArena, SizeOf(GDVars.combatArena^));
+  FreeMem(GDVars.combatArena, SizeOf(Types.TArena));
   GDVars.combatArena := nil;
   Blit.FreePic(GDVars.combatEffectSprite);
   CbtMap.SetNoncombatPalette;
@@ -163,26 +164,26 @@ begin
   cr^.combatAddr^.flankCount := 0;
   cr^.combatAddr^.flankSpread := 0;
   cr^.combatAddr^.guarding := 0;
-  FxEngine.TriggerEffectsWithCondition(7, Types.PCreature(cr));
+  FxEngine.TriggerEffectsWithCondition(7, cr);
   if cr^.combatAddr^.initiative <= 0 then
     Exit;
   if cr^.combatAddr^.initiative = 20 then
     cr^.combatAddr^.initiative := 19;
   GDVars.curChar := cr;
-  GDVars.mapVisible := (cr^.hostile = 0) or CbtMap.CombatIconVisible(Types.PCreature(cr), 0);
-  CbtMap.DisplayMapViewCentered(Types.PCreature(cr), 2, True);
-  CharHlp.RecalcStats(Types.PCreature(cr));
+  GDVars.mapVisible := (cr^.hostile = 0) or CbtMap.CombatIconVisible(cr, 0);
+  CbtMap.DisplayMapViewCentered(cr, 2, True);
+  CharHlp.RecalcStats(cr);
   GDVars.combatRedraw := True;
-  CharHlp.CombatPrintCreatureInfo(Types.PCreature(cr));
-  FxEngine.TriggerEffectsWithCondition(15, Types.PCreature(cr));
+  CharHlp.CombatPrintCreatureInfo(cr);
+  FxEngine.TriggerEffectsWithCondition(15, cr);
   if cr^.combatAddr^.spellCast = 0 then
-    FxEngine.TriggerEffectsWithCondition(21, Types.PCreature(cr));
+    FxEngine.TriggerEffectsWithCondition(21, cr);
   if cr^.combatAddr^.initiative > 0 then
     if cr^.quickfight <> 0 then
-      CombatAi.CombatAiControl(Types.PCreature(cr))
+      CombatAi.CombatAiControl(cr)
     else
       Combat.ManualControl(cr);
-  CbtMap.RedrawArenaCell(CbtMap.CombatCellX(Types.PCreature(cr)), CbtMap.CombatCellY(Types.PCreature(cr)));
+  CbtMap.RedrawArenaCell(CbtMap.CombatCellX(cr), CbtMap.CombatCellY(cr));
 end;
 
 { Runs a player-controlled creature's turn. A disabled creature just ends its actions, and a spell begun earlier is cast
@@ -206,7 +207,7 @@ begin
       spell := cr^.combatAddr^.spellCast;
       cr^.combatAddr^.spellCast := 0;
       Magic.CastSpell(spell, False, True, done);
-      done := CharHlp.EndActions(Types.PCreature(cr));
+      done := CharHlp.EndActions(cr);
     end else begin
       done := False;
       while not done do begin
@@ -219,7 +220,7 @@ begin
                    GameIo.DiscardPendingKeys;
                    Delay(200);
                    done := True;
-                   CombatAi.CombatAiControl(Types.PCreature(cr));
+                   CombatAi.CombatAiControl(cr);
                  end;
             'M': Combat.MoveMenu(cr, ' ', done);
             'V': begin
@@ -239,7 +240,7 @@ begin
             'C': CbtActs.CastSpellCombat(0, 0, done);
             'T': begin
                    CbtActs.CombatTurnUndead(cr);
-                   done := CharHlp.EndActions(Types.PCreature(cr));
+                   done := CharHlp.EndActions(cr);
                  end;
             'D': Combat.DoneMenu(cr, done);
             ' ': begin
@@ -275,21 +276,21 @@ begin
                     done := True;
                   end;
             C_Keys.ALT_X: if CbtActs.VictoryCheat then begin
-                    CbtMap.DisplayMapViewCentered(Types.PCreature(cr), 3, False);
+                    CbtMap.DisplayMapViewCentered(cr, 3, False);
                     done := True;
                   end else
                     CharHlp.PrintBottomLine('That doesn''t work');
           end;
         end;
         if done = False then begin
-          CbtMap.DisplayMapViewCentered(Types.PCreature(cr), 2, True);
+          CbtMap.DisplayMapViewCentered(cr, 2, True);
           GDVars.combatRedraw := True;
-          CharHlp.CombatPrintCreatureInfo(Types.PCreature(cr));
+          CharHlp.CombatPrintCreatureInfo(cr);
         end;
       end;
     end;
   end else
-    done := CharHlp.EndActions(Types.PCreature(cr));
+    done := CharHlp.EndActions(cr);
 end;
 
 { Builds the combat menu (Move while movement remains, View, Aim, Use with items, Cast with memorized spells when
@@ -317,7 +318,7 @@ begin
      and (GDVars.zone0^[C_Gbvm.ANTI_MAGIC] = 0) then
     menu := menu + 'Cast ';
   if ((cr^.classLevels[C_Class.CLERIC_LEVEL] > 0) or
-      ((cr^.oldClassLevels[C_Class.CLERIC_LEVEL] > 0) and Boolean(ClassCal.EarlierClassActive(Types.PCreature(cr)))))
+      ((cr^.oldClassLevels[C_Class.CLERIC_LEVEL] > 0) and Boolean(ClassCal.EarlierClassActive(cr))))
      and (cr^.combatAddr^.usedTurnUndead = 0) then
     menu := menu + 'Turn ';
   menu := menu + 'Quick Done';
@@ -353,8 +354,8 @@ begin
   p := GDVars.partyHead;
   cnt := 1;
   while p <> nil do begin
-    FxEngine.TriggerEffectsWithCondition(19, Types.PCreature(p));
-    FxEngine.ConsiderTerrainEffects(Types.PCreature(p), 0);
+    FxEngine.TriggerEffectsWithCondition(19, p);
+    FxEngine.ConsiderTerrainEffects(p, 0);
     if p^.status = C_Status.DYING then begin
       Inc(p^.combatAddr^.overkill);
       if p^.combatAddr^.overkill > 9 then
@@ -399,8 +400,8 @@ var
 begin
   savedMove := cr^.combatAddr^.movement;
   savedDir := cr^.combatAddr^.direction;
-  startX := CbtMap.CombatCellX(Types.PCreature(cr));
-  startY := CbtMap.CombatCellY(Types.PCreature(cr));
+  startX := CbtMap.CombatCellX(cr);
+  startY := CbtMap.CombatCellY(cr);
   ch := firstCh;
   done := False;
   dir := 8;
@@ -413,9 +414,9 @@ begin
     case ch of
       C_Keys.NONE: begin
             cr^.combatAddr^.movement := savedMove;
-            CbtMap.UpdateCombatMapTile(0, 0, CbtMap.CombatSlot(Types.PCreature(cr)));
-            done := CbtMap.IsValidCreatureLoc(Types.PCreature(cr), startX, startY, False) = False;
-            CbtMap.ScrollView(CbtMap.CombatCellX(Types.PCreature(cr)), CbtMap.CombatCellY(Types.PCreature(cr)), 0, 8);
+            CbtMap.UpdateCombatMapTile(0, 0, CbtMap.CombatSlot(cr));
+            done := CbtMap.IsValidCreatureLoc(cr, startX, startY, False) = False;
+            CbtMap.ScrollView(CbtMap.CombatCellX(cr), CbtMap.CombatCellY(cr), 0, 8);
             cr^.combatAddr^.direction := savedDir;
             dir := 8;
           end;
@@ -431,8 +432,8 @@ begin
       dir := 8;
     end;
     if dir < 8 then begin
-      CbtMap.SetCreatureFacing(Types.PCreature(cr), dir, 0, 0);
-      CbtMap.ProbeDirection(Types.PCreature(cr), dir, crIdx, terrIdx, adjA, adjB);
+      CbtMap.SetCreatureFacing(cr, dir, 0, 0);
+      CbtMap.ProbeDirection(cr, dir, crIdx, terrIdx, adjA, adjB);
       if crIdx > 0 then
         Combat.MeleeAttack(cr, GDVars.combatCreatures[crIdx], done)
       else if terrIdx = 0 then begin
@@ -452,15 +453,15 @@ begin
         else begin
           CbtActs.AttacksOfOpportunity(cr, dir);
           if cr^.enabled = 0 then
-            done := CharHlp.EndActions(Types.PCreature(cr))
+            done := CharHlp.EndActions(cr)
           else begin
             if cr^.combatAddr^.movement > 0 then
               CbtActs.CombatMoveCreature(cr, dir);
             if cr^.enabled = 0 then
-              done := CharHlp.EndActions(Types.PCreature(cr));
-            FxEngine.ConsiderTerrainEffects(Types.PCreature(cr), 1);
-            if CharHlp.IsHelpless(Types.PCreature(cr)) then
-              done := CharHlp.EndActions(Types.PCreature(cr));
+              done := CharHlp.EndActions(cr);
+            FxEngine.ConsiderTerrainEffects(cr, 1);
+            if CharHlp.IsHelpless(cr) then
+              done := CharHlp.EndActions(cr);
           end;
         end;
       end;
@@ -479,15 +480,15 @@ end;
   @param(done Set when the attack ends the attacker's actions.) }
 procedure MeleeAttack(att, def: Types.PCreature; var done: Boolean);
 begin
-  if CharHlp.HasRangedWeapon(Types.PCreature(att)) and not CharHlp.HasThrowableWeapon(Types.PCreature(att)) then
+  if CharHlp.HasRangedWeapon(att) and not CharHlp.HasThrowableWeapon(att) then
     CharHlp.PrintBottomLine('Not with that weapon')
   else if CbtActs.CheckAttackAlly(att, def) then begin
-    att^.combatAddr^.other := Types.PCreature(def);
+    att^.combatAddr^.other := def;
     if CbtActs.SweepAttack(att, def) then
       done := True
     else begin
-      CbtActs.NoteAttackDirection(Types.PCreature(att), Types.PCreature(def));
-      CbtActs.MakeAttack(Types.PCreature(att), Types.PCreature(def), False, nil, done);
+      CbtActs.NoteAttackDirection(att, def);
+      CbtActs.MakeAttack(att, def, False, nil, done);
     end;
   end;
 end;
@@ -504,7 +505,7 @@ var
 begin
   done := False;
   menu := '';
-  if not CharHlp.HasRangedWeapon(Types.PCreature(cr)) or CharHlp.HasThrowableWeapon(Types.PCreature(cr)) then
+  if not CharHlp.HasRangedWeapon(cr) or CharHlp.HasThrowableWeapon(cr) then
     menu := menu + 'Guard ';
   menu := menu + 'Delay Quit ';
   if CharHlp.BandageDying(False) then
@@ -516,15 +517,15 @@ begin
     ch := MenuCore.MenuHorizontal('', menu, LightMagenta, LightGreen, White, False, False,
                                   GDVars.combatMenuExtendedKey);
     case ch of
-      'G': done := CharHlp.Guard(Types.PCreature(cr));
+      'G': done := CharHlp.Guard(cr);
       'D': begin
              cr^.combatAddr^.initiative := 1;
              done := True;
            end;
-      'Q': done := CharHlp.EndActions(Types.PCreature(cr));
+      'Q': done := CharHlp.EndActions(cr);
       'B': begin
              done := CharHlp.BandageDying(True);
-             done := CharHlp.EndActions(Types.PCreature(cr));
+             done := CharHlp.EndActions(cr);
            end;
       'S': Combat.SpeedMenu;
     end;

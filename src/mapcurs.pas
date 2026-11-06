@@ -6,12 +6,6 @@ unit MapCurs;
 
 interface
 
-{ Empty routine with no callers. }
-procedure NoopMapCursA;
-
-{ Empty routine with no callers. }
-procedure NoopMapCursB;
-
 { Sets the cursor's screen cell from the cursor tables, indexed by the party's overland location that the script sets. }
 procedure SetCursorPosition;
 
@@ -24,24 +18,9 @@ procedure RestoreCursorBackground;
 { Empty entry; EclVm calls it to load this overlay before returning to the overland view. }
 procedure PrimeMapCurs;
 
-{ Empty routine with no callers. }
-procedure NoopMapCursC;
-
 implementation
 
 uses Blit, GDConsts, GDVars, C_Gbvm;
-
-procedure NoopMapCursA;
-begin
-end;
-
-procedure NoopMapCursB;
-begin
-end;
-
-procedure NoopMapCursC;
-begin
-end;
 
 procedure PrimeMapCurs;
 begin

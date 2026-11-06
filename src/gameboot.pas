@@ -8,7 +8,7 @@ interface
 
 implementation
 
-uses Crt, Dos, Overlay, DaxIo, Blit, TextRend, GDConsts, GDVars, C_Sound, Types;
+uses Crt, Dos, Overlay, DaxIo, Blit, TextRend, GDConsts, GDVars, C_Sound;
 
 type
   TPtrRec = record ofs: Word; seg: Word; end;
@@ -17,7 +17,6 @@ const
   OVERLAY_BUFFER_SIZE = 163840;
 
 var
-  heapTop: Types.PFreeRec absolute FreePtr;
   { The program's directory, which FSplit stores straight into cfgDir1. }
   fsDir: DirStr absolute GDVars.cfgDir1;
 
@@ -126,14 +125,10 @@ begin
     'T':
       begin
         GDVars.displayMode := 2;
-        { Tandy graphics use the top 16 KB of memory: the heap's free list moves 16 KB lower. }
-        GDVars.savedTop := Ptr(TPtrRec(heapTop).seg - $400, TPtrRec(heapTop).ofs);
-        Move(heapTop^, GDVars.savedTop^, SizeOf(GDVars.savedTop^));
-        heapTop := GDVars.savedTop;
+        { Tandy graphics use the top 16 KB of memory: the heap's end moves 16 KB lower. }
+        GDVars.savedTop := Ptr(TPtrRec(HeapEnd).seg - $400, TPtrRec(HeapEnd).ofs);
+        HeapEnd := GDVars.savedTop;
         Blit.SetVideoMode($09);
-        { Keep at least 80 bytes for the heap free list. }
-        FreeMin := 80;
-        GDVars.tandyHeapTop := heapTop;
       end;
   else begin
       GDVars.displayMode := 0;

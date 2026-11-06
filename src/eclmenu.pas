@@ -5,8 +5,8 @@ unit EclMenu;
 
 interface
 
-uses Types, Portrait, MenuCore, MapTiles, DaxIo, TextRend, View3D, ViewChar, FxEngine, CharHlp, ClassCal, MapView,
-  EclTrace, GDConsts, GDVars, C_Keys, C_Status, C_Effect, C_Ifc, C_Gbvm, C_Ecl, C_Class, C_Stat, SaveLoad, Crt;
+uses Types, Portrait, MenuCore, MapTiles, DaxIo, TextRend, View3D, ViewChar, SaveLoad, FxEngine, CharHlp, ClassCal,
+  MapView, EclTrace, GDConsts, GDVars, C_Keys, C_Status, C_Effect, C_Ifc, C_Gbvm, C_Ecl, C_Class, C_Stat, Crt;
 
 { Reads the value of a loaded script argument: type 0 is an immediate byte, types 1, 3 and $80 read the GBVM word at the
   argument's address, and types 2 and $81 are an immediate word. Other types leave the result undefined.
@@ -67,40 +67,6 @@ procedure DisplayMonster(sprId, picId, dist: Byte; var flags: Types.TMonFlags);
   @returns(The high byte times 256 plus the low byte.) }
 function CombineBytesToWord(lowByte, highByte: Byte): Word;
 
-{ Turns a 6-bit game character into ASCII: codes below 32 gain 64, and higher codes stay as they are.
-  @param(code The game character.)
-  @returns(The ASCII character.) }
-function DecodeGameCharacter(code: Byte): Char;
-
-{ Finds the GBVM bank holding an address.
-  @param(address The GBVM address.)
-  @returns(0 for $4B00..$4EFF, 1 for $7C00..$7FFF, 2 for $7A00..$7BFF, 3 (the script) for $8000..$9DFF, and 4 for
-    anything else.) }
-function GbvmZone(address: Word): Byte;
-
-{ Finds a creature's place in the creature list.
-  @param(creature The creature.)
-  @returns(Its place from 0; the list's length when it is not there.) }
-function FindCurCharIdx(creature: Types.PCreature): Byte;
-
-{ Reads the zone-1 addresses that map onto the current character: Intelligence, Constitution, race, class, a saving
-  throw, terrain type, thief skills, NPC byte, coins, magic-user level (counting an earlier class once passed), gender,
-  alignment, a script flag bit, experience fields, status ($7D00: 1 enabled, $80 disabled, or 0 once after a
-  character-not-found), side and quick fight ($7D0C), movement, party position, a Charisma value (0..60), the current
-  disk and the party size.
-  @param(address The zone-1 address.)
-  @param(found Set False for an ordinary zone-1 word, else True.)
-  @returns(The value; undefined for $7D0D and for an ordinary word.) }
-function SpecialReadZ1(address: Word; var found: Boolean): Word;
-
-{ Applies the side effects of a zone-1 write to the current character: memorized spells, NPC byte (values above $B2
-  lowered by $32), coins, experience fields, status ($80 and up disables, $87 also stones), side and quick fight, the
-  current disk (PushState), and the three wall sets (values above $80, less bit 7). Writing 0 to $7C00 or $7D00 asks for
-  a party or monster record dump.
-  @param(address The zone-1 address.)
-  @param(value The value written.) }
-procedure SpecialWriteZ1(address, value: Word);
-
 { Writes a GBVM word. A zone-0 write to a sky color asks for a sky redraw, and one that changes the 3D flag switches
   between the overland and 3D interface states, remembering the previous one; zone-1 writes go on to SpecialWriteZ1.
   Outside the banks, the addresses that do anything are the sound effect, two script values, and from $BF68 up the
@@ -120,18 +86,6 @@ function ReadGbvm(address: Word): Word;
   @param(address The GBVM address.)
   @param(value The string.) }
 procedure WriteGbvmString(address: Word; value: String);
-
-{ Unpacks a packed script string (four 6-bit characters per three bytes) from the script at the instruction pointer into
-  a script string, skipping zero codes.
-  @param(len The packed length in bytes.)
-  @param(strIdx The script string filled.) }
-procedure ConvGbString(len, strIdx: Byte);
-
-{ Copies the zero-terminated string at a GBVM address into a script string. Zone-1 address $7C00 gives the current
-  character's name; addresses outside the banks give an empty string.
-  @param(strIdx The script string filled.)
-  @param(address The GBVM address.) }
-procedure DerefGbString(strIdx: Byte; address: Word);
 
 { Runs a script horizontal menu with '~' hotkeys; extended keys change the current character.
   @param(query The prompt.)
@@ -224,6 +178,10 @@ procedure EclInflictDamage(dmg: Word; creature: Pointer);
 procedure PrimeEclMenu;
 
 implementation
+
+procedure ConvGbString(len, strIdx: Byte); forward;
+
+procedure DerefGbString(strIdx: Byte; address: Word); forward;
 
 procedure PrimeEclMenu;
 begin
@@ -461,6 +419,9 @@ begin
   CombineBytesToWord := highByte * 256 + lowByte;
 end;
 
+{ Turns a 6-bit game character into ASCII: codes below 32 gain 64, and higher codes stay as they are.
+  @param(code The game character.)
+  @returns(The ASCII character.) }
 function DecodeGameCharacter(code: Byte): Char;
 begin
   if code > 31 then
@@ -469,6 +430,10 @@ begin
     DecodeGameCharacter := Chr(code + 64);
 end;
 
+{ Finds the GBVM bank holding an address.
+  @param(address The GBVM address.)
+  @returns(0 for $4B00..$4EFF, 1 for $7C00..$7FFF, 2 for $7A00..$7BFF, 3 (the script) for $8000..$9DFF, and 4 for
+    anything else.) }
 function GbvmZone(address: Word): Byte;
 begin
   GbvmZone := 4;
@@ -478,6 +443,9 @@ begin
   if (address >= $8000) and (address <= $9DFF) then GbvmZone := 3;
 end;
 
+{ Finds a creature's place in the creature list.
+  @param(creature The creature.)
+  @returns(Its place from 0; the list's length when it is not there.) }
 function FindCurCharIdx(creature: Types.PCreature): Byte;
 var
   idx: Byte;
@@ -498,6 +466,14 @@ begin
   FindCurCharIdx := idx;
 end;
 
+{ Reads the zone-1 addresses that map onto the current character: Intelligence, Constitution, race, class, a saving
+  throw, terrain type, thief skills, NPC byte, coins, magic-user level (counting an earlier class once passed), gender,
+  alignment, a script flag bit, experience fields, status ($7D00: 1 enabled, $80 disabled, or 0 once after a
+  character-not-found), side and quick fight ($7D0C), movement, party position, a Charisma value (0..60), the current
+  disk and the party size.
+  @param(address The zone-1 address.)
+  @param(found Set False for an ordinary zone-1 word, else True.)
+  @returns(The value; undefined for $7D0D and for an ordinary word.) }
 function SpecialReadZ1(address: Word; var found: Boolean): Word;
 var
   t: Byte;
@@ -521,8 +497,9 @@ begin
     $BF: SpecialReadZ1 := GDVars.curChar^.coins[2];
     $C1: SpecialReadZ1 := GDVars.curChar^.coins[3];
     $C3: SpecialReadZ1 := GDVars.curChar^.coins[4];
-    $C9: SpecialReadZ1 := ClassCal.EarlierClassActive(Types.PCreature(GDVars.curChar)) *
-      GDVars.curChar^.oldClassLevels[C_Class.MAGE_LEVEL] + GDVars.curChar^.classLevels[C_Class.MAGE_LEVEL];
+    $C9: SpecialReadZ1 :=
+      ClassCal.EarlierClassActive(GDVars.curChar) * GDVars.curChar^.oldClassLevels[C_Class.MAGE_LEVEL] +
+      GDVars.curChar^.classLevels[C_Class.MAGE_LEVEL];
     $D6: SpecialReadZ1 := GDVars.curChar^.gender;
     $D8: SpecialReadZ1 := ShortInt(GDVars.curChar^.alignment);
     $E4: SpecialReadZ1 := GDVars.curChar^.scriptFlags[0] and 1;
@@ -570,6 +547,12 @@ begin
   end;
 end;
 
+{ Applies the side effects of a zone-1 write to the current character: memorized spells, NPC byte (values above $B2
+  lowered by $32), coins, experience fields, status ($80 and up disables, $87 also stones), side and quick fight, the
+  current disk (PushState), and the three wall sets (values above $80, less bit 7). Writing 0 to $7C00 or $7D00 asks for
+  a party or monster record dump.
+  @param(address The zone-1 address.)
+  @param(value The value written.) }
 procedure SpecialWriteZ1(address, value: Word);
 var
   t: Byte;
@@ -749,7 +732,7 @@ begin
         case address of
           0: ReadGbvm := GDVars.partyPos.mapX;
           1: ReadGbvm := GDVars.partyPos.mapY;
-          2: ReadGbvm := Word(GDVars.partyPos.facing) div 2;
+          2: ReadGbvm := GDVars.partyPos.facing div 2;
           3: ReadGbvm := GDVars.partyPos.wallAhead;
           4: ReadGbvm := GDVars.partyPos.eventAtCell;
           $E: ;
@@ -797,6 +780,10 @@ begin
   end;
 end;
 
+{ Unpacks a packed script string (four 6-bit characters per three bytes) from the script at the instruction pointer into
+  a script string, skipping zero codes.
+  @param(len The packed length in bytes.)
+  @param(strIdx The script string filled.) }
 procedure ConvGbString(len, strIdx: Byte);
 var
   i: Byte;
@@ -847,6 +834,10 @@ begin
   end;
 end;
 
+{ Copies the zero-terminated string at a GBVM address into a script string. Zone-1 address $7C00 gives the current
+  character's name; addresses outside the banks give an empty string.
+  @param(strIdx The script string filled.)
+  @param(address The GBVM address.) }
 procedure DerefGbString(strIdx: Byte; address: Word);
 var
   zone: Byte;
@@ -858,7 +849,8 @@ begin
   case zone of
     0:
       while GDVars.zone0^[address + i] <> 0 do begin
-        GDVars.scriptStrings[strIdx] := Concat(GDVars.scriptStrings[strIdx], Char(GDVars.zone0^[address + i]));
+        GDVars.scriptStrings[strIdx] := Concat(GDVars.scriptStrings[strIdx],
+                                                 Char(GDVars.zone0^[address + i]));
         Inc(i);
       end;
     1:
@@ -866,17 +858,20 @@ begin
         GDVars.scriptStrings[strIdx] := GDVars.curChar^.name
       else
         while GDVars.zone1^[address + i] <> 0 do begin
-          GDVars.scriptStrings[strIdx] := Concat(GDVars.scriptStrings[strIdx], Char(GDVars.zone1^[address + i]));
+          GDVars.scriptStrings[strIdx] := Concat(GDVars.scriptStrings[strIdx],
+                                                   Char(GDVars.zone1^[address + i]));
           Inc(i);
         end;
     2:
       while GDVars.zone2^[address + i] <> 0 do begin
-        GDVars.scriptStrings[strIdx] := Concat(GDVars.scriptStrings[strIdx], Char(GDVars.zone2^[address + i]));
+        GDVars.scriptStrings[strIdx] := Concat(GDVars.scriptStrings[strIdx],
+                                                 Char(GDVars.zone2^[address + i]));
         Inc(i);
       end;
     3:
       while GDVars.scriptCode^[address + i] <> 0 do begin
-        GDVars.scriptStrings[strIdx] := Concat(GDVars.scriptStrings[strIdx], Char(GDVars.scriptCode^[address + i]));
+        GDVars.scriptStrings[strIdx] := Concat(GDVars.scriptStrings[strIdx],
+                                                 Char(GDVars.scriptCode^[address + i]));
         Inc(i);
       end;
   end;
@@ -915,7 +910,7 @@ begin
     ch := MenuCore.MenuHorizontal(query, menu, qCol, mCol, hlCol, True, animate, ext);
     if ext then begin
       ViewChar.SelectPrevNextChar(ch);
-      CharHlp.DisplayParty(Types.PCreature(GDVars.curChar));
+      CharHlp.DisplayParty(GDVars.curChar);
       ch := C_Keys.NONE;
     end;
   until (ch in ['0'..'9', 'A'..'Z']) or ((ch = C_Keys.ENTER) and enterOk);
@@ -1035,12 +1030,12 @@ begin
   srcIt := cur^.itemsAddr;
   while srcIt <> nil do begin
     if p^.itemsAddr = nil then begin
-      GetMem(p^.itemsAddr, SizeOf(p^.itemsAddr^));
+      GetMem(p^.itemsAddr, SizeOf(Types.TItem));
       p^.itemsAddr^ := srcIt^;
       p^.itemsAddr^.next := nil;
     end else begin
       tmp := p^.itemsAddr;
-      GetMem(p^.itemsAddr, SizeOf(p^.itemsAddr^));
+      GetMem(p^.itemsAddr, SizeOf(Types.TItem));
       p^.itemsAddr^ := srcIt^;
       p^.itemsAddr^.next := Types.PItem(tmp);
     end;
@@ -1126,9 +1121,9 @@ begin
   slowest := p^.movementCur;
   while p <> nil do begin
     m := p^.movementCur;
-    if CharHlp.HasEffect(Types.PCreature(p), C_Effect.HASTED, eff) then
+    if CharHlp.HasEffect(p, C_Effect.HASTED, eff) then
       m := m * 2
-    else if CharHlp.HasEffect(Types.PCreature(p), C_Effect.SLOWED, eff) then
+    else if CharHlp.HasEffect(p, C_Effect.SLOWED, eff) then
       m := m div 2;
     if m > fastest then fastest := m;
     if m < slowest then slowest := m;
@@ -1161,7 +1156,7 @@ begin
   TextRend.DisplayMessageWindow(1, 17, 38, 22, White, 0, pause, msg);
   CharHlp.InflictDamage(Types.PCreature(creature), dmg);
   TextRend.ClearRect(17, 1, 38, 15);
-  CharHlp.DisplayParty(Types.PCreature(GDVars.curChar));
+  CharHlp.DisplayParty(GDVars.curChar);
 end;
 
 begin

@@ -9,9 +9,6 @@ interface
   picture and the fireworks, then restores the interface state and the noncombat screen. }
 procedure WinGame;
 
-{ Does nothing. }
-procedure NoopEnding;
-
 implementation
 
 uses MenuCore, CharHlp, Dos, Crt, Blit, TextRend, Portrait, Types, GDConsts, GDVars, C_Gbvm;
@@ -417,10 +414,6 @@ begin
   Ending.VictoryAnim;
   GDVars.ifcState := GDVars.prevIfcState;
   CharHlp.DisplayNoncombatInterface;
-end;
-
-procedure NoopEnding;
-begin
 end;
 
 begin

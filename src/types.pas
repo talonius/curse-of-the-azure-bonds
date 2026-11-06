@@ -410,6 +410,8 @@ type
     movementCur: Byte;
   end;
 
+  TBrkSet = set of ' '..'?';
+
   { EGA-to-CGA color map: sixteen nibbles packed into eight bytes. }
   TColorMap = array[0..7] of Byte;
   { Unsigned bytes for image data and transparency masks. }
@@ -437,67 +439,6 @@ type
     { image data (open-ended) }
     data: array[0..32000] of Byte;
   end;
-
-  { Terrain properties used for placement and arena generation. }
-  TTerrain = record cost: Byte; clearance: Byte; blocking: Byte; tileId: Byte; end;
-  TBrkSet = set of ' '..'?';
-  TBandRec = record lo: ShortInt; hi: ShortInt; end;
-  TIconDelta = record dx: ShortInt; dy: ShortInt; end;
-  TRandomItemTemplate = record
-    nameIds: array[1..3] of Word;
-    weight: Word;
-    value: Word;
-    properties: array[1..3] of Word;
-  end;
-  { Low and high bytes of a word. }
-  TWordBytes = record
-    lo: Byte;
-    hi: Byte;
-  end;
-  { The random item templates, which GenerateRandomItem also reads as one run of words, and of their low bytes, from a
-    template's first word. }
-  TRandomItemTable = record
-    case Byte of
-      0: (templates: array[1..7] of TRandomItemTemplate);
-      1: (words: array[1..56] of Word);
-      2: (wordBytes: array[1..56] of TWordBytes);
-  end;
-  { creature slot, doubled distance, direction toward it }
-  TTargetRec = record idx: Byte; dist: Byte; dir: Byte; end;
-  TDownedRec = record cr: PCreature; x: ShortInt; y: ShortInt; terrain: Byte; end;
-  { Where the party stands and what it faces. GameInit clears the five fields together and SaveLoad saves and loads them
-    as one block; scripts read them all through EclMenu. }
-  TPartyPosition = record
-    { The party's column on the 16 by 16 dungeon map; stepping off one edge wraps to the other. Explore steps it,
-      scripts set it through EclMenu, and GameInit starts the party at column 7. }
-    mapX: ShortInt;
-    { The party's row on the dungeon map, with the same wrapping and writers as mapX; GameInit starts the party at row
-      13. }
-    mapY: ShortInt;
-    { The direction the party faces, 0..7 clockwise from north; on the dungeon map it moves in steps of 2. Explore turns
-      it, scripts set it through EclMenu, and the combat setup lays the two sides out along it. }
-    facing: Byte;
-    { The wall type on the facing side of the party's cell, from View3D's GetWallType; Explore, EclMenu and EclVm
-      refresh it after moves and turns. }
-    wallAhead: Byte;
-    { The event byte of the party's cell, from View3D's GetMapEvent; Explore, EclMenu, EclVm and MapView refresh it
-      after moves. With bit $80 set MapView paints the sky area in the ceiling color. }
-    eventAtCell: Byte;
-  end;
-  { A wall-set slot: the WALLDEF block it holds and the 8x8 symbol slot its glyphs went to. }
-  TWallSetCacheSlot = record wallDefId: Word; symbolSlot: Word; end;
-
-  { One wall type's symbol numbers for each of its perspective forms; geoSymbolOffset gives a form's first. }
-  TWallRow = array[0..155] of Byte;
-  { One WALLDEF entry: the five wall types of a wall-set slot. }
-  TWallEntry = array[1..5] of TWallRow;
-  { The loaded wall graphics: fifteen wall types, read by wall type or as the three wall-set slots of five types each. }
-  PWallGfx = ^TWallGfx;
-  TWallGfx = record
-    case Byte of
-      0: (byType: array[1..15] of TWallRow);
-      1: (bySlot: array[1..3] of TWallEntry);
-  end;
   TAnimFrame = record
     { How long the frame stays up, from the file. }
     time: LongInt;
@@ -511,6 +452,10 @@ type
     current: Byte;
     frames: array[1..8] of TAnimFrame;
   end;
+
+  { Terrain properties used for placement and arena generation. }
+  TTerrain = record cost: Byte; clearance: Byte; blocking: Byte; tileId: Byte end;
+  TIconDelta = record dx: ShortInt; dy: ShortInt end;
 
   { A spell's properties. }
   TSpellRec = record
@@ -541,8 +486,39 @@ type
     aiRadius: Byte;
   end;
 
-  THitDice = record num: Byte; sides: Byte; end;
-  TAlignmentRow = record count: ShortInt; choices: array[1..9] of ShortInt; end;
+  TRandomItemTemplate = record
+    nameIds: array[1..3] of Word;
+    weight: Word;
+    value: Word;
+    properties: array[1..3] of Word;
+  end;
+  { Low and high bytes of a word. }
+  TWordBytes = record
+    lo: Byte;
+    hi: Byte;
+  end;
+  { The random item templates, which GenerateRandomItem also reads as one run of words, and of their low bytes, from a
+    template's first word. }
+  TRandomItemTable = record
+    case Byte of
+      0: (templates: array[1..7] of TRandomItemTemplate);
+      1: (words: array[1..56] of Word);
+      2: (wordBytes: array[1..56] of TWordBytes);
+  end;
+
+  TRuleAge = record base: Word; num: Byte; sides: Byte end;
+  TBandRec = record lo: ShortInt; hi: ShortInt end;
+  THitDice = record num: Byte; sides: Byte end;
+  TAlignmentRow = record count: ShortInt; choices: array[1..9] of ShortInt end;
+  { One class's experience table: the experience needed for each level 2..12 (-1 where the class cannot reach the
+    level), and the spell slots the class gains at each of those levels, by spell level. }
+  TRuleXp = record
+    thresholds: array[2..12] of LongInt;
+    slots: array[2..12, 1..5] of Byte;
+  end;
+  { The classes one race may take: how many, then the class values. }
+  TRaceClassRow = record count: ShortInt; choices: array[1..13] of ShortInt; end;
+
   { One race's ability limits. The strength limits are indexed by gender. }
   TRaceAbilityLimit = record
     strMin: array[0..1] of Byte;
@@ -559,9 +535,6 @@ type
     chaMin: Byte;
     chaMax: Byte;
   end;
-  TArenaLoc = record x: ShortInt; y: ShortInt; aux: Byte; size: Byte; end;
-  TArenaLocationHead = record x: ShortInt; y: ShortInt; aux: Byte end;
-  TCombatGridStorage = record rows: array[0..23, 0..49] of Byte; finalRow: array[0..45] of Byte end;
   PArena = ^TArena;
   TArena = record
     { reserved }
@@ -600,19 +573,63 @@ type
     { set when the cloud survives a resistance check; later checks skip it }
     resolved: Byte;
   end;
-  TRuleAge = record base: Word; num: Byte; sides: Byte; end;
-  { One class's experience table: the experience needed for each level 2..12 (-1 where the class cannot reach the
-    level), and the spell slots the class gains at each of those levels, by spell level. }
-  TRuleXp = record
-    thresholds: array[2..12] of LongInt;
-    slots: array[2..12, 1..5] of Byte;
-  end;
-  { The classes one race may take: how many, then the class values. }
-  TRaceClassRow = record count: ShortInt; choices: array[1..13] of ShortInt; end;
+
+  TArenaLoc = record x: ShortInt; y: ShortInt; aux: Byte; size: Byte end;
+  TArenaLocationHead = record x: ShortInt; y: ShortInt; aux: Byte end;
+  TCombatGridStorage = record rows: array[0..23, 0..49] of Byte; finalRow: array[0..45] of Byte end;
 
   TCharacterMenuItem = record
     name: String[40];
     enabled: Boolean;
+  end;
+
+  TTargetRec = record
+    { creature slot, doubled distance, direction toward it }
+    idx: Byte;
+    dist: Byte;
+    dir: Byte;
+  end;
+  TDownedRec = record
+    cr: PCreature;
+    x: ShortInt;
+    y: ShortInt;
+    terrain: Byte;
+  end;
+  { Where the party stands and what it faces. GameInit clears the five fields together and SaveLoad saves and loads them
+    as one block; scripts read them all through EclMenu. }
+  TPartyPosition = record
+    { The party's column on the 16 by 16 dungeon map; stepping off one edge wraps to the other. Explore steps it,
+      scripts set it through EclMenu, and GameInit starts the party at column 7. }
+    mapX: ShortInt;
+    { The party's row on the dungeon map, with the same wrapping and writers as mapX; GameInit starts the party at row
+      13. }
+    mapY: ShortInt;
+    { The direction the party faces, 0..7 clockwise from north; on the dungeon map it moves in steps of 2. Explore turns
+      it, scripts set it through EclMenu, and the combat setup lays the two sides out along it. }
+    facing: Byte;
+    { The wall type on the facing side of the party's cell, from View3D's GetWallType; Explore, EclMenu and EclVm
+      refresh it after moves and turns. }
+    wallAhead: Byte;
+    { The event byte of the party's cell, from View3D's GetMapEvent; Explore, EclMenu, EclVm and MapView refresh it
+      after moves. With bit $80 set MapView paints the sky area in the ceiling color. }
+    eventAtCell: Byte;
+  end;
+  { A wall-set slot: the WALLDEF block it holds and the 8x8 symbol slot its glyphs went to. }
+  TWallSetCacheSlot = record
+    wallDefId: Word;
+    symbolSlot: Word;
+  end;
+
+  { One wall type's symbol numbers for each of its perspective forms; geoSymbolOffset gives a form's first. }
+  TWallRow = array[0..155] of Byte;
+  { One WALLDEF entry: the five wall types of a wall-set slot. }
+  TWallEntry = array[1..5] of TWallRow;
+  { The loaded wall graphics: fifteen wall types, read by wall type or as the three wall-set slots of five types each. }
+  PWallGfx = ^TWallGfx;
+  TWallGfx = record
+    case Byte of
+      0: (byType: array[1..15] of TWallRow);
+      1: (bySlot: array[1..3] of TWallEntry);
   end;
 
   { A loaded or decompressed DAX block, read a byte at a time. }
@@ -732,11 +749,7 @@ type
     cmapPink8: TColorTab;
     cmapPink0: TColorTab;
   end;
-  TPortraitRemap = record
-                         tintSrc: TColorTab;
-                         tintDst: TColorTab;
-                         keySrc: TColorTab;
-                         keyDst: TColorTab end;
+  TPortraitRemap = record tintSrc: TColorTab; tintDst: TColorTab; keySrc: TColorTab; keyDst: TColorTab end;
 
 type
   TStar = record
@@ -758,8 +771,6 @@ type
   PStarField = ^TStarField;
   { per-layer color seed: 1 = dim, 2..6 a color }
   TLayerMask = array[1..3] of Byte;
-  PFreeRec = ^TFreeRec;
-  TFreeRec = record next: Pointer; size: Pointer; end;
   { An encounter monster's display state for DisplayMonster: [0] set once its sprite is loaded, [1] once its close-up
     has been shown. }
   TMonFlags = array[0..1] of Boolean;

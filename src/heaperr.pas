@@ -1,35 +1,38 @@
-{ The heap-error handler, installed at startup: on a failed allocation the player is made to save the game, then the
-  program quits. }
+{ The heap-error handler, installed at startup: on a failed allocation it warns, lets the player save the game when
+  heap-failure saving is on, then quits. }
 {$O+,F+}
 unit HeapErr;
 
 interface
 
-{ Shows "Time to save your game" and opens the save menu until the recently-saved flag is set, then quits. It runs on
-  every call, size 0 included. Note: the recently-saved flag is not cleared first, so after an earlier save the loop
-  ends after one pass even when nothing is saved.
-  @param(size Unused.)
-  @returns(Nothing: ExitGame ends the program, so no result is assigned.) }
-function HeapErrorHandler(size: Word): Integer;
-
-{ Empty routine with no callers. }
-procedure NoopHeapErr;
-
 implementation
 
 uses TextRend, SaveLoad, GameIo, GDConsts, GDVars, Crt;
 
-procedure NoopHeapErr;
-begin
-end;
-
+{ On a failed allocation (size above 0), warns of insufficient memory and either opens the save menu until the
+  recently-saved flag is set (when heap-failure saving is on) or says the program is exiting; then quits. A size-0 call
+  returns at once. Note: the recently-saved flag is not cleared first, so after an earlier save the loop ends after one
+  pass even when nothing is saved.
+  @param(size The failed allocation size; 0 for a call that needs no action.)
+  @returns(Unassigned; the routine only returns for size 0.) }
 function HeapErrorHandler(size: Word): Integer;
+var
+  exitFlag: Byte;
 begin
-  repeat
-    TextRend.DisplayAndPause(Yellow, Black, 'Time to save your game');
-    SaveLoad.SaveGame;
-  until GDVars.recentlySaved <> 0;
-  GameIo.ExitGame;
+  if size > 0 then begin
+    exitFlag := 0;
+    repeat
+      TextRend.DisplayAndPause(Yellow, Black, 'WARNING: Insufficient Memory');
+      if GDVars.heapFailureSaveEnabled then begin
+        SaveLoad.SaveGame;
+        exitFlag := GDVars.recentlySaved;
+      end else begin
+        exitFlag := 1;
+        TextRend.DisplayAndPause(Yellow, Black, 'Insufficient Memory. Exiting Program');
+      end;
+    until exitFlag <> 0;
+    GameIo.ExitGame;
+  end;
 end;
 
 begin

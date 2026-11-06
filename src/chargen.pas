@@ -22,14 +22,6 @@ type
   restores the interface state, redraws the view frame, closes the training hall and returns. }
 procedure MainMenu;
 
-{ Adds saved characters from Curse, Pool or Hillsfar (GDVars.importMode) to the party. A pick not yet marked is loaded
-  and marked '* '. It joins unless it is already in the party (same name and identity byte) or the party is full (6
-  non-NPCs, 8 members), or a paladin would join an evil character, a fourth ranger would join, or an evil character
-  would join a paladin. The first character into an empty party joins unchecked. A rejection removes the mark, names the
-  reason (except for a duplicate or a full party) and frees the record. Ends on Exit, Escape or a full party. Note: the
-  record list is never freed. }
-procedure AddCharacterMenu;
-
 { Unlinks the current character from the creature list and frees it. The current character becomes the previous one, or
   the next one when it was first; with no current character the list head becomes current. A current character not in
   the list is left alone.
@@ -99,18 +91,6 @@ begin
   ClassCal.PrimeClassCal;
 end;
 
-procedure CreateCharacterMenu; forward;
-
-procedure DropCharacterMenu; forward;
-
-procedure ModifyCharacterMenu; forward;
-
-function HpMaximum(cr: Types.PCreature): Byte; forward;
-
-function HpMinimum(cr: Types.PCreature): Byte; forward;
-
-function RollFirstLevelHp(cr: Types.PCreature; mask: Byte): Byte; forward;
-
 { Frees a character's combat record, items and effects, then the record itself.
   @param(creature The character to free; set to nil.) }
 procedure FreeCreature(var creature: Types.PCreature);
@@ -139,6 +119,22 @@ begin
   FreeMem(creature, SizeOf(creature^));
   creature := nil;
 end;
+
+procedure ModifyCharacterMenu; forward;
+
+procedure AddCharacterMenu; forward;
+
+procedure CreateCharacterMenu; forward;
+
+procedure DropCharacterMenu; forward;
+
+function HpMinimum(cr: Types.PCreature): Byte; forward;
+
+function HpMaximum(cr: Types.PCreature): Byte; forward;
+
+function RollFirstLevelHp(cr: Types.PCreature; mask: Byte): Byte; forward;
+
+procedure TakeCoins(gp: LongInt; cr: Types.PCreature); forward;
 
 function ClassConAdj(cls: Byte): ShortInt; forward;
 
@@ -1149,6 +1145,12 @@ begin
   GDVars.curChar^.exStrBase := GDVars.curChar^.exStrCur;
 end;
 
+{ Adds saved characters from Curse, Pool or Hillsfar (GDVars.importMode) to the party. A pick not yet marked is loaded
+  and marked '* '. It joins unless it is already in the party (same name and identity byte) or the party is full (6
+  non-NPCs, 8 members), or a paladin would join an evil character, a fourth ranger would join, or an evil character
+  would join a paladin. The first character into an empty party joins unchecked. A rejection removes the mark, names the
+  reason (except for a duplicate or a full party) and frees the record. Ends on Exit, Escape or a full party. Note: the
+  record list is never freed. }
 procedure AddCharacterMenu;
 var
   { character names shown in the menu }

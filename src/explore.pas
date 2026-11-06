@@ -29,7 +29,8 @@ procedure PrimeExplore;
 implementation
 
 uses FxEngine, ClassCal, CharHlp, Types, MenuCore, Portrait, TextRend, GameTime, SoundDrv, Crt, Blit, ViewChar, Camp,
-  View3D, MapView, SaveLoad, MapTiles, EclTrace, Border, GDConsts, GDVars, C_Keys, C_Status, C_Stat, C_Gbvm, C_Ifc;
+  View3D, MapView, SaveLoad, MapTiles, EclTrace, Border, GDConsts, GDVars, C_Keys, C_Status, C_Stat, C_Gbvm,
+  C_Ifc;
 
 procedure PrimeExplore;
 begin
@@ -88,8 +89,7 @@ begin
   found := False;
   p := GDVars.partyHead;
   while (p <> nil) and (not found) do begin
-    if (p^.classLevels[idx] > 0) or
-        ((p^.oldClassLevels[idx] > 0) and (ClassCal.EarlierClassActive(p) <> 0)) then
+    if (p^.classLevels[idx] > 0) or ((p^.oldClassLevels[idx] > 0) and (ClassCal.EarlierClassActive(p) <> 0)) then
       found := True;
     p := p^.next;
   end;
@@ -438,11 +438,6 @@ begin
   Blit.FreePic(GDVars.portraits[2].pic);
   GDVars.portraits[1].fileId := 255;
   GDVars.portraits[2].fileId := 255;
-end;
-
-{ Does nothing. }
-procedure NoopExplore;
-begin
 end;
 
 begin

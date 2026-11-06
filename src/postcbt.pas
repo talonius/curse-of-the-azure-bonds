@@ -81,14 +81,14 @@ begin
           while it <> nil do begin
             Inc(cnt);
             if GDVars.treasureItems = nil then begin
-              GetMem(GDVars.treasureItems, SizeOf(GDVars.treasureItems^));
+              GetMem(GDVars.treasureItems, SizeOf(Types.TItem));
               CharHlp.PrintItemString(p, Pointer(it), 0, 0, False, False);
               GDVars.treasureItems^ := it^;
               GDVars.treasureItems^.equipped := 0;
               GDVars.treasureItems^.next := nil;
             end else begin
               q := GDVars.treasureItems;
-              GetMem(GDVars.treasureItems, SizeOf(GDVars.treasureItems^));
+              GetMem(GDVars.treasureItems, SizeOf(Types.TItem));
               CharHlp.PrintItemString(p, Pointer(it), 0, 0, False, False);
               GDVars.treasureItems^ := it^;
               GDVars.treasureItems^.equipped := 0;
@@ -202,7 +202,7 @@ begin
       if (p^.enabled = 0) or (p^.status = C_Status.ANIMATED) then
         Inc(GDVars.treasureCreatureCount);
       for fxIdx := 1 to 19 do
-        FxEngine.RemoveEffect(Types.PCreature(p), GDConsts.postCombatRemovalEffects[fxIdx], nil);
+        FxEngine.RemoveEffect(p, GDConsts.postCombatRemovalEffects[fxIdx], nil);
       p := p^.next;
     end;
     if GDVars.combatWon <> 0 then begin
@@ -306,7 +306,7 @@ begin
       p := GDVars.treasureItems;
       while p <> nil do begin
         q := p^.next;
-        FreeMem(p, SizeOf(p^));
+        FreeMem(p, SizeOf(Types.TItem));
         p := q;
       end;
       FillChar(GDVars.treasureMoney, SizeOf(GDVars.treasureMoney), 0);
@@ -397,7 +397,7 @@ begin
         end;
         itemToTake^.next := nil;
         if itemToTake <> nil then
-          FreeMem(itemToTake, SizeOf(itemToTake^));
+          FreeMem(itemToTake, SizeOf(Types.TItem));
         if GDVars.treasureItems = nil then
           done := True;
       end;
@@ -629,7 +629,7 @@ begin
   if not GDVars.demoMode then begin
     cp := GDVars.partyHead;
     while cp <> nil do begin
-      CharHlp.RecalcStats(Types.PCreature(cp));
+      CharHlp.RecalcStats(cp);
       cp := cp^.next;
     end;
     if (not GDVars.partyDefeated) or GDVars.duelFlag then begin
@@ -638,7 +638,7 @@ begin
         while p <> nil do begin
           q := p;
           p := p^.next;
-          FreeMem(q, SizeOf(q^));
+          FreeMem(q, SizeOf(Types.TItem));
         end;
         GDVars.treasureItems := nil;
       end;
@@ -651,7 +651,7 @@ begin
       while p <> nil do begin
         q := p;
         p := p^.next;
-        FreeMem(q, SizeOf(q^));
+        FreeMem(q, SizeOf(Types.TItem));
       end;
       GDVars.treasureItems := nil;
     end else begin

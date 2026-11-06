@@ -1761,8 +1761,7 @@ begin
   end;
 end;
 
-{ PROTECTION: runs the copy-protection question, then the executable checksum check (a sound plays when it fails), and
-  redraws the noncombat screen. }
+{ PROTECTION: runs the copy-protection question and redraws the noncombat screen. }
 procedure EclProtection;
 var
   { Unused in this version; see the other implementations of this routine. }
@@ -1772,7 +1771,6 @@ begin
   GDVars.eclGraphics := False;
   EclMenu.LoadEclVars(1);
   CopyProt.CopyProtection;
-  if not CopyProt.VerifyChecksum then SoundDrv.SoundCommand(GDConsts.sndStartCountdown);
   CharHlp.DisplayNoncombatInterface;
 end;
 

@@ -2,7 +2,7 @@
 ; Each routine is a near Pascal external taking (col, row, ink, paper, glyphIndex). RenderChar has already copied the
 ; glyph's eight rows to glyphBits, so glyphIndex is not read. Each routine preserves SS and DS.
 
-CODE    SEGMENT BYTE PUBLIC
+CODE    SEGMENT BYTE PUBLIC 'CODE'
         ASSUME  CS:CODE, DS:DATA
         PUBLIC  CGAGLYPH, EGAGLYPH, TANDYGLYPH
 

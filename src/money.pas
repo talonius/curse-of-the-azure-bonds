@@ -6,23 +6,7 @@ unit Money;
 
 interface
 
-uses Types, FxEngine, CharHlp, TextRend, GameIo, MenuCore, Border, EclTrace, GDConsts, GDVars, C_Keys,
-  C_Ifc, Crt;
-
-{ Works out how much weight a character can carry before it is overloaded: its Strength weight allowance plus 1500.
-  @param(creature The character.)
-  @returns(The carrying capacity.) }
-function CarryingCapacity(creature: Types.PCreature): Word;
-
-{ Takes weight off a character's encumbrance.
-  @param(creature The character.)
-  @param(weight The weight removed.) }
-procedure RemoveWeight(creature: Types.PCreature; weight: Word);
-
-{ Adds weight to a character's encumbrance.
-  @param(creature The character.)
-  @param(weight The weight added.) }
-procedure AddWeight(creature: Types.PCreature; weight: Word);
+uses Types, FxEngine, CharHlp, TextRend, GameIo, MenuCore, Border, EclTrace, GDConsts, GDVars, C_Keys, C_Ifc, Crt;
 
 { Tells whether adding weight to a character's encumbrance would take it past its carrying capacity.
   @param(creature The character.)
@@ -34,10 +18,6 @@ function CheckOverload(creature: Types.PCreature; weight: Word; var takable: Wor
 { Moves the money of each player character, including one made a quick fighter by charm (NPC value $B3), into the pool,
   taking its weight off, and marks the pool as holding money. }
 procedure PoolMoney;
-
-{ Counts the player characters, including those made quick fighters by charm (NPC value $B3).
-  @returns(The number of characters that pool money.) }
-function CountPoolers: Byte;
 
 { Divides the pool: each member with an NPC value below $80 gets an equal share of each money type (jewelry and gems
   first) and one coin of the remainder, as far as its carrying capacity allows, the shares being worked out over
@@ -140,16 +120,25 @@ begin
   EclTrace.PrimeEclTrace;
 end;
 
+{ Works out how much weight a character can carry before it is overloaded: its Strength weight allowance plus 1500.
+  @param(creature The character.)
+  @returns(The carrying capacity.) }
 function CarryingCapacity(creature: Types.PCreature): Word;
 begin
-  CarryingCapacity := CharHlp.WeightAllowance(Types.PCreature(creature)) + 1500;
+  CarryingCapacity := CharHlp.WeightAllowance(creature) + 1500;
 end;
 
+{ Takes weight off a character's encumbrance.
+  @param(creature The character.)
+  @param(weight The weight removed.) }
 procedure RemoveWeight(creature: Types.PCreature; weight: Word);
 begin
   creature^.encumbrance := creature^.encumbrance - weight;
 end;
 
+{ Adds weight to a character's encumbrance.
+  @param(creature The character.)
+  @param(weight The weight added.) }
 procedure AddWeight(creature: Types.PCreature; weight: Word);
 begin
   creature^.encumbrance := creature^.encumbrance + weight;
@@ -292,6 +281,8 @@ begin
   end;
 end;
 
+{ Counts the player characters, including those made quick fighters by charm (NPC value $B3).
+  @returns(The number of characters that pool money.) }
 function CountPoolers: Byte;
 var
   p: Types.PCreature;
@@ -485,8 +476,8 @@ begin
       end;
     sel := p;
     save := p;
-    ch := MenuCore.MenuVertical('Select type of coin ', 'Select', LightMagenta, LightGreen, White, 2, 2, 15, 8,
-                                Types.PItem(p), True, redraw, idx, Types.PItem(sel));
+    ch := MenuCore.MenuVertical('Select type of coin ', 'Select', LightMagenta, LightGreen, White, 2, 2, 15, 8, p, True,
+                                redraw, idx, sel);
     if (sel = nil) or (ch = C_Keys.NONE) then
       exitF := True
     else begin
@@ -495,7 +486,7 @@ begin
       numStr := 'How much ' + numStr + 'will you take? ';
       n := Money.InputNumberMax(treasureMoneyLo[mType].lo, numStr, 10);
       Money.TakeMoney(GDVars.curChar, n, mType);
-      MenuCore.FreeStringList(Types.PItem(save));
+      MenuCore.FreeStringList(save);
       GDVars.treasureMoneyFlag := False;
       exitF := True;
       for i := 0 to 6 do
@@ -653,14 +644,14 @@ begin
                  end;
           end;
           case itemType of
-            59: value := plus * 2500;
-            73, 28: value := plus * 150;
-            53, 54: value := plus * 3000;
-            55, 56: value := plus * 3500;
-            57: value := plus * 4000;
-            58: value := plus * 5000;
-            77: value := plus * 3000;
-            else value := plus * 2000;
+            59: value := Word(plus) * 2500;
+            73, 28: value := Word(plus) * 150;
+            53, 54: value := Word(plus) * 3000;
+            55, 56: value := Word(plus) * 3500;
+            57: value := Word(plus) * 4000;
+            58: value := Word(plus) * 5000;
+            77: value := Word(plus) * 3000;
+            else value := Word(plus) * 2000;
           end;
         end;
       61, 62: begin
@@ -695,7 +686,7 @@ begin
                 5: spell := FxEngine.RollDice(1, 6) + 70;
               end;
             spells[j] := spell;
-            value := roll * 300 + value;
+            value := Word(roll) * 300 + value;
           end;
         end;
       63, 67: templateIdx := 41;
@@ -762,7 +753,7 @@ begin
           else jwlStr := jwlStr + ' pieces of Jewelry';
         end;
         TextRend.ClearRect(1, 1, 38, 22);
-        CharHlp.DisplayCreatureName(Types.PCreature(GDVars.curChar), 1, 1, False);
+        CharHlp.DisplayCreatureName(GDVars.curChar, 1, 1, False);
         TextRend.DisplayString(1, 7, White, 0, 'You have a fine collection of:');
         TextRend.DisplayString(1, 9, White, 0, gemStr);
         TextRend.DisplayString(1, 10, White, 0, jwlStr);
@@ -874,7 +865,7 @@ begin
           'E', C_Keys.NONE:
             exitF := True;
         end;
-        CharHlp.RecalcStats(Types.PCreature(GDVars.curChar));
+        CharHlp.RecalcStats(GDVars.curChar);
       end;
     until exitF;
 end;

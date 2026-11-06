@@ -402,7 +402,7 @@ begin
   CharHlp.DisplayNoncombatInterface;
   GDVars.shopSession := True;
   CharHlp.DisplayParty(GDVars.curChar);
-  FillChar(GDVars.treasureMoney, SizeOf(Types.TMoney), 0);
+  FillChar(GDVars.treasureMoney, SizeOf(GDVars.treasureMoney), 0);
   GDVars.treasureMoneyFlag := False;
   done := False;
   repeat

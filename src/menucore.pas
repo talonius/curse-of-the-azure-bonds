@@ -15,11 +15,6 @@ uses Types, TextRend, GameIo, Crt, Portrait, Border, EclTrace, MapCurs, GDConsts
   @returns(The member, or nil when the list is shorter.) }
 function FindListMember(index: Integer; list: Types.PItem): Types.PItem;
 
-{ Counts the members of a string list.
-  @param(list The list's first member, or nil.)
-  @returns(The number of members.) }
-function ListCount(list: Types.PItem): Integer;
-
 { Shows query and a one-line menu on the bottom row and waits for a choice. Each option starts at a digit or capital
   letter, its hotkey, drawn in hlCol; the highlighted option (menuChoice, kept between calls) is drawn inverse. ',' and
   '.' move the highlight, wrapping; a hotkey picks its option; Enter takes the highlighted option when mCol or hlCol is
@@ -47,11 +42,10 @@ procedure ClearBottomLine;
 { Runs a menu over a string list in a window. Members with inUse set are labels, drawn in qCol and skipped by the
   highlight; the others are choices, drawn in mCol. A horizontal menu on the bottom row (MenuHorizontal) takes the
   command: menu's options, then Next when a later page exists, Prev when the page top is past the leading labels, and
-  Exit with addExit. Home and End move the highlight up and down, wrapping within the page; Page Up and Page Down turn
-  pages when Prev and Next are offered, P and N whether or not they are. The page top (verticalMenuTop) is kept between
-  calls; it is pulled back to idx when it lies past it, and to 0 when it lies past the end of the list. menuChoice
-  starts at 1. Note: the highlight wraps within the page without checking the end of the list, so on a short last page
-  it can move past the last member.
+  Exit with addExit. Home and End move the highlight up and down, wrapping within the page and the list; Page Up and
+  Page Down turn pages when Prev and Next are offered, P and N whether or not they are. The page top (verticalMenuTop)
+  is kept between calls; it is pulled back to idx when it lies past it, and to 0 when it lies past the end of the list,
+  and set to 0 without a redraw when the whole list fits in the window. menuChoice starts at 1.
   @param(query Text shown before the command menu.)
   @param(menu The command menu's own options.)
   @param(qCol Color of the query and the labels.)
@@ -125,6 +119,9 @@ begin
     FindListMember := nil;
 end;
 
+{ Counts the members of a string list.
+  @param(list The list's first member, or nil.)
+  @returns(The number of members.) }
 function ListCount(list: Types.PItem): Integer;
 var
   p: Types.PItem;
@@ -445,7 +442,7 @@ var
                              Copy(pp^.name, a, b));
   end;
 
-  { Moves the highlight off labels, wrapping within the page, for at most a page of steps. }
+  { Moves the highlight off labels, wrapping within the page and the list, for at most a page of steps. }
   procedure SkipLabels(down: Boolean);
   var
     k: Integer;
@@ -458,6 +455,8 @@ var
         Inc(idx);
         if GDVars.verticalMenuTop + rows - 1 < idx then
           idx := GDVars.verticalMenuTop;
+        if count - 1 < idx then
+          idx := GDVars.verticalMenuTop;
       end;
     end else
       while (k < rows)
@@ -466,6 +465,8 @@ var
         Dec(idx);
         if idx < GDVars.verticalMenuTop then
           idx := GDVars.verticalMenuTop + rows - 1;
+        if count - 1 < idx then
+          idx := count - 1;
       end;
   end;
 
@@ -489,7 +490,7 @@ var
     DrawPage(GDVars.verticalMenuTop);
   end;
 
-  { Moves the highlight one member down or up, wrapping within the page, then off labels. }
+  { Moves the highlight one member down or up, wrapping within the page and the list, then off labels. }
   procedure MoveLine(down: Boolean);
   var
     { Unused in this version; see the other implementations of this routine. }
@@ -503,10 +504,14 @@ var
       Inc(idx);
       if GDVars.verticalMenuTop + rows - 1 < idx then
         idx := GDVars.verticalMenuTop;
+      if count - 1 < idx then
+        idx := GDVars.verticalMenuTop;
     end else begin
       Dec(idx);
       if idx < GDVars.verticalMenuTop then
         idx := GDVars.verticalMenuTop + rows - 1;
+      if count - 1 < idx then
+        idx := count - 1;
     end;
     SkipLabels(down);
   end;
@@ -533,6 +538,8 @@ begin
       p := p^.next;
       Inc(total);
     end;
+    if total <= rows then
+      GDVars.verticalMenuTop := 0;
     if GDVars.verticalMenuTop > idx then begin
       GDVars.verticalMenuTop := idx;
       redraw := True;

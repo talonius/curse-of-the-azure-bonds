@@ -14,7 +14,8 @@ procedure InitializeGame;
 
 { Returns the game to its starting state after a game: clears the span tables and the GBVM banks, puts the party at (7,
   13) facing 2, and resets most of the globals InitializeGame gives defaults, leaving the picture and animation
-  switches, the demo flag and the sky pictures alone. }
+  switches, the demo flag and the sky pictures alone. It also turns the heap-failure save flag on, which InitializeGame
+  turns off. }
 procedure ResetGameState;
 
 { Calls the priming entry of each overlay this unit uses, so the overlay manager loads them. }
@@ -116,6 +117,7 @@ begin
   end;
 
   { The other globals get their defaults; ResetGameState repeats most of these. }
+  GDVars.heapFailureSaveEnabled := False;
   GDVars.animOn := 1;
   GDVars.picsOn := 1;
   GDVars.debugTraceEnabled := False;
@@ -190,6 +192,7 @@ end;
 
 procedure ResetGameState;
 begin
+  GDVars.heapFailureSaveEnabled := True;
 
   FillChar(GDVars.spanActive, SizeOf(GDVars.spanActive), 0);
   FillChar(GDVars.spanScreenOfs, SizeOf(GDVars.spanScreenOfs), 0);

@@ -88,7 +88,7 @@ begin
   itemToBuy := cursor;
   p := GDVars.treasureItems;
   while p <> nil do begin
-    CharHlp.PrintItemString(nil, Types.PItem(p), 0, 0, False, False);
+    CharHlp.PrintItemString(nil, p, 0, 0, False, False);
     p := p^.next;
   end;
 end;
@@ -105,19 +105,19 @@ begin
     failed := False;
     p := GDVars.curChar^.itemsAddr;
     if p = nil then begin
-      GetMem(p, SizeOf(p^));
+      GetMem(p, SizeOf(Types.TItem));
       p^ := item^;
       p^.next := nil;
       GDVars.curChar^.itemsAddr := p;
     end else begin
       while p^.next <> nil do
         p := p^.next;
-      GetMem(q, SizeOf(q^));
+      GetMem(q, SizeOf(Types.TItem));
       q^ := item^;
       q^.next := nil;
       p^.next := q;
     end;
-    CharHlp.RecalcStats(Types.PCreature(GDVars.curChar));
+    CharHlp.RecalcStats(GDVars.curChar);
   end;
 end;
 
@@ -195,14 +195,14 @@ begin
   GDVars.shopSession := GDVars.zone0^[C_Gbvm.VIEW_3D] = 0;
   CharHlp.DisplayNoncombatInterface;
   GDVars.shopSession := True;
-  CharHlp.DisplayParty(Types.PCreature(GDVars.curChar));
-  FillChar(GDVars.treasureMoney, SizeOf(GDVars.treasureMoney), 0);
+  CharHlp.DisplayParty(GDVars.curChar);
+  FillChar(GDVars.treasureMoney, SizeOf(Types.TMoney), 0);
   query[0] := #0;
   GDVars.treasureMoneyFlag := False;
   done := False;
   p := GDVars.treasureItems;
   while p <> nil do begin
-    CharHlp.PrintItemString(nil, Types.PItem(p), 0, 0, False, False);
+    CharHlp.PrintItemString(nil, p, 0, 0, False, False);
     p := p^.next;
   end;
   repeat
@@ -243,7 +243,7 @@ begin
       'B', 'T': CharHlp.DisplayNoncombatInterface;
       'A': if apprOk then CharHlp.DisplayNoncombatInterface;
     end;
-    CharHlp.DisplayParty(Types.PCreature(GDVars.curChar));
+    CharHlp.DisplayParty(GDVars.curChar);
   until done;
 end;
 

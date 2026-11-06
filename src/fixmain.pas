@@ -1,7 +1,7 @@
 { The program: initializes the game, shows the introduction and the Play Demo menu, asks the copy-protection question,
   then repeats party creation and exploration; after a demo run it goes back to the introduction and the menu. }
-{$M 10000,65536,655360}
-{$F+,O+}
+{$M 16384,0,655360}
+{$F+,O-}
 program FixMain;
 
 uses
@@ -9,8 +9,10 @@ uses
   GDConsts, GDVars,
   ModeInit, SoundDrv,
   DaxIo, TextRend, Blit, GameIo, GameBoot,
-  Sym8x8, Border, EclTrace, EmptyB,
-  MapTiles, CbtMap, Pathing, EmptyC,
+  Sym8x8, Border, EclTrace,
+  EmptyB,
+  MapTiles, CbtMap, Pathing,
+  EmptyC,
   View3D,
   Portrait, MapView, MapCurs, MenuCore, ClassCal, CharHlp,
   FxEngine, Magic, Money, GameTime, ViewChar, Ending,
@@ -57,7 +59,7 @@ uses
 
 const
   STING_KEYWORD = 'STING';
-  BANNER = 'Curse of the Azure Bonds v1.2 ';
+  BANNER = 'Curse of the Azure Bonds v1.3 ';
   PLAY_DEMO = 'Play Demo';
 
 begin

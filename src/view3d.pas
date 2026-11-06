@@ -5,20 +5,12 @@ unit View3D;
 
 interface
 
-{ Does nothing. }
-procedure NoopThreeDViewA;
-
 { Records the four colors the next drawing of the 3D view paints its background in.
   @param(pal0 The sky color.)
   @param(pal1 The color of the first ground band, painted on CGA only.)
   @param(pal2 The color of the second ground band.)
   @param(pal3 The color of the lower ground.) }
 procedure SetView3DColors(pal0, pal1, pal2, pal3: Byte);
-
-{ Paints the 3D view's background in the recorded colors; CGA uses its own bands. Outside CGA, under an open sky (a cell
-  event below $80 and a light cyan sky) it draws the sun by the hour when the party faces east, south or west, and the
-  north sky picture when it faces north; then it draws the horizon picture. }
-procedure DrawBackdrop;
 
 { Reads a wall from the 3D map. Off the 16x16 map it returns 0 while script 0 or 10 is loaded, and otherwise wraps
   around the edges.
@@ -61,23 +53,12 @@ procedure LoadWallSet(blockId, wallset: Byte);
   @param(blockId The block to load.) }
 procedure Load3DMap(blockId: Byte);
 
-{ Does nothing. }
-procedure NoopThreeDViewB;
-
 { Calls the priming entry of each overlay this unit uses, so the overlay manager loads them. }
 procedure PrimeView3D;
 
 implementation
 
 uses Blit, Sym8x8, DaxIo, GameIo, EclTrace, Types, GDConsts, GDVars, Crt, C_Gbvm;
-
-procedure NoopThreeDViewA;
-begin
-end;
-
-procedure NoopThreeDViewB;
-begin
-end;
 
 procedure PrimeView3D;
 begin
@@ -124,7 +105,7 @@ begin
       Sym8x8.Put8x8Sym(ri + 3 - 1, ci + 3 - 1, mask, True, False);
     end;
   end;
-  Sym8x8.Put8x8Sym(cRem + 3 - 1, rRem + 3 - 1, (facing div 2) + 256, True, False);
+  Sym8x8.Put8x8Sym(cRem + 3 - 1, rRem + 3 - 1, (facing shr 1) + 256, True, False);
   Blit.FlushView;
 end;
 
@@ -136,6 +117,9 @@ begin
   GDVars.floorBandColor := pal3;
 end;
 
+{ Paints the 3D view's background in the recorded colors; CGA uses its own bands. Outside CGA, under an open sky (a cell
+  event below $80 and a light cyan sky) it draws the sun by the hour when the party faces east, south or west, and the
+  north sky picture when it faces north; then it draws the horizon picture. }
 procedure DrawBackdrop;
 var
   hour: Word;

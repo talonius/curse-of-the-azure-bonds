@@ -4,9 +4,6 @@ unit EclTrace;
 
 interface
 
-{ Empty routine with no callers. }
-procedure NoopEclTrace;
-
 { Empty entry; calling it loads this overlay. }
 procedure PrimeEclTrace;
 
@@ -19,10 +16,6 @@ function OpName(op: Byte): String;
 implementation
 
 uses GDConsts, GDVars, C_Ecl;
-
-procedure NoopEclTrace;
-begin
-end;
 
 procedure PrimeEclTrace;
 begin

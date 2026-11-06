@@ -500,7 +500,7 @@ begin
   else
     MapTiles.Load24x24Set('WildCom', 1, 0, 33);
   MapTiles.Load24x24Set('RandCom', 1, 34, 6);
-  GetMem(GDVars.combatArena, SizeOf(Types.TArena));
+  GetMem(GDVars.combatArena, SizeOf(GDVars.combatArena^));
   GDVars.combatArena^.cursorOn := 0;
   GDVars.combatArena^.focusSize := 1;
   GDVars.combatArena^.distMode := 0;
@@ -522,10 +522,10 @@ begin
   p := GDVars.partyHead;
   count := 0;
   while p <> nil do begin
-    CharHlp.RecalcStats(Types.PCreature(p));
+    CharHlp.RecalcStats(p);
     Inc(count);
-    GetMem(p^.combatAddr, SizeOf(Types.TCombatRec));
-    FillChar(p^.combatAddr^, SizeOf(Types.TCombatRec), 0);
+    GetMem(p^.combatAddr, SizeOf(p^.combatAddr^));
+    FillChar(p^.combatAddr^, SizeOf(p^.combatAddr^), 0);
     if count > GDVars.zone1^[C_Gbvm.PARTY_SIZE] then
       p^.combatAddr^.notPcNpc := 1;
     p^.combatAddr^.direction := GDConsts.combatQuadrantDirections[GDVars.partyPos.facing div 2];
@@ -767,7 +767,7 @@ begin
           Inc(GDVars.downedCount);
           GDVars.downedCharacters[GDVars.downedCount].terrain := GDVars.combatArena^.cells[y, x];
           GDVars.combatArena^.cells[y, x] := C_Terr.CORPSE;
-          GDVars.downedCharacters[GDVars.downedCount].cr := Types.PCreature(p);
+          GDVars.downedCharacters[GDVars.downedCount].cr := p;
           GDVars.downedCharacters[GDVars.downedCount].x := x;
           GDVars.downedCharacters[GDVars.downedCount].y := y;
         end;
@@ -829,13 +829,13 @@ begin
   CombatSt.PlaceAllCreatures;
   GameIo.PollGameKeys;
   Blit.AllocPic(24, 3, 4, 1, GDVars.combatEffectSprite);
-  GDVars.combatArena^.focusX := CbtMap.CombatCellX(Types.PCreature(GDVars.partyHead)) - 3;
-  GDVars.combatArena^.focusY := CbtMap.CombatCellY(Types.PCreature(GDVars.partyHead)) - 3;
+  GDVars.combatArena^.focusX := CbtMap.CombatCellX(GDVars.partyHead) - 3;
+  GDVars.combatArena^.focusY := CbtMap.CombatCellY(GDVars.partyHead) - 3;
   CharHlp.DisplayCombatInterface;
   p := GDVars.partyHead;
   while p <> nil do begin
-    FxEngine.TriggerEffectsWithCondition(8, Types.PCreature(p));
-    FxEngine.TriggerEffectsWithCondition(22, Types.PCreature(p));
+    FxEngine.TriggerEffectsWithCondition(8, p);
+    FxEngine.TriggerEffectsWithCondition(22, p);
     p := p^.next;
   end;
   CbtActs.UpdateHostileHpPercent;

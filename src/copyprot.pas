@@ -1,5 +1,5 @@
-{ Translation-wheel copy protection and the executable checksum check. }
-{$O+,F+,I-}
+{ Translation-wheel copy protection. }
+{$O+,F+}
 {$A-}
 unit CopyProt;
 
@@ -14,58 +14,13 @@ procedure CopyProtection;
 { Calls EclTrace's priming entry, so the overlay manager loads it. }
 procedure PrimeCopyProt;
 
-{ Checks START.EXE against its stored checksum: the sum of every byte except the last four must equal the four-byte
-  value at the end. A mismatch shows 'checksum error <sum> - <stored>'. Note: the open is checked through DosError,
-  which Reset does not set, so a missing file is not caught.
-  @returns(True when the sums match, or when DosError is already nonzero.) }
-function VerifyChecksum: Boolean;
-
 implementation
 
-uses Blit, MapTiles, SoundDrv, Crt, Dos, GameIo, TextRend, Border, EclTrace, CharHlp, MenuCore, GDConsts, GDVars;
+uses Blit, MapTiles, SoundDrv, Crt, GameIo, TextRend, Border, EclTrace, GDConsts, GDVars;
 
 procedure PrimeCopyProt;
 begin
   EclTrace.PrimeEclTrace;
-end;
-
-function VerifyChecksum: Boolean;
-var
-  { Four-byte executable checksum. }
-  stored: LongInt;
-  sum: LongInt;
-  { Unused in this version; see the other implementations of this routine. }
-  isValid: Byte;
-  bytesRead: LongInt;
-  i: LongInt;
-  f: file;
-  limit: LongInt;
-  chunk: LongInt;
-  buf: array[1..256] of Byte;
-begin
-  TextRend.DisplayString(0, 24, LightGreen, 0, 'Loading...Please Wait');
-  sum := 0;
-  bytesRead := 0;
-  Assign(f, 'start.exe');
-  Reset(f, 1);
-  if DosError = 0 then begin
-    limit := FileSize(f) - 4;
-    while bytesRead < limit do begin
-      chunk := 256;
-      if bytesRead + chunk >= limit then chunk := limit - bytesRead;
-      BlockRead(f, buf, chunk);
-      for i := 1 to chunk do
-        Inc(sum, buf[i]);
-      Inc(bytesRead, chunk);
-    end;
-    BlockRead(f, stored, SizeOf(stored));
-    VerifyChecksum := sum = stored;
-    if sum <> stored then
-      TextRend.DisplayAndPause(Yellow, 0, 'checksum error ' + CharHlp.Int32Str(sum) + ' - ' + CharHlp.Int32Str(stored));
-  end else
-    VerifyChecksum := True;
-  Close(f);
-  MenuCore.ClearBottomLine;
 end;
 
 procedure CopyProtection;

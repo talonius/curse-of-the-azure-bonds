@@ -6,11 +6,8 @@ unit GameTime;
 
 interface
 
-uses Types, Crt, Magic, FxEngine, CharHlp, MenuCore, TextRend, EclTrace, GDConsts, GDVars, C_Keys, C_Ifc, C_Spell,
-  C_Gbvm;
-
-{ Empty routine with no callers. }
-procedure NoopGameTime;
+uses Types, Crt, Magic, FxEngine, CharHlp, MenuCore, TextRend, EclTrace, GDConsts, GDVars, C_Keys,
+  C_Ifc, C_Spell, C_Gbvm;
 
 { Advances the game clock, kept in the script's variables, by amount units of one clock component, a unit at a time,
   carrying as it goes (ValidateClock), and runs the party's effects down by the same time (TimeOutEffects).
@@ -30,10 +27,6 @@ function CampRest(interactive: Boolean): Boolean;
 procedure PrimeGameTime;
 
 implementation
-
-procedure NoopGameTime;
-begin
-end;
 
 procedure PrimeGameTime;
 begin
@@ -61,6 +54,7 @@ var
   found: Boolean;
   tail: Types.PEffect;
   prev: Types.PEffect;
+  nxt: Types.PEffect;
   e: Types.PEffect;
 begin
   if GDVars.ifcState <> C_Ifc.CAMPING then
@@ -90,6 +84,7 @@ begin
         e := cur^.effects;
         tail := cur^.effects;
         prev := cur^.effects;
+        nxt := prev^.next;
         if cur^.effects <> nil then
           while tail^.next <> nil do tail := tail^.next;
         done := False;
@@ -102,11 +97,12 @@ begin
             GDVars.effFlags[i] := True;
             e := e^.next;
           end else begin
-            FxEngine.RemoveEffect(Types.PCreature(cur), e^.id, e);
+            nxt := e^.next;
+            FxEngine.RemoveEffect(cur, e^.id, e);
             if prev = cur^.effects then
               e := cur^.effects
             else
-              e := prev^.next;
+              e := nxt;
           end;
           prev := cur^.effects;
           while (prev <> nil) and (prev <> e) and (prev^.next <> e) do
@@ -307,12 +303,12 @@ begin
     healed := False;
     cur := GDVars.partyHead;
     while cur <> nil do begin
-      if FxEngine.RestoreHitPoints(Types.PCreature(cur), 1, False) then healed := True;
+      if FxEngine.RestoreHitPoints(cur, 1, False) then healed := True;
       cur := cur^.next;
     end;
     if showTime then GameTime.DisplayRestTime(0);
     TextRend.DisplayString(1, 19, LightGreen, 0, 'The Whole Party Is Healed');
-    if healed then CharHlp.DisplayParty(Types.PCreature(GDVars.curChar));
+    if healed then CharHlp.DisplayParty(GDVars.curChar);
     TextRend.PauseOnly;
     CharHlp.ClearMessageWindow;
     GDVars.healTicks := 0;

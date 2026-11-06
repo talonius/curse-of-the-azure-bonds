@@ -6,9 +6,9 @@ unit ViewChar;
 
 interface
 
-uses Types, MenuCore, Portrait, Money, Border, TextRend, GDConsts, GDVars, C_Keys, C_Class,
-  C_Status, C_Effect, C_Ifc, C_Gbvm, C_Stat, C_Spell, CharHlp, CbtMap, FxEngine, ClassCal, MapView, EclTrace, Magic,
-  GameTime, Crt;
+uses Types, MenuCore, Portrait, Money, Border, TextRend, GDConsts, GDVars, C_Keys,
+  C_Class, C_Status, C_Effect, C_Ifc, C_Gbvm, C_Stat, C_Spell, CharHlp, Magic, CbtMap, FxEngine, ClassCal, GameTime,
+  MapView, EclTrace, Crt;
 
 { Draws the current character's sheet: name ("(NPC)" for an NPC), gender, race, age, alignment, class, the six
   abilities, money, levels (a dual-class human's earlier class too, once the current class level exceeds it),
@@ -82,32 +82,6 @@ function CreatureCoinValueInGold(creature: Types.PCreature): LongInt;
   @returns(The chosen spell, or 0.) }
 function SpellMenu(menuType, selType: Byte; var idx: Integer; var notEmpty: Boolean): Byte;
 
-{ Tells whether a paladin (or a dual-class character whose earlier paladin levels are active) may lay on hands now:
-  outside combat, okay, and more than a day after the last time.
-  @param(cr The character.)
-  @returns(True when it may.) }
-function CanHeal(cr: Types.PCreature): Boolean;
-
-{ Tells whether a paladin (or a dual-class character whose earlier paladin levels are active) may cure disease now:
-  outside combat, okay, with cures left (cureDiseaseUses).
-  @param(cr The character.)
-  @returns(True when it may.) }
-function CanCure(cr: Types.PCreature): Boolean;
-
-{ Lays on hands: the party member the player picks regains 2 hit points per paladin level of the healer (earlier paladin
-  levels count while active), who cannot heal again for a day. Picking no one just redraws the sheet.
-  @param(cr The paladin.) }
-procedure PaladinLayOnHands(cr: Types.PCreature);
-
-{ Cures the diseases of the party member the player picks (asking first when there are none), using one of the paladin's
-  cures and starting its seven-day cure effect if it is not already running.
-  @param(cr The paladin.) }
-procedure PaladinCureDisease(cr: Types.PCreature);
-
-{ Shows an item's raw fields for debugging (V in the item menu) and waits for a key.
-  @param(it The item.) }
-procedure ViewItemDetail(it: Types.PItem);
-
 { Calls the priming entries of MenuCore, Portrait, Magic, FxEngine, Money, GameTime, MapView, CharHlp, EclTrace and
   ClassCal, so the overlay manager loads them; CbtMap, which this unit also uses, is not primed. }
 procedure PrimeViewChar;
@@ -142,9 +116,17 @@ procedure TradeTreasureMenu; forward;
 
 procedure DropMoneyMenu; forward;
 
-function CheckItemAvail(item: Types.PItem): Boolean; forward;
+procedure ViewItemDetail(it: Types.PItem); forward;
 
 procedure ToggleItemEffect(it: Types.PItem; equipping: Boolean); forward;
+
+function CanHeal(cr: Types.PCreature): Boolean; forward;
+
+function CanCure(cr: Types.PCreature): Boolean; forward;
+
+procedure PaladinLayOnHands(cr: Types.PCreature); forward;
+
+procedure PaladinCureDisease(cr: Types.PCreature); forward;
 
 procedure DisplayChar;
 var
@@ -194,7 +176,7 @@ begin
   s := '';
   for j := 0 to 7 do
     if (GDVars.sheetChar^.classLevels[j] > 0) or
-        ((GDVars.sheetChar^.oldClassLevels[j] < ClassCal.CurrentDualClassLevel(Types.PCreature(GDVars.sheetChar))) and
+        ((GDVars.sheetChar^.oldClassLevels[j] < ClassCal.CurrentDualClassLevel(GDVars.sheetChar)) and
          (GDVars.sheetChar^.oldClassLevels[j] > 0)) then begin
       if multi then
         s := s + '/';
@@ -246,12 +228,12 @@ var
   eff: Types.PEffect;
 begin
   p := GDVars.curChar;
-  CharHlp.RecalcStats(Types.PCreature(p));
+  CharHlp.RecalcStats(p);
   row := 17;
   TextRend.DisplayString(1, row, White, 0, 'AC    ');
-  CharHlp.PrintArmorClass(Types.PCreature(p), 4, row);
+  CharHlp.PrintArmorClass(p, 4, row);
   TextRend.DisplayString(1, row + 1, White, 0, 'HP    ');
-  CharHlp.PrintHitPoints(Types.PCreature(p), 4, row + 1, False);
+  CharHlp.PrintHitPoints(p, 4, row + 1, False);
   col := 8;
   TextRend.DisplayString(col + 1, row, White, 0, 'THAC0   ');
   TextRend.DisplayString(col + 7, row, LightGreen, 0, CharHlp.Uint8Str(60 - p^.thac0Cur));
@@ -266,9 +248,9 @@ begin
   TextRend.DisplayString(col, row, White, 0, 'Encumbrance      ');
   TextRend.DisplayString(col + 12, row, LightGreen, 0, CharHlp.Uint16Str(p^.encumbrance));
   mv := p^.movementCur;
-  if CharHlp.HasEffect(Types.PCreature(p), C_Effect.SLOWED, eff) then
+  if CharHlp.HasEffect(p, C_Effect.SLOWED, eff) then
     mv := mv * 2;
-  if CharHlp.HasEffect(Types.PCreature(p), C_Effect.HASTED, eff) then
+  if CharHlp.HasEffect(p, C_Effect.HASTED, eff) then
     mv := mv div 2;
   TextRend.DisplayString(col + 3, row + 1, White, 0, 'Movement   ');
   TextRend.DisplayString(col + 12, row + 1, LightGreen, 0, CharHlp.Uint8Str(mv));
@@ -289,8 +271,8 @@ begin
   if GDVars.curChar^.stats[statIdx].current < 10 then
     Inc(col);
   TextRend.DisplayString(col, statIdx + 7, hlCol, 0, CharHlp.Uint8Str(GDVars.curChar^.stats[statIdx].current));
-  if (statIdx = C_Stat.STRENGTH) and (GDVars.curChar^.stats[C_Stat.STRENGTH].current = 18)
-      and (GDVars.curChar^.exStrCur > 0) then begin
+  if (statIdx = C_Stat.STRENGTH) and (GDVars.curChar^.stats[C_Stat.STRENGTH].current = 18) and
+      (GDVars.curChar^.exStrCur > 0) then begin
     s := CharHlp.Uint8Str(GDVars.curChar^.exStrCur);
     if GDVars.curChar^.exStrCur < 10 then
       s := '0' + s;
@@ -389,6 +371,8 @@ begin
   Border.ClearBox(1, 21, 38, 22);
 end;
 
+{ Shows an item's raw fields for debugging (V in the item menu) and waits for a key.
+  @param(it The item.) }
 procedure ViewItemDetail(it: Types.PItem);
 begin
   Border.DrawWindowFrame;
@@ -467,8 +451,8 @@ begin
       if cr^.numberOfItems < 16 then
         s := s + ' Halve';
       s := s + ' Join';
-      if ((cr^.npc < $80) or (cr^.enabled = 0) or (cr^.status = C_Status.ANIMATED))
-         and (GDVars.ifcState = C_Ifc.SHOP_TEMPLE) then
+      if ((cr^.npc < $80) or (cr^.enabled = 0) or (cr^.status = C_Status.ANIMATED)) and
+          (GDVars.ifcState = C_Ifc.SHOP_TEMPLE) then
         s := s + ' Sell';
       if GDVars.ifcState = C_Ifc.SHOP_TEMPLE then
         s := s + ' Id';
@@ -521,7 +505,7 @@ begin
                                                'Your ' + sel^.name + 'will be gone forever');
                  if MenuCore.YesNoMenu('Drop It? ', LightMagenta, LightGreen, White) = 'Y' then
                  begin
-                   CharHlp.RemoveItem(Types.PCreature(GDVars.curChar), Types.PItem(sel));
+                   CharHlp.RemoveItem(GDVars.curChar, sel);
                    vmRedraw := True;
                  end;
                  Border.ClearBox(1, 21, 38, 22);
@@ -535,7 +519,7 @@ begin
                  ch := ' ';
           'I': ViewChar.IdentifyItem(sel, vmRedraw);
         end;
-      CharHlp.RecalcStats(Types.PCreature(cr));
+      CharHlp.RecalcStats(cr);
     end;
     if cr^.numberOfItems <> itemCount then
       vmRedraw := True;
@@ -568,13 +552,13 @@ begin
   case effId of
     0: begin
          GDVars.overrideFlag := 1;
-         FxEngine.CallEffectHandler(it^.special, Types.PCreature(cr), it, equipping = False);
+         FxEngine.CallEffectHandler(it^.special, cr, it, equipping = False);
        end;
     1: if equipping then begin
          for i := 1 to 3 do
            Inc(cr^.spellSlots[C_Spell.MAGE_LIST, i], cr^.spellSlots[C_Spell.MAGE_LIST, i]);
        end else begin
-         perClassLvl := ClassCal.EarlierClassActive(Types.PCreature(cr)) * cr^.oldClassLevels[C_Class.MAGE_LEVEL]
+         perClassLvl := ClassCal.EarlierClassActive(cr) * cr^.oldClassLevels[C_Class.MAGE_LEVEL]
                         + cr^.classLevels[C_Class.MAGE_LEVEL];
          newLevel := perClassLvl;
          for i := 1 to 5 do
@@ -594,8 +578,8 @@ begin
              end;
        end;
     2: begin
-         FxEngine.RecalcAbility(Types.PCreature(cr), C_Stat.DEXTERITY);
-         ClassCal.RecalcThiefSkills(Types.PCreature(cr));
+         FxEngine.RecalcAbility(cr, C_Stat.DEXTERITY);
+         ClassCal.RecalcThiefSkills(cr);
        end;
     4: if (it^.effect and $F) <> cr^.alignment then begin
          it^.equipped := 0;
@@ -603,30 +587,30 @@ begin
          GDVars.elementMask := 8;
          if GDVars.ifcState = C_Ifc.IN_COMBAT then
            CharHlp.DisplayCombatInterface;
-         FxEngine.InflictNonWeaponDamage(Types.PCreature(cr), damage, 0, False);
+         FxEngine.InflictNonWeaponDamage(cr, damage, 0, False);
          GDVars.invRedraw := 1;
        end;
-    5: FxEngine.RecalcAbility(Types.PCreature(cr), C_Stat.STRENGTH);
+    5: FxEngine.RecalcAbility(cr, C_Stat.STRENGTH);
     6: begin
-         FxEngine.RecalcAbility(Types.PCreature(cr), C_Stat.CONSTITUTION);
-         FxEngine.RecalcAbility(Types.PCreature(cr), C_Stat.CHARISMA);
+         FxEngine.RecalcAbility(cr, C_Stat.CONSTITUTION);
+         FxEngine.RecalcAbility(cr, C_Stat.CHARISMA);
        end;
     8: case it^.effect of
-         C_Stat.STRENGTH: FxEngine.RecalcAbility(Types.PCreature(cr), C_Stat.STRENGTH);
-         C_Stat.INTELLIGENCE: FxEngine.RecalcAbility(Types.PCreature(cr), C_Stat.INTELLIGENCE);
-         C_Stat.WISDOM: FxEngine.RecalcAbility(Types.PCreature(cr), C_Stat.WISDOM);
-         C_Stat.DEXTERITY: FxEngine.RecalcAbility(Types.PCreature(cr), C_Stat.DEXTERITY);
-         C_Stat.CONSTITUTION: FxEngine.RecalcAbility(Types.PCreature(cr), C_Stat.CONSTITUTION);
-         C_Stat.CHARISMA: FxEngine.RecalcAbility(Types.PCreature(cr), C_Stat.CHARISMA);
+         C_Stat.STRENGTH: FxEngine.RecalcAbility(cr, C_Stat.STRENGTH);
+         C_Stat.INTELLIGENCE: FxEngine.RecalcAbility(cr, C_Stat.INTELLIGENCE);
+         C_Stat.WISDOM: FxEngine.RecalcAbility(cr, C_Stat.WISDOM);
+         C_Stat.DEXTERITY: FxEngine.RecalcAbility(cr, C_Stat.DEXTERITY);
+         C_Stat.CONSTITUTION: FxEngine.RecalcAbility(cr, C_Stat.CONSTITUTION);
+         C_Stat.CHARISMA: FxEngine.RecalcAbility(cr, C_Stat.CHARISMA);
        end;
     9: if not equipping then
-         FxEngine.RemoveEffect(Types.PCreature(cr), C_Effect.SPIRITUAL_HAMMER, nil);
-    10: FxEngine.RecalcAbility(Types.PCreature(cr), C_Stat.DEXTERITY);
-    11: ClassCal.RecalcThiefSkills(Types.PCreature(cr));
-    12: FxEngine.RecalcAbility(Types.PCreature(cr), C_Stat.INTELLIGENCE);
+         FxEngine.RemoveEffect(cr, C_Effect.SPIRITUAL_HAMMER, nil);
+    10: FxEngine.RecalcAbility(cr, C_Stat.DEXTERITY);
+    11: ClassCal.RecalcThiefSkills(cr);
+    12: FxEngine.RecalcAbility(cr, C_Stat.INTELLIGENCE);
     13: begin
-          FxEngine.RecalcAbility(Types.PCreature(cr), C_Stat.STRENGTH);
-          FxEngine.RecalcAbility(Types.PCreature(cr), C_Stat.INTELLIGENCE);
+          FxEngine.RecalcAbility(cr, C_Stat.STRENGTH);
+          FxEngine.RecalcAbility(cr, C_Stat.INTELLIGENCE);
         end;
   end;
 end;
@@ -703,9 +687,9 @@ begin
     if ViewChar.CannotCarryItem(tgt, item) then
       CharHlp.PrintBottomLine('Overloaded')
     else begin
-      CharHlp.AddItemCopy(Types.PCreature(tgt), Types.PItem(item));
-      CharHlp.RemoveItem(Types.PCreature(GDVars.curChar), Types.PItem(item));
-      CharHlp.RecalcStats(Types.PCreature(tgt));
+      CharHlp.AddItemCopy(tgt, item);
+      CharHlp.RemoveItem(GDVars.curChar, item);
+      CharHlp.RecalcStats(tgt);
     end;
   end;
 end;
@@ -755,7 +739,7 @@ begin
         (cur^.charges < 2) and (cur^.effect = cur^.effect) and (cur^.special = cur^.special) then begin
       if qty + cur^.quantity <= 255 then begin
         Inc(qty, cur^.quantity);
-        CharHlp.RemoveItem(Types.PCreature(GDVars.curChar), Types.PItem(cur));
+        CharHlp.RemoveItem(GDVars.curChar, cur);
       end else begin
         dst^.quantity := 255;
         cur^.quantity := cur^.quantity - (255 - qty);
@@ -790,7 +774,7 @@ begin
     if (GDVars.ifcState = C_Ifc.IN_COMBAT) and (GDVars.curChar^.quickfight = 0) then
       CharHlp.DisplayCombatInterface;
     if GDVars.usingItem then begin
-      CharHlp.PrintCreatureMessage(Types.PCreature(GDVars.curChar), 'uses an item', 10, Boolean(0));
+      CharHlp.PrintCreatureMessage(GDVars.curChar, 'uses an item', 10, Boolean(0));
       if GDVars.ifcState = C_Ifc.IN_COMBAT then begin
         TextRend.DisplayString(0, 23, LightGreen, 0, 'Item:');
         CharHlp.PrintItemString(GDVars.curChar, Pointer(item), 5, 23, False, True);
@@ -801,23 +785,23 @@ begin
     end;
     GDVars.usingItem := True;
     if Magic.ItemReadable(item) then begin
-      if (ClassCal.FirstEarlierClass(Types.PCreature(GDVars.curChar)) = C_Class.MAGE_LEVEL) or
-          (ClassCal.FirstCurrentClass(Types.PCreature(GDVars.curChar)) = C_Class.MAGE_LEVEL) or
-          (ClassCal.FirstEarlierClass(Types.PCreature(GDVars.curChar)) = C_Class.CLERIC_LEVEL) or
-          (ClassCal.FirstCurrentClass(Types.PCreature(GDVars.curChar)) = C_Class.CLERIC_LEVEL) or
+      if (ClassCal.FirstEarlierClass(GDVars.curChar) = C_Class.MAGE_LEVEL) or
+          (ClassCal.FirstCurrentClass(GDVars.curChar) = C_Class.MAGE_LEVEL) or
+          (ClassCal.FirstEarlierClass(GDVars.curChar) = C_Class.CLERIC_LEVEL) or
+          (ClassCal.FirstCurrentClass(GDVars.curChar) = C_Class.CLERIC_LEVEL) or
           (GDVars.curChar^.classLevels[C_Class.MAGE_LEVEL] > 0) or
           (GDVars.curChar^.classLevels[C_Class.CLERIC_LEVEL] > 0) then
         Magic.CastSpell(spell, Boolean(GDVars.curChar^.quickfight), False, done)
       else if (GDVars.curChar^.classLevels[C_Class.THIEF_LEVEL] > 9) and (FxEngine.RollDice(1, 100) <= 75) then
         Magic.CastSpell(spell, Boolean(GDVars.curChar^.quickfight), False, done)
       else
-        CharHlp.PrintCreatureMessage(Types.PCreature(GDVars.curChar), 'oops!', GDVars.curRow + 1, Boolean(1));
+        CharHlp.PrintCreatureMessage(GDVars.curChar, 'oops!', GDVars.curRow + 1, Boolean(1));
     end else
       Magic.CastSpell(spell, Boolean(GDVars.curChar^.quickfight), False, done);
     GDVars.usingItem := False;
     if GDVars.ifcState = C_Ifc.IN_COMBAT then
       if GDConsts.spellProperties[spell].combatOk <> 0 then
-        done := CharHlp.EndActions(Types.PCreature(GDVars.curChar));
+        done := CharHlp.EndActions(GDVars.curChar);
   end;
   if done then begin
     if Magic.ItemReadable(item) then
@@ -828,7 +812,7 @@ begin
       else begin
         Dec(item^.charges);
         if item^.charges = 0 then
-          CharHlp.RemoveItem(Types.PCreature(GDVars.curChar), Types.PItem(item));
+          CharHlp.RemoveItem(GDVars.curChar, item);
       end;
     end;
   end;
@@ -860,7 +844,7 @@ begin
   if MenuCore.YesNoMenu('Is It a Deal? ', LightMagenta, LightGreen, White) = 'Y' then
   begin
     CharHlp.PrintBottomLine('Sold!');
-    CharHlp.RemoveItem(Types.PCreature(GDVars.curChar), Types.PItem(item));
+    CharHlp.RemoveItem(GDVars.curChar, item);
     plat := price div 5;
     gold := price mod 5;
     if Money.CheckOverload(GDVars.curChar, gold + plat, takable) then begin
@@ -1090,7 +1074,7 @@ var
   f: Boolean;
   w: Word;
 begin
-  CharHlp.RecalcStats(Types.PCreature(creature));
+  CharHlp.RecalcStats(creature);
   f := False;
   if creature^.numberOfItems > 15 then
     f := True;
@@ -1167,25 +1151,34 @@ begin
     SpellMenu := 0;
 end;
 
+{ Tells whether a paladin (or a dual-class character whose earlier paladin levels are active) may lay on hands now:
+  outside combat, okay, and more than a day after the last time.
+  @param(cr The character.)
+  @returns(True when it may.) }
 function CanHeal(cr: Types.PCreature): Boolean;
 var
   eff: Types.PEffect;
 begin
   CanHeal := ((cr^.charClass = C_Class.PALADIN) or
-              ((cr^.oldClassLevels[C_Class.PALADIN_LEVEL] > 0) and
-               Boolean(ClassCal.EarlierClassActive(Types.PCreature(cr))))) and
-    (GDVars.ifcState <> C_Ifc.IN_COMBAT) and (cr^.status = C_Status.OKAY) and
-    not CharHlp.HasEffect(Types.PCreature(cr), C_Effect.RECENTLY_HEALED, eff);
+              ((cr^.oldClassLevels[C_Class.PALADIN_LEVEL] > 0) and Boolean(ClassCal.EarlierClassActive(cr)))) and
+                (GDVars.ifcState <> C_Ifc.IN_COMBAT) and (cr^.status = C_Status.OKAY) and
+                not CharHlp.HasEffect(cr, C_Effect.RECENTLY_HEALED, eff);
 end;
 
+{ Tells whether a paladin (or a dual-class character whose earlier paladin levels are active) may cure disease now:
+  outside combat, okay, with cures left (cureDiseaseUses).
+  @param(cr The character.)
+  @returns(True when it may.) }
 function CanCure(cr: Types.PCreature): Boolean;
 begin
   CanCure := ((cr^.charClass = C_Class.PALADIN) or
-              ((cr^.oldClassLevels[C_Class.PALADIN_LEVEL] > 0) and
-               Boolean(ClassCal.EarlierClassActive(Types.PCreature(cr))))) and
+              ((cr^.oldClassLevels[C_Class.PALADIN_LEVEL] > 0) and Boolean(ClassCal.EarlierClassActive(cr)))) and
     (GDVars.ifcState <> C_Ifc.IN_COMBAT) and (cr^.status = C_Status.OKAY) and (cr^.cureDiseaseUses > 0);
 end;
 
+{ Lays on hands: the party member the player picks regains 2 hit points per paladin level of the healer (earlier paladin
+  levels count while active), who cannot heal again for a day. Picking no one just redraws the sheet.
+  @param(cr The paladin.) }
 procedure PaladinLayOnHands(cr: Types.PCreature);
 var
   tgt: Types.PCreature;
@@ -1202,11 +1195,14 @@ begin
       CharHlp.PrintBottomLine(tgt^.name + ' feels better')
     else
       CharHlp.PrintBottomLine(tgt^.name + ' is unaffected');
-    FxEngine.AddEffect(Types.PCreature(cr), C_Effect.RECENTLY_HEALED, 1440, 0, False);
+    FxEngine.AddEffect(cr, C_Effect.RECENTLY_HEALED, 1440, 0, False);
     ViewChar.DisplayChar;
   end;
 end;
 
+{ Cures the diseases of the party member the player picks (asking first when there are none), using one of the paladin's
+  cures and starting its seven-day cure effect if it is not already running.
+  @param(cr The paladin.) }
 procedure PaladinCureDisease(cr: Types.PCreature);
 var
   tgt: Types.PCreature;
@@ -1238,8 +1234,8 @@ begin
       GDVars.effectLock := 0;
       if cr^.cureDiseaseUses > 0 then
         Dec(cr^.cureDiseaseUses);
-      if not CharHlp.HasEffect(Types.PCreature(cr), C_Effect.RECENTLY_CURED, eff) then
-        FxEngine.AddEffect(Types.PCreature(cr), C_Effect.RECENTLY_CURED, 10080, 0, True);
+      if not CharHlp.HasEffect(cr, C_Effect.RECENTLY_CURED, eff) then
+        FxEngine.AddEffect(cr, C_Effect.RECENTLY_CURED, 10080, 0, True);
       CharHlp.PrintBottomLine(tgt^.name + ' is cured');
     end;
     ViewChar.DisplayChar;

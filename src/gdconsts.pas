@@ -86,9 +86,11 @@ const
      (lo: 2; hi: 9), (lo: 3; hi: 10), (lo: 4; hi: 10)));
   { Column offsets of the four neighbors (north, east, south, west) that CombatSt's room decorator turns into feature
     tiles around a placed feature. }
-  featureDx: array[1..4] of ShortInt = (0, 1, 0, -1);
+  featureDx: array[1..4] of ShortInt = (
+    0, 1, 0, -1);
   { Row offsets of the four neighbors (north, east, south, west) that go with featureDx. }
-  featureDy: array[1..4] of ShortInt = (-1, 0, 1, 0);
+  featureDy: array[1..4] of ShortInt = (
+    -1, 0, 1, 0);
   { Feature-class bits of each wilderness terrain character, read by TerrainClassOf; bits $10 and $20 raise the arena
     generators' fill thresholds. The terrain character is not range-checked, so higher characters read the bytes after
     this table. }
@@ -197,22 +199,15 @@ const
     bytes. }
   randomItemTemplates: Types.TRandomItemTable = (
     templates: (
-      (nameIds: (185, 187, 64); weight: 1; value: 800;
-       properties: (3, 99, 0)),
-      (nameIds: (239, 167, 64); weight: 1; value: 1100;
-       properties: (1, 59, 0)),
-      (nameIds: (185, 167, 64); weight: 1; value: 400;
-       properties: (1, 3, 0)),
-      (nameIds: (173, 167, 64); weight: 1; value: 450;
-       properties: (1, 48, 0)),
-      (nameIds: (206, 167, 69); weight: 1; value: 11000;
-       properties: (30, 15, 0)),
-      (nameIds: (226, 167, 100); weight: 10; value: 15000;
-       properties: (0, 38, 131)),
-      (nameIds: (157, 167, 21); weight: 20; value: 3000;
-       properties: (1, 51, 0))));
+      (nameIds: (185, 187, 64); weight: 1; value: 800; properties: (3, 99, 0)),
+      (nameIds: (239, 167, 64); weight: 1; value: 1100; properties: (1, 59, 0)),
+      (nameIds: (185, 167, 64); weight: 1; value: 400; properties: (1, 3, 0)),
+      (nameIds: (173, 167, 64); weight: 1; value: 450; properties: (1, 48, 0)),
+      (nameIds: (206, 167, 69); weight: 1; value: 11000; properties: (30, 15, 0)),
+      (nameIds: (226, 167, 100); weight: 10; value: 15000; properties: (0, 38, 131)),
+      (nameIds: (157, 167, 21); weight: 20; value: 3000; properties: (1, 51, 0))));
   { Headings of the spell lists, by spell level. }
-  spellLevelNames: array[1..9] of String[40] = (
+  spellLevelNames: array[1..9] of Types.TStr40 = (
     '1st Level',
     '2nd Level',
     '3rd Level',
@@ -747,12 +742,14 @@ const
     set's base. }
   wallThreshold: Word = 45;
   { Unused: the last symbol of sets 1..4. }
-  symbolSetLimits: array[1..4] of Word = (115, 185, 255, 295);
+  symbolSetLimits: array[1..4] of Word = (
+    115, 185, 255, 295);
   { Column step of each direction 0..7 (north first, clockwise), with 8 for no step. }
   directionDx: array[0..8] of ShortInt = (
     0, 1, 1, 1, 0, -1, -1, -1, 0);
   { Row step of each direction 0..7 (north first, clockwise), with 8 for no step. }
-  directionDy: array[0..8] of ShortInt = (-1, -1, 0, 1, 1, 1, 0, -1, 0);
+  directionDy: array[0..8] of ShortInt = (
+    -1, -1, 0, 1, 1, 1, 0, -1, 0);
   { Combat terrain by terrain number: movement cost (255 impassable), clearance, blocking, and the tile drawn for it. }
   terrainInfo: array[1..65] of Types.TTerrain = (
     (cost: 255; clearance: 1; blocking: 2; tileId: 0),
@@ -951,306 +948,406 @@ const
   { Spell rules by spell ID: casting class and level, range, duration, targeting, saves, effect, and the combat AI's
     priority and radius. CombatAi also indexes it with unchecked preparation bits. }
   spellProperties: array[1..100] of Types.TSpellRec = (
-    (castClass: 0; level: 1; rangeBase: 6; rangePerLevel: 0; durBase: 6; durPerLevel: 0; targetType: 10;
-     targeting: 4; saveResult: 0; saveType: 4; effectId: 1; combatOk: 2; castingTime: 10; aiPriority: 1;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 0; level: 1; rangeBase: 6; rangePerLevel: 0; durBase: 6; durPerLevel: 0; targetType: 10;
-     targeting: 0; saveResult: 0; saveType: 4; effectId: 2; combatOk: 1; castingTime: 10; aiPriority: 3;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 0; level: 1; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 4;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 0; combatOk: 2; castingTime: 5; aiPriority: 1;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 0; level: 1; rangeBase: 255; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 4;
-     targeting: 0; saveResult: 0; saveType: 4; effectId: 0; combatOk: 1; castingTime: 5; aiPriority: 2;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 0; level: 1; rangeBase: 3; rangePerLevel: 0; durBase: 10; durPerLevel: 0; targetType: 0;
-     targeting: 1; saveResult: 0; saveType: 4; effectId: 5; combatOk: 2; castingTime: 1; aiPriority: 0;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 0; level: 1; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 3; targetType: 4;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 8; combatOk: 2; castingTime: 4; aiPriority: 1;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 0; level: 1; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 3; targetType: 4;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 9; combatOk: 2; castingTime: 4; aiPriority: 1;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 0; level: 1; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 10; targetType: 4;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 10; combatOk: 2; castingTime: 10; aiPriority: 0;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 2; level: 1; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 4;
-     targeting: 0; saveResult: 0; saveType: 4; effectId: 0; combatOk: 1; castingTime: 1; aiPriority: 2;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 2; level: 1; rangeBase: 12; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 4;
-     targeting: 0; saveResult: 1; saveType: 4; effectId: 11; combatOk: 1; castingTime: 1; aiPriority: 4;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 2; level: 1; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 2; targetType: 0;
-     targeting: 1; saveResult: 0; saveType: 4; effectId: 5; combatOk: 2; castingTime: 1; aiPriority: 0;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 2; level: 1; rangeBase: 0; rangePerLevel: 2; durBase: 0; durPerLevel: 10; targetType: 4;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 12; combatOk: 2; castingTime: 1; aiPriority: 0;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 2; level: 1; rangeBase: 0; rangePerLevel: 2; durBase: 0; durPerLevel: 10; targetType: 4;
-     targeting: 2; saveResult: 1; saveType: 4; effectId: 13; combatOk: 2; castingTime: 1; aiPriority: 0;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 2; level: 1; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 1; targetType: 0;
-     targeting: 1; saveResult: 0; saveType: 4; effectId: 14; combatOk: 0; castingTime: 1; aiPriority: 0;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 2; level: 1; rangeBase: 6; rangePerLevel: 4; durBase: 0; durPerLevel: 0; targetType: 4;
-     targeting: 0; saveResult: 0; saveType: 4; effectId: 0; combatOk: 1; castingTime: 1; aiPriority: 4;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 2; level: 1; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 2; targetType: 4;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 8; combatOk: 2; castingTime: 1; aiPriority: 1;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 2; level: 1; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 2; targetType: 4;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 9; combatOk: 2; castingTime: 1; aiPriority: 1;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 2; level: 1; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 2; targetType: 0;
-     targeting: 1; saveResult: 0; saveType: 4; effectId: 16; combatOk: 0; castingTime: 10; aiPriority: 0;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 2; level: 1; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 5; targetType: 0;
-     targeting: 1; saveResult: 0; saveType: 4; effectId: 17; combatOk: 2; castingTime: 1; aiPriority: 2;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 2; level: 1; rangeBase: 255; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 4;
-     targeting: 0; saveResult: 0; saveType: 4; effectId: 0; combatOk: 1; castingTime: 1; aiPriority: 2;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 2; level: 1; rangeBase: 3; rangePerLevel: 4; durBase: 0; durPerLevel: 5; targetType: 9;
-     targeting: 0; saveResult: 0; saveType: 4; effectId: 53; combatOk: 1; castingTime: 1; aiPriority: 2;
-     targetsEnemy: 1; aiRadius: 1),
-    (castClass: 0; level: 2; rangeBase: 0; rangePerLevel: 0; durBase: 30; durPerLevel: 0; targetType: 0;
-     targeting: 1; saveResult: 0; saveType: 4; effectId: 19; combatOk: 0; castingTime: 5; aiPriority: 0;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 0; level: 2; rangeBase: 6; rangePerLevel: 0; durBase: 4; durPerLevel: 1; targetType: 6;
-     targeting: 0; saveResult: 1; saveType: 4; effectId: 52; combatOk: 1; castingTime: 5; aiPriority: 6;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 0; level: 2; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 10; targetType: 4;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 20; combatOk: 2; castingTime: 5; aiPriority: 1;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 0; level: 2; rangeBase: 12; rangePerLevel: 0; durBase: 0; durPerLevel: 2; targetType: 31;
-     targeting: 0; saveResult: 3; saveType: 4; effectId: 21; combatOk: 1; castingTime: 5; aiPriority: 4;
-     targetsEnemy: 1; aiRadius: 1),
-    (castClass: 0; level: 2; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 60; targetType: 4;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 22; combatOk: 2; castingTime: 1; aiPriority: 0;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 0; level: 2; rangeBase: 3; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 240;
-     targeting: 0; saveResult: 0; saveType: 4; effectId: 51; combatOk: 1; castingTime: 5; aiPriority: 0;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 0; level: 2; rangeBase: 3; rangePerLevel: 0; durBase: 0; durPerLevel: 1; targetType: 0;
-     targeting: 1; saveResult: 0; saveType: 4; effectId: 23; combatOk: 2; castingTime: 5; aiPriority: 1;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 2; level: 2; rangeBase: 0; rangePerLevel: 4; durBase: 0; durPerLevel: 5; targetType: 0;
-     targeting: 1; saveResult: 0; saveType: 4; effectId: 24; combatOk: 2; castingTime: 2; aiPriority: 1;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 2; level: 2; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 4;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 25; combatOk: 2; castingTime: 2; aiPriority: 2;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 2; level: 2; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 0;
-     targeting: 0; saveResult: 0; saveType: 4; effectId: 0; combatOk: 0; castingTime: 1; aiPriority: 0;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 2; level: 2; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 2; targetType: 0;
-     targeting: 1; saveResult: 0; saveType: 4; effectId: 28; combatOk: 2; castingTime: 2; aiPriority: 3;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 2; level: 2; rangeBase: 1; rangePerLevel: 1; durBase: 0; durPerLevel: 1; targetType: 4;
-     targeting: 0; saveResult: 1; saveType: 4; effectId: 29; combatOk: 1; castingTime: 2; aiPriority: 2;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 2; level: 2; rangeBase: 3; rangePerLevel: 0; durBase: 0; durPerLevel: 1; targetType: 9;
-     targeting: 0; saveResult: 3; saveType: 0; effectId: 30; combatOk: 1; castingTime: 2; aiPriority: 5;
-     targetsEnemy: 1; aiRadius: 1),
-    (castClass: 2; level: 2; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 60; targetType: 0;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 38; combatOk: 0; castingTime: 10; aiPriority: 0;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 3; level: 7; rangeBase: 4; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 8;
-     targeting: 4; saveResult: 1; saveType: 4; effectId: 0; combatOk: 2; castingTime: 0; aiPriority: 2;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 0; level: 3; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 4;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 0; combatOk: 2; castingTime: 10; aiPriority: 0;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 0; level: 3; rangeBase: 255; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 4;
-     targeting: 0; saveResult: 1; saveType: 4; effectId: 33; combatOk: 1; castingTime: 10; aiPriority: 3;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 0; level: 3; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 0;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 0; combatOk: 0; castingTime: 100; aiPriority: 0;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 0; level: 3; rangeBase: 255; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 4;
-     targeting: 0; saveResult: 1; saveType: 4; effectId: 34; combatOk: 1; castingTime: 100; aiPriority: 4;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 0; level: 3; rangeBase: 6; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 9;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 0; combatOk: 2; castingTime: 4; aiPriority: 3;
-     targetsEnemy: 1; aiRadius: 1),
-    (castClass: 0; level: 3; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 1; targetType: 0;
-     targeting: 4; saveResult: 0; saveType: 4; effectId: 49; combatOk: 2; castingTime: 6; aiPriority: 5;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 0; level: 3; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 4;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 0; combatOk: 2; castingTime: 6; aiPriority: 0;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 0; level: 3; rangeBase: 255; rangePerLevel: 0; durBase: 0; durPerLevel: 10; targetType: 4;
-     targeting: 0; saveResult: 1; saveType: 4; effectId: 36; combatOk: 1; castingTime: 6; aiPriority: 5;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 2; level: 3; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 1; targetType: 0;
-     targeting: 0; saveResult: 0; saveType: 4; effectId: 37; combatOk: 1; castingTime: 1; aiPriority: 2;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 2; level: 3; rangeBase: 12; rangePerLevel: 0; durBase: 0; durPerLevel: 1; targetType: 9;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 0; combatOk: 2; castingTime: 3; aiPriority: 2;
-     targetsEnemy: 1; aiRadius: 1),
-    (castClass: 2; level: 3; rangeBase: 10; rangePerLevel: 1; durBase: 0; durPerLevel: 0; targetType: 11;
-     targeting: 0; saveResult: 2; saveType: 4; effectId: 0; combatOk: 1; castingTime: 3; aiPriority: 7;
-     targetsEnemy: 1; aiRadius: 3),
-    (castClass: 2; level: 3; rangeBase: 6; rangePerLevel: 0; durBase: 3; durPerLevel: 1; targetType: 10;
-     targeting: 4; saveResult: 0; saveType: 4; effectId: 39; combatOk: 2; castingTime: 3; aiPriority: 3;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 2; level: 3; rangeBase: 12; rangePerLevel: 0; durBase: 0; durPerLevel: 2; targetType: 7;
-     targeting: 0; saveResult: 1; saveType: 4; effectId: 52; combatOk: 1; castingTime: 3; aiPriority: 6;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 2; level: 3; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 9;
-     targeting: 4; saveResult: 0; saveType: 4; effectId: 25; combatOk: 2; castingTime: 3; aiPriority: 1;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 2; level: 3; rangeBase: 4; rangePerLevel: 1; durBase: 0; durPerLevel: 0; targetType: 8;
-     targeting: 0; saveResult: 2; saveType: 4; effectId: 0; combatOk: 1; castingTime: 3; aiPriority: 6;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 2; level: 3; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 2; targetType: 4;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 45; combatOk: 2; castingTime: 3; aiPriority: 1;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 2; level: 3; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 2; targetType: 4;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 46; combatOk: 2; castingTime: 3; aiPriority: 2;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 2; level: 3; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 10; targetType: 4;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 41; combatOk: 2; castingTime: 3; aiPriority: 3;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 2; level: 3; rangeBase: 9; rangePerLevel: 1; durBase: 3; durPerLevel: 1; targetType: 10;
-     targeting: 0; saveResult: 0; saveType: 4; effectId: 42; combatOk: 1; castingTime: 3; aiPriority: 4;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 0; level: 7; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 4;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 0; combatOk: 2; castingTime: 6; aiPriority: 0;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 3; level: 6; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 0;
-     targeting: 1; saveResult: 0; saveType: 4; effectId: 39; combatOk: 2; castingTime: 0; aiPriority: 3;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 0; level: 4; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 4;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 0; combatOk: 2; castingTime: 7; aiPriority: 1;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 3; level: 6; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 0;
-     targeting: 1; saveResult: 0; saveType: 4; effectId: 38; combatOk: 2; castingTime: 0; aiPriority: 1;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 3; level: 6; rangeBase: 4; rangePerLevel: 4; durBase: 0; durPerLevel: 0; targetType: 4;
-     targeting: 0; saveResult: 2; saveType: 4; effectId: 0; combatOk: 1; castingTime: 0; aiPriority: 7;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 3; level: 6; rangeBase: 6; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 4;
-     targeting: 0; saveResult: 1; saveType: 0; effectId: 52; combatOk: 1; castingTime: 0; aiPriority: 7;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 3; level: 6; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 0;
-     targeting: 1; saveResult: 0; saveType: 4; effectId: 39; combatOk: 2; castingTime: 0; aiPriority: 1;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 3; level: 6; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 7;
-     targeting: 4; saveResult: 0; saveType: 4; effectId: 71; combatOk: 2; castingTime: 0; aiPriority: 2;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 3; level: 6; rangeBase: 7; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 11;
-     targeting: 0; saveResult: 2; saveType: 4; effectId: 0; combatOk: 1; castingTime: 0; aiPriority: 7;
-     targetsEnemy: 1; aiRadius: 3),
-    (castClass: 3; level: 6; rangeBase: 12; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 4;
-     targeting: 0; saveResult: 0; saveType: 4; effectId: 0; combatOk: 1; castingTime: 0; aiPriority: 6;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 0; level: 4; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 4;
-     targeting: 0; saveResult: 0; saveType: 4; effectId: 0; combatOk: 1; castingTime: 7; aiPriority: 5;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 0; level: 4; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 0;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 0; combatOk: 0; castingTime: 7; aiPriority: 0;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 0; level: 4; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 4;
-     targeting: 0; saveResult: 1; saveType: 0; effectId: 0; combatOk: 1; castingTime: 7; aiPriority: 6;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 0; level: 4; rangeBase: 3; rangePerLevel: 0; durBase: 0; durPerLevel: 10; targetType: 4;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 45; combatOk: 2; castingTime: 7; aiPriority: 2;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 0; level: 4; rangeBase: 3; rangePerLevel: 0; durBase: 0; durPerLevel: 2; targetType: 4;
-     targeting: 0; saveResult: 0; saveType: 4; effectId: 3; combatOk: 1; castingTime: 7; aiPriority: 4;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 0; level: 5; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 4;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 0; combatOk: 2; castingTime: 8; aiPriority: 2;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 0; level: 5; rangeBase: 255; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 4;
-     targeting: 0; saveResult: 1; saveType: 4; effectId: 0; combatOk: 1; castingTime: 8; aiPriority: 6;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 0; level: 5; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 1; targetType: 0;
-     targeting: 0; saveResult: 0; saveType: 4; effectId: 145; combatOk: 1; castingTime: 8; aiPriority: 3;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 0; level: 5; rangeBase: 6; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 4;
-     targeting: 0; saveResult: 2; saveType: 4; effectId: 0; combatOk: 1; castingTime: 8; aiPriority: 6;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 0; level: 5; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 0;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 0; combatOk: 0; castingTime: 10; aiPriority: 1;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 0; level: 5; rangeBase: 3; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 4;
-     targeting: 0; saveResult: 1; saveType: 4; effectId: 0; combatOk: 1; castingTime: 10; aiPriority: 7;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 1; level: 1; rangeBase: 3; rangePerLevel: 0; durBase: 12; durPerLevel: 0; targetType: 0;
-     targeting: 1; saveResult: 0; saveType: 4; effectId: 5; combatOk: 2; castingTime: 3; aiPriority: 1;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 1; level: 1; rangeBase: 8; rangePerLevel: 0; durBase: 10; durPerLevel: 0; targetType: 11;
-     targeting: 0; saveResult: 1; saveType: 4; effectId: 136; combatOk: 1; castingTime: 3; aiPriority: 3;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 1; level: 1; rangeBase: 8; rangePerLevel: 0; durBase: 0; durPerLevel: 4; targetType: 5;
-     targeting: 0; saveResult: 1; saveType: 4; effectId: 7; combatOk: 1; castingTime: 3; aiPriority: 4;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 1; level: 1; rangeBase: 255; rangePerLevel: 0; durBase: 10; durPerLevel: 1; targetType: 4;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 69; combatOk: 2; castingTime: 4; aiPriority: 1;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 2; level: 4; rangeBase: 6; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 5;
-     targeting: 0; saveResult: 1; saveType: 4; effectId: 11; combatOk: 1; castingTime: 4; aiPriority: 6;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 2; level: 4; rangeBase: 12; rangePerLevel: 0; durBase: 2; durPerLevel: 1; targetType: 11;
-     targeting: 0; saveResult: 1; saveType: 4; effectId: 35; combatOk: 1; castingTime: 4; aiPriority: 7;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 2; level: 4; rangeBase: 0; rangePerLevel: 3; durBase: 0; durPerLevel: 0; targetType: 8;
-     targeting: 0; saveResult: 0; saveType: 4; effectId: 0; combatOk: 1; castingTime: 1; aiPriority: 0;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 2; level: 4; rangeBase: 6; rangePerLevel: 0; durBase: 0; durPerLevel: 1; targetType: 8;
-     targeting: 0; saveResult: 1; saveType: 4; effectId: 142; combatOk: 1; castingTime: 4; aiPriority: 6;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 2; level: 4; rangeBase: 0; rangePerLevel: 0; durBase: 2; durPerLevel: 1; targetType: 0;
-     targeting: 1; saveResult: 0; saveType: 4; effectId: 0; combatOk: 2; castingTime: 4; aiPriority: 8;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 2; level: 4; rangeBase: 0; rangePerLevel: 1; durBase: 0; durPerLevel: 1; targetType: 4;
-     targeting: 0; saveResult: 1; saveType: 4; effectId: 27; combatOk: 1; castingTime: 4; aiPriority: 4;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 2; level: 4; rangeBase: 0; rangePerLevel: 1; durBase: 0; durPerLevel: 0; targetType: 10;
-     targeting: 0; saveResult: 0; saveType: 4; effectId: 0; combatOk: 1; castingTime: 4; aiPriority: 7;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 2; level: 4; rangeBase: 0; rangePerLevel: 1; durBase: 0; durPerLevel: 1; targetType: 0;
-     targeting: 1; saveResult: 0; saveType: 4; effectId: 63; combatOk: 2; castingTime: 4; aiPriority: 5;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 2; level: 4; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 4;
-     targeting: 2; saveResult: 0; saveType: 4; effectId: 0; combatOk: 2; castingTime: 4; aiPriority: 0;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 3; level: 5; rangeBase: 1; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 240;
-     targeting: 4; saveResult: 0; saveType: 4; effectId: 32; combatOk: 2; castingTime: 5; aiPriority: 0;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 2; level: 5; rangeBase: 2; rangePerLevel: 0; durBase: 0; durPerLevel: 1; targetType: 9;
-     targeting: 0; saveResult: 0; saveType: 4; effectId: 0; combatOk: 2; castingTime: 5; aiPriority: 5;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 2; level: 5; rangeBase: 6; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 8;
-     targeting: 0; saveResult: 2; saveType: 4; effectId: 0; combatOk: 1; castingTime: 5; aiPriority: 6;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 2; level: 5; rangeBase: 16; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 4;
-     targeting: 0; saveResult: 1; saveType: 4; effectId: 68; combatOk: 1; castingTime: 5; aiPriority: 6;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 2; level: 5; rangeBase: 0; rangePerLevel: 1; durBase: 0; durPerLevel: 1; targetType: 7;
-     targeting: 0; saveResult: 1; saveType: 4; effectId: 52; combatOk: 1; castingTime: 5; aiPriority: 7;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 3; level: 6; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 0;
-     targeting: 1; saveResult: 0; saveType: 4; effectId: 73; combatOk: 2; castingTime: 10; aiPriority: 1;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 3; level: 6; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 0;
-     targeting: 1; saveResult: 0; saveType: 4; effectId: 109; combatOk: 2; castingTime: 10; aiPriority: 1;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 3; level: 6; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 0;
-     targeting: 1; saveResult: 0; saveType: 4; effectId: 25; combatOk: 2; castingTime: 0; aiPriority: 1;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 3; level: 6; rangeBase: 3; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 11;
-     targeting: 0; saveResult: 1; saveType: 4; effectId: 0; combatOk: 1; castingTime: 0; aiPriority: 1;
-     targetsEnemy: 1; aiRadius: 0),
-    (castClass: 3; level: 6; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 0; targetType: 0;
-     targeting: 1; saveResult: 0; saveType: 4; effectId: 0; combatOk: 2; castingTime: 0; aiPriority: 1;
-     targetsEnemy: 0; aiRadius: 0),
-    (castClass: 2; level: 4; rangeBase: 0; rangePerLevel: 0; durBase: 0; durPerLevel: 10; targetType: 4;
-     targeting: 0; saveResult: 1; saveType: 4; effectId: 0; combatOk: 1; castingTime: 4; aiPriority: 4;
-     targetsEnemy: 1; aiRadius: 0));
+    (castClass: 0; level: 1; rangeBase: 6; rangePerLevel: 0;
+     durBase: 6; durPerLevel: 0; targetType: 10; targeting: 4;
+     saveResult: 0; saveType: 4; effectId: 1; combatOk: 2;
+     castingTime: 10; aiPriority: 1; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 0; level: 1; rangeBase: 6; rangePerLevel: 0;
+     durBase: 6; durPerLevel: 0; targetType: 10; targeting: 0;
+     saveResult: 0; saveType: 4; effectId: 2; combatOk: 1;
+     castingTime: 10; aiPriority: 3; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 0; level: 1; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 4; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 0; combatOk: 2;
+     castingTime: 5; aiPriority: 1; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 0; level: 1; rangeBase: 255; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 4; targeting: 0;
+     saveResult: 0; saveType: 4; effectId: 0; combatOk: 1;
+     castingTime: 5; aiPriority: 2; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 0; level: 1; rangeBase: 3; rangePerLevel: 0;
+     durBase: 10; durPerLevel: 0; targetType: 0; targeting: 1;
+     saveResult: 0; saveType: 4; effectId: 5; combatOk: 2;
+     castingTime: 1; aiPriority: 0; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 0; level: 1; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 3; targetType: 4; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 8; combatOk: 2;
+     castingTime: 4; aiPriority: 1; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 0; level: 1; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 3; targetType: 4; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 9; combatOk: 2;
+     castingTime: 4; aiPriority: 1; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 0; level: 1; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 10; targetType: 4; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 10; combatOk: 2;
+     castingTime: 10; aiPriority: 0; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 2; level: 1; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 4; targeting: 0;
+     saveResult: 0; saveType: 4; effectId: 0; combatOk: 1;
+     castingTime: 1; aiPriority: 2; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 2; level: 1; rangeBase: 12; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 4; targeting: 0;
+     saveResult: 1; saveType: 4; effectId: 11; combatOk: 1;
+     castingTime: 1; aiPriority: 4; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 2; level: 1; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 2; targetType: 0; targeting: 1;
+     saveResult: 0; saveType: 4; effectId: 5; combatOk: 2;
+     castingTime: 1; aiPriority: 0; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 2; level: 1; rangeBase: 0; rangePerLevel: 2;
+     durBase: 0; durPerLevel: 10; targetType: 4; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 12; combatOk: 2;
+     castingTime: 1; aiPriority: 0; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 2; level: 1; rangeBase: 0; rangePerLevel: 2;
+     durBase: 0; durPerLevel: 10; targetType: 4; targeting: 2;
+     saveResult: 1; saveType: 4; effectId: 13; combatOk: 2;
+     castingTime: 1; aiPriority: 0; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 2; level: 1; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 1; targetType: 0; targeting: 1;
+     saveResult: 0; saveType: 4; effectId: 14; combatOk: 0;
+     castingTime: 1; aiPriority: 0; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 2; level: 1; rangeBase: 6; rangePerLevel: 4;
+     durBase: 0; durPerLevel: 0; targetType: 4; targeting: 0;
+     saveResult: 0; saveType: 4; effectId: 0; combatOk: 1;
+     castingTime: 1; aiPriority: 4; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 2; level: 1; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 2; targetType: 4; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 8; combatOk: 2;
+     castingTime: 1; aiPriority: 1; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 2; level: 1; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 2; targetType: 4; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 9; combatOk: 2;
+     castingTime: 1; aiPriority: 1; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 2; level: 1; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 2; targetType: 0; targeting: 1;
+     saveResult: 0; saveType: 4; effectId: 16; combatOk: 0;
+     castingTime: 10; aiPriority: 0; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 2; level: 1; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 5; targetType: 0; targeting: 1;
+     saveResult: 0; saveType: 4; effectId: 17; combatOk: 2;
+     castingTime: 1; aiPriority: 2; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 2; level: 1; rangeBase: 255; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 4; targeting: 0;
+     saveResult: 0; saveType: 4; effectId: 0; combatOk: 1;
+     castingTime: 1; aiPriority: 2; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 2; level: 1; rangeBase: 3; rangePerLevel: 4;
+     durBase: 0; durPerLevel: 5; targetType: 9; targeting: 0;
+     saveResult: 0; saveType: 4; effectId: 53; combatOk: 1;
+     castingTime: 1; aiPriority: 2; targetsEnemy: 1; aiRadius: 1),
+    (castClass: 0; level: 2; rangeBase: 0; rangePerLevel: 0;
+     durBase: 30; durPerLevel: 0; targetType: 0; targeting: 1;
+     saveResult: 0; saveType: 4; effectId: 19; combatOk: 0;
+     castingTime: 5; aiPriority: 0; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 0; level: 2; rangeBase: 6; rangePerLevel: 0;
+     durBase: 4; durPerLevel: 1; targetType: 6; targeting: 0;
+     saveResult: 1; saveType: 4; effectId: 52; combatOk: 1;
+     castingTime: 5; aiPriority: 6; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 0; level: 2; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 10; targetType: 4; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 20; combatOk: 2;
+     castingTime: 5; aiPriority: 1; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 0; level: 2; rangeBase: 12; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 2; targetType: 31; targeting: 0;
+     saveResult: 3; saveType: 4; effectId: 21; combatOk: 1;
+     castingTime: 5; aiPriority: 4; targetsEnemy: 1; aiRadius: 1),
+    (castClass: 0; level: 2; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 60; targetType: 4; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 22; combatOk: 2;
+     castingTime: 1; aiPriority: 0; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 0; level: 2; rangeBase: 3; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 240; targeting: 0;
+     saveResult: 0; saveType: 4; effectId: 51; combatOk: 1;
+     castingTime: 5; aiPriority: 0; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 0; level: 2; rangeBase: 3; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 1; targetType: 0; targeting: 1;
+     saveResult: 0; saveType: 4; effectId: 23; combatOk: 2;
+     castingTime: 5; aiPriority: 1; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 2; level: 2; rangeBase: 0; rangePerLevel: 4;
+     durBase: 0; durPerLevel: 5; targetType: 0; targeting: 1;
+     saveResult: 0; saveType: 4; effectId: 24; combatOk: 2;
+     castingTime: 2; aiPriority: 1; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 2; level: 2; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 4; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 25; combatOk: 2;
+     castingTime: 2; aiPriority: 2; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 2; level: 2; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 0; targeting: 0;
+     saveResult: 0; saveType: 4; effectId: 0; combatOk: 0;
+     castingTime: 1; aiPriority: 0; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 2; level: 2; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 2; targetType: 0; targeting: 1;
+     saveResult: 0; saveType: 4; effectId: 28; combatOk: 2;
+     castingTime: 2; aiPriority: 3; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 2; level: 2; rangeBase: 1; rangePerLevel: 1;
+     durBase: 0; durPerLevel: 1; targetType: 4; targeting: 0;
+     saveResult: 1; saveType: 4; effectId: 29; combatOk: 1;
+     castingTime: 2; aiPriority: 2; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 2; level: 2; rangeBase: 3; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 1; targetType: 9; targeting: 0;
+     saveResult: 3; saveType: 0; effectId: 30; combatOk: 1;
+     castingTime: 2; aiPriority: 5; targetsEnemy: 1; aiRadius: 1),
+    (castClass: 2; level: 2; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 60; targetType: 0; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 38; combatOk: 0;
+     castingTime: 10; aiPriority: 0; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 3; level: 7; rangeBase: 4; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 8; targeting: 4;
+     saveResult: 1; saveType: 4; effectId: 0; combatOk: 2;
+     castingTime: 0; aiPriority: 2; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 0; level: 3; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 4; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 0; combatOk: 2;
+     castingTime: 10; aiPriority: 0; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 0; level: 3; rangeBase: 255; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 4; targeting: 0;
+     saveResult: 1; saveType: 4; effectId: 33; combatOk: 1;
+     castingTime: 10; aiPriority: 3; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 0; level: 3; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 0; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 0; combatOk: 0;
+     castingTime: 100; aiPriority: 0; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 0; level: 3; rangeBase: 255; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 4; targeting: 0;
+     saveResult: 1; saveType: 4; effectId: 34; combatOk: 1;
+     castingTime: 100; aiPriority: 4; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 0; level: 3; rangeBase: 6; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 9; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 0; combatOk: 2;
+     castingTime: 4; aiPriority: 3; targetsEnemy: 1; aiRadius: 1),
+    (castClass: 0; level: 3; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 1; targetType: 0; targeting: 4;
+     saveResult: 0; saveType: 4; effectId: 49; combatOk: 2;
+     castingTime: 6; aiPriority: 5; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 0; level: 3; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 4; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 0; combatOk: 2;
+     castingTime: 6; aiPriority: 0; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 0; level: 3; rangeBase: 255; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 10; targetType: 4; targeting: 0;
+     saveResult: 1; saveType: 4; effectId: 36; combatOk: 1;
+     castingTime: 6; aiPriority: 5; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 2; level: 3; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 1; targetType: 0; targeting: 0;
+     saveResult: 0; saveType: 4; effectId: 37; combatOk: 1;
+     castingTime: 1; aiPriority: 2; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 2; level: 3; rangeBase: 12; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 1; targetType: 9; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 0; combatOk: 2;
+     castingTime: 3; aiPriority: 2; targetsEnemy: 1; aiRadius: 1),
+    (castClass: 2; level: 3; rangeBase: 10; rangePerLevel: 1;
+     durBase: 0; durPerLevel: 0; targetType: 11; targeting: 0;
+     saveResult: 2; saveType: 4; effectId: 0; combatOk: 1;
+     castingTime: 3; aiPriority: 7; targetsEnemy: 1; aiRadius: 3),
+    (castClass: 2; level: 3; rangeBase: 6; rangePerLevel: 0;
+     durBase: 3; durPerLevel: 1; targetType: 10; targeting: 4;
+     saveResult: 0; saveType: 4; effectId: 39; combatOk: 2;
+     castingTime: 3; aiPriority: 3; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 2; level: 3; rangeBase: 12; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 2; targetType: 7; targeting: 0;
+     saveResult: 1; saveType: 4; effectId: 52; combatOk: 1;
+     castingTime: 3; aiPriority: 6; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 2; level: 3; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 9; targeting: 4;
+     saveResult: 0; saveType: 4; effectId: 25; combatOk: 2;
+     castingTime: 3; aiPriority: 1; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 2; level: 3; rangeBase: 4; rangePerLevel: 1;
+     durBase: 0; durPerLevel: 0; targetType: 8; targeting: 0;
+     saveResult: 2; saveType: 4; effectId: 0; combatOk: 1;
+     castingTime: 3; aiPriority: 6; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 2; level: 3; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 2; targetType: 4; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 45; combatOk: 2;
+     castingTime: 3; aiPriority: 1; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 2; level: 3; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 2; targetType: 4; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 46; combatOk: 2;
+     castingTime: 3; aiPriority: 2; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 2; level: 3; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 10; targetType: 4; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 41; combatOk: 2;
+     castingTime: 3; aiPriority: 3; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 2; level: 3; rangeBase: 9; rangePerLevel: 1;
+     durBase: 3; durPerLevel: 1; targetType: 10; targeting: 0;
+     saveResult: 0; saveType: 4; effectId: 42; combatOk: 1;
+     castingTime: 3; aiPriority: 4; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 0; level: 7; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 4; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 0; combatOk: 2;
+     castingTime: 6; aiPriority: 0; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 3; level: 6; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 0; targeting: 1;
+     saveResult: 0; saveType: 4; effectId: 39; combatOk: 2;
+     castingTime: 0; aiPriority: 3; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 0; level: 4; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 4; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 0; combatOk: 2;
+     castingTime: 7; aiPriority: 1; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 3; level: 6; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 0; targeting: 1;
+     saveResult: 0; saveType: 4; effectId: 38; combatOk: 2;
+     castingTime: 0; aiPriority: 1; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 3; level: 6; rangeBase: 4; rangePerLevel: 4;
+     durBase: 0; durPerLevel: 0; targetType: 4; targeting: 0;
+     saveResult: 2; saveType: 4; effectId: 0; combatOk: 1;
+     castingTime: 0; aiPriority: 7; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 3; level: 6; rangeBase: 6; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 4; targeting: 0;
+     saveResult: 1; saveType: 0; effectId: 52; combatOk: 1;
+     castingTime: 0; aiPriority: 7; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 3; level: 6; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 0; targeting: 1;
+     saveResult: 0; saveType: 4; effectId: 39; combatOk: 2;
+     castingTime: 0; aiPriority: 1; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 3; level: 6; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 7; targeting: 4;
+     saveResult: 0; saveType: 4; effectId: 71; combatOk: 2;
+     castingTime: 0; aiPriority: 2; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 3; level: 6; rangeBase: 7; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 11; targeting: 0;
+     saveResult: 2; saveType: 4; effectId: 0; combatOk: 1;
+     castingTime: 0; aiPriority: 7; targetsEnemy: 1; aiRadius: 3),
+    (castClass: 3; level: 6; rangeBase: 12; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 4; targeting: 0;
+     saveResult: 0; saveType: 4; effectId: 0; combatOk: 1;
+     castingTime: 0; aiPriority: 6; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 0; level: 4; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 4; targeting: 0;
+     saveResult: 0; saveType: 4; effectId: 0; combatOk: 1;
+     castingTime: 7; aiPriority: 5; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 0; level: 4; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 0; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 0; combatOk: 0;
+     castingTime: 7; aiPriority: 0; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 0; level: 4; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 4; targeting: 0;
+     saveResult: 1; saveType: 0; effectId: 0; combatOk: 1;
+     castingTime: 7; aiPriority: 6; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 0; level: 4; rangeBase: 3; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 10; targetType: 4; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 45; combatOk: 2;
+     castingTime: 7; aiPriority: 2; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 0; level: 4; rangeBase: 3; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 2; targetType: 4; targeting: 0;
+     saveResult: 0; saveType: 4; effectId: 3; combatOk: 1;
+     castingTime: 7; aiPriority: 4; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 0; level: 5; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 4; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 0; combatOk: 2;
+     castingTime: 8; aiPriority: 2; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 0; level: 5; rangeBase: 255; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 4; targeting: 0;
+     saveResult: 1; saveType: 4; effectId: 0; combatOk: 1;
+     castingTime: 8; aiPriority: 6; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 0; level: 5; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 1; targetType: 0; targeting: 0;
+     saveResult: 0; saveType: 4; effectId: 145; combatOk: 1;
+     castingTime: 8; aiPriority: 3; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 0; level: 5; rangeBase: 6; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 4; targeting: 0;
+     saveResult: 2; saveType: 4; effectId: 0; combatOk: 1;
+     castingTime: 8; aiPriority: 6; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 0; level: 5; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 0; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 0; combatOk: 0;
+     castingTime: 10; aiPriority: 1; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 0; level: 5; rangeBase: 3; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 4; targeting: 0;
+     saveResult: 1; saveType: 4; effectId: 0; combatOk: 1;
+     castingTime: 10; aiPriority: 7; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 1; level: 1; rangeBase: 3; rangePerLevel: 0;
+     durBase: 12; durPerLevel: 0; targetType: 0; targeting: 1;
+     saveResult: 0; saveType: 4; effectId: 5; combatOk: 2;
+     castingTime: 3; aiPriority: 1; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 1; level: 1; rangeBase: 8; rangePerLevel: 0;
+     durBase: 10; durPerLevel: 0; targetType: 11; targeting: 0;
+     saveResult: 1; saveType: 4; effectId: 136; combatOk: 1;
+     castingTime: 3; aiPriority: 3; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 1; level: 1; rangeBase: 8; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 4; targetType: 5; targeting: 0;
+     saveResult: 1; saveType: 4; effectId: 7; combatOk: 1;
+     castingTime: 3; aiPriority: 4; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 1; level: 1; rangeBase: 255; rangePerLevel: 0;
+     durBase: 10; durPerLevel: 1; targetType: 4; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 69; combatOk: 2;
+     castingTime: 4; aiPriority: 1; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 2; level: 4; rangeBase: 6; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 5; targeting: 0;
+     saveResult: 1; saveType: 4; effectId: 11; combatOk: 1;
+     castingTime: 4; aiPriority: 6; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 2; level: 4; rangeBase: 12; rangePerLevel: 0;
+     durBase: 2; durPerLevel: 1; targetType: 11; targeting: 0;
+     saveResult: 1; saveType: 4; effectId: 35; combatOk: 1;
+     castingTime: 4; aiPriority: 7; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 2; level: 4; rangeBase: 0; rangePerLevel: 3;
+     durBase: 0; durPerLevel: 0; targetType: 8; targeting: 0;
+     saveResult: 0; saveType: 4; effectId: 0; combatOk: 1;
+     castingTime: 1; aiPriority: 0; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 2; level: 4; rangeBase: 6; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 1; targetType: 8; targeting: 0;
+     saveResult: 1; saveType: 4; effectId: 142; combatOk: 1;
+     castingTime: 4; aiPriority: 6; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 2; level: 4; rangeBase: 0; rangePerLevel: 0;
+     durBase: 2; durPerLevel: 1; targetType: 0; targeting: 1;
+     saveResult: 0; saveType: 4; effectId: 0; combatOk: 2;
+     castingTime: 4; aiPriority: 8; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 2; level: 4; rangeBase: 0; rangePerLevel: 1;
+     durBase: 0; durPerLevel: 1; targetType: 4; targeting: 0;
+     saveResult: 1; saveType: 4; effectId: 27; combatOk: 1;
+     castingTime: 4; aiPriority: 4; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 2; level: 4; rangeBase: 0; rangePerLevel: 1;
+     durBase: 0; durPerLevel: 0; targetType: 10; targeting: 0;
+     saveResult: 0; saveType: 4; effectId: 0; combatOk: 1;
+     castingTime: 4; aiPriority: 7; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 2; level: 4; rangeBase: 0; rangePerLevel: 1;
+     durBase: 0; durPerLevel: 1; targetType: 0; targeting: 1;
+     saveResult: 0; saveType: 4; effectId: 63; combatOk: 2;
+     castingTime: 4; aiPriority: 5; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 2; level: 4; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 4; targeting: 2;
+     saveResult: 0; saveType: 4; effectId: 0; combatOk: 2;
+     castingTime: 4; aiPriority: 0; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 3; level: 5; rangeBase: 1; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 240; targeting: 4;
+     saveResult: 0; saveType: 4; effectId: 32; combatOk: 2;
+     castingTime: 5; aiPriority: 0; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 2; level: 5; rangeBase: 2; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 1; targetType: 9; targeting: 0;
+     saveResult: 0; saveType: 4; effectId: 0; combatOk: 2;
+     castingTime: 5; aiPriority: 5; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 2; level: 5; rangeBase: 6; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 8; targeting: 0;
+     saveResult: 2; saveType: 4; effectId: 0; combatOk: 1;
+     castingTime: 5; aiPriority: 6; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 2; level: 5; rangeBase: 16; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 4; targeting: 0;
+     saveResult: 1; saveType: 4; effectId: 68; combatOk: 1;
+     castingTime: 5; aiPriority: 6; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 2; level: 5; rangeBase: 0; rangePerLevel: 1;
+     durBase: 0; durPerLevel: 1; targetType: 7; targeting: 0;
+     saveResult: 1; saveType: 4; effectId: 52; combatOk: 1;
+     castingTime: 5; aiPriority: 7; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 3; level: 6; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 0; targeting: 1;
+     saveResult: 0; saveType: 4; effectId: 73; combatOk: 2;
+     castingTime: 10; aiPriority: 1; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 3; level: 6; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 0; targeting: 1;
+     saveResult: 0; saveType: 4; effectId: 109; combatOk: 2;
+     castingTime: 10; aiPriority: 1; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 3; level: 6; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 0; targeting: 1;
+     saveResult: 0; saveType: 4; effectId: 25; combatOk: 2;
+     castingTime: 0; aiPriority: 1; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 3; level: 6; rangeBase: 3; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 11; targeting: 0;
+     saveResult: 1; saveType: 4; effectId: 0; combatOk: 1;
+     castingTime: 0; aiPriority: 1; targetsEnemy: 1; aiRadius: 0),
+    (castClass: 3; level: 6; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 0; targetType: 0; targeting: 1;
+     saveResult: 0; saveType: 4; effectId: 0; combatOk: 2;
+     castingTime: 0; aiPriority: 1; targetsEnemy: 0; aiRadius: 0),
+    (castClass: 2; level: 4; rangeBase: 0; rangePerLevel: 0;
+     durBase: 0; durPerLevel: 10; targetType: 4; targeting: 0;
+     saveResult: 1; saveType: 4; effectId: 0; combatOk: 1;
+     castingTime: 4; aiPriority: 4; targetsEnemy: 1; aiRadius: 0));
   { Count of each game-clock unit that makes one of the next, smallest unit first; the years (256) do not roll over. }
   clockLimits: Types.TClock = (
     10, 10, 6, 24, 30, 12, 256);

@@ -42,9 +42,15 @@ end;
 
 function TurnUndeadAi(creature: Types.PCreature): Boolean; forward;
 
+function DecideCastSpell(creature: Types.PCreature; spell, minPri: Byte): Boolean; forward;
+
 function SelectItemToUse(creature: Types.PCreature): Boolean; forward;
 
 function SelectSpellToCast(creature: Types.PCreature): Boolean; forward;
+
+function AiCanStep(creature: Types.PCreature; attempt, baseDir: Byte; var edge: Boolean): Boolean; forward;
+
+procedure AiMoveStep(creature: Types.PCreature); forward;
 
 function AiMoveAttack(creature: Types.PCreature): Boolean; forward;
 
@@ -54,9 +60,9 @@ function CheckKeystroke(creature: Types.PCreature): Boolean; forward;
 
 function CheckMorale(creature: Types.PCreature): Boolean; forward;
 
-procedure EquipWeaponAndArmor(creature: Types.PCreature); forward;
+function CalcWeaponPriority(creature: Types.PCreature; item: Types.PItem): Byte; forward;
 
-function DecideCastSpell(creature: Types.PCreature; spell, minPri: Byte): Boolean; forward;
+procedure EquipWeaponAndArmor(creature: Types.PCreature); forward;
 
 procedure CombatAiControl(creature: Types.PCreature);
 var
@@ -178,12 +184,6 @@ begin
       end;
   end;
 end;
-
-function AiCanStep(creature: Types.PCreature; attempt, baseDir: Byte; var edge: Boolean): Boolean; forward;
-
-procedure AiMoveStep(creature: Types.PCreature); forward;
-
-function CalcWeaponPriority(creature: Types.PCreature; item: Types.PItem): Byte; forward;
 
 { Uses an item's spell effect when the AI wants one; needs item use allowed this round, enemies left and no anti-magic.
   Over 1d7 passes the minimum AI priority drops from 7, and the first readied item that is not readable, has special
@@ -387,7 +387,7 @@ begin
       dir := CbtActs.DirTowardTarget(Pointer(creature), Pointer(creature^.combatAddr^.other))
     else begin
       creature^.combatAddr^.aiStance := FxEngine.RollDice(1, 2);
-      dir := GDVars.partyPos.facing - (((GDVars.partyPos.facing + 2) mod 4) div 2);
+      dir := GDVars.partyPos.facing - (((GDVars.partyPos.facing + 2) mod 4) shr 1);
       if creature^.hostile = 0 then dir := dir + 4;
       dir := dir mod 8;
     end;
@@ -635,8 +635,8 @@ begin
   GDVars.combatMorale := (creature^.npc and $7F) * 2;
   if GDVars.combatMorale > 102 then GDVars.combatMorale := 0;
   FxEngine.TriggerEffectsWithCondition(17, Pointer(creature));
-  if (GDVars.combatMorale >= 100 - creature^.hpCur * 100 div creature^.hpMax) and
-      (GDVars.combatMorale <> 0) then Exit;
+  if (GDVars.combatMorale >= 100 - creature^.hpCur * 100 div creature^.hpMax)
+     and (GDVars.combatMorale <> 0) then Exit;
   moraleSave := GDVars.combatMorale;
   GDVars.combatMorale := GDVars.hostileHpPct;
   FxEngine.TriggerEffectsWithCondition(17, Pointer(creature));

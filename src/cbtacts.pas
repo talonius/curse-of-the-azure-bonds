@@ -26,27 +26,6 @@ procedure BeginRound(creature: Types.PCreature);
   @returns(The movement in half-steps.) }
 function CalcCreatureMovement(creature: Types.PCreature): Byte;
 
-{ Rolls one attack's damage into GDVars.damage: the current damage dice of the attack phase plus its modifier,
-  multiplied on a backstab by (thief level - 1) div 4 + 2, where the thief level counts earlier thief levels while
-  ClassCal.EarlierClassActive allows them. It then clears the damage element mask and fires attacker's condition-4 and
-  defender's condition-5 effects. Note: GDVars.damage is a Byte, so the test for a negative total never passes and a
-  negative total wraps.
-  @param(attacker The creature dealing the damage.)
-  @param(defender The creature hit; it is tested for a backstab.)
-  @param(phase Attack phase, 1 or 2, whose dice and modifier are used.) }
-procedure CalcWeaponDamage(attacker, defender: Types.PCreature; phase: Byte);
-
-{ Prints the attack message and inflicts the damage. Nonzero damage stops the defender casting this round and loses a
-  spell it is casting. A defender that goes down is reported as dying or killed, loses its hit-point-0 effects, runs its
-  condition-13 effects and, if still disabled, goes to CbtMap.CreatureDowned.
-  @param(attacker The creature attacking.)
-  @param(defender The creature attacked.)
-  @param(manner 1 from behind, 2 a backstab, 3 slays a helpless target; anything else is a plain attack.)
-  @param(damage Hit points inflicted on a hit.)
-  @param(shownDamage The damage figure printed.)
-  @param(isHit True for a hit, False for a miss.) }
-procedure ProcessAttackResult(attacker, defender: Types.PCreature; manner, damage, shownDamage: Byte; isHit: Boolean);
-
 { Moves a creature one cell in a direction. The step costs the terrain cost times 2 half-steps, times 3 on a diagonal;
   with too few left, movement drops to 0 but the step is still taken. The view follows the mover (faster in quick
   fight). The step plays the step sound, resets the creature's flanking counts and lets guarding enemies attack, and a
@@ -78,11 +57,6 @@ function AttemptFlee(creature: Types.PCreature): Boolean;
   keep the base attacks value, in half-attacks, rather than the previous count.
   @param(creature The creature whose attacks are recalculated.) }
 procedure RecalcAttacksLeft(creature: Types.PCreature);
-
-{ Converts half-attacks to attacks: adds 1 on odd rounds, then halves.
-  @param(rate The rate in half-attacks.)
-  @returns(The whole attacks for this round.) }
-function AttacksFromRate(rate: Byte): Byte;
 
 { Sweeps level-0 enemies. When the defender is an adjacent level-0 enemy, the attacker's sweep budget exceeds its
   current attacks, and more adjacent level-0 enemies stand around it than it has current attacks, the attacker makes one
@@ -137,14 +111,6 @@ procedure NoteAttackDirection(attacker, defender: Types.PCreature);
   @param(done Set True when attacker's actions for the round are over.) }
 procedure MakeAttack(attacker, defender: Types.PCreature; fromBehind: Boolean; weapon: Types.PItem; var done: Boolean);
 
-{ Raises a defense value for range. With a ranged weapon the band is (range - 1) div 3 steps; a defender more than one
-  band away adds 2 and more than two bands away 3 more. A weapon of range 3 or less has a band of 0, so any distance
-  adds both. Melee adds nothing.
-  @param(attacker The creature attacking.)
-  @param(defender The creature attacked.)
-  @param(armorClass The defense value, raised in place.) }
-procedure ApplyRangePenalty(attacker, defender: Types.PCreature; var armorClass: Byte);
-
 { Finds a Cure Light Wounds target in the creature's own cell or the eight around it. Candidates are the wounded ally
   with the fewest hit points (the creature itself, checked last, also wins whenever below half its maximum) and the last
   downed body, not dead, stoned or gone, found on a corpse cell. The body wins unless no body was found or the ally has
@@ -196,28 +162,12 @@ function CheckAttackAlly(attacker, defender: Types.PCreature): Boolean;
 procedure CombatAimMenu(creature: Types.PCreature; range, weaponMode, groundOk, creatureOk: Byte; var done: Boolean;
                         var tgt);
 
-{ Checks for a backstab: the attacker must be a thief (or have thief levels from an earlier class that is active), with
-  no weapon or one of item types 7, 8, 35..37 or 97; the defender must be small, have been attacked more than once this
-  round, and face away from the attacker.
-  @param(attacker The creature attacking.)
-  @param(defender The creature attacked.)
-  @returns(True for a backstab.) }
-function IsBackstab(attacker, defender: Types.PCreature): Boolean;
-
 { Finds the direction from one creature to another, using eight sectors whose slope thresholds are 106/256 and 618/256;
   the same cell gives 0.
   @param(creature The creature looking.)
   @param(other The creature looked at.)
   @returns(The direction, 0..7 clockwise from north.) }
 function DirTowardTarget(creature, other: Types.PCreature): Byte;
-
-{ Flies a missile from attacker to defender. It plays the launch sound, then builds the icon for weapon's item type with
-  a sound for its kind: item types 9, $15, $1C, $1F, $49 and $64 get an icon drawn for the direction of flight, and the
-  others a fixed icon, some in four frames at a slower pace.
-  @param(attacker The creature shooting.)
-  @param(defender The creature shot at.)
-  @param(weapon The missile or thrown item.) }
-procedure AnimateMissile(attacker, defender: Types.PCreature; weapon: Types.PItem);
 
 { Sets the hostiles' hit-point percentage: the enabled hostiles' current hit points as a percentage of the hostiles'
   combined maximum hit points, disabled ones included, rounded down to a multiple of five; it is left unchanged when
@@ -306,9 +256,22 @@ var
   { The turning table as CbtActs reads it: undead levels 11 and 12 run past its end into the menus that follow. }
   turnUndeadTbl: array[1..12, 1..10] of ShortInt absolute GDConsts.turnUndeadResults;
 
+procedure CalcWeaponDamage(attacker, defender: Types.PCreature; phase: Byte); forward;
+
+procedure ProcessAttackResult(attacker, defender: Types.PCreature; manner, damage, shownDamage: Byte;
+                              isHit: Boolean); forward;
+
 procedure GuardersAttack(creature: Types.PCreature); forward;
 
+function AttacksFromRate(rate: Byte): Byte; forward;
+
+function IsBackstab(attacker, defender: Types.PCreature): Boolean; forward;
+
 procedure RollAttacks(att, def: Types.PCreature; fromBehind: Boolean; var done: Boolean; other: Types.PItem); forward;
+
+procedure AnimateMissile(attacker, defender: Types.PCreature; weapon: Types.PItem); forward;
+
+procedure ApplyRangePenalty(attacker, defender: Types.PCreature; var armorClass: Byte); forward;
 
 function SelectSpellTarget(spellId, aiControlled, groundOk: Byte; var target: TTgtRec): Boolean; forward;
 
@@ -359,6 +322,14 @@ begin
   CalcCreatureMovement := GDVars.movementAttacks;
 end;
 
+{ Rolls one attack's damage into GDVars.damage: the current damage dice of the attack phase plus its modifier,
+  multiplied on a backstab by (thief level - 1) div 4 + 2, where the thief level counts earlier thief levels while
+  ClassCal.EarlierClassActive allows them. It then clears the damage element mask and fires attacker's condition-4 and
+  defender's condition-5 effects. Note: GDVars.damage is a Byte, so the test for a negative total never passes and a
+  negative total wraps.
+  @param(attacker The creature dealing the damage.)
+  @param(defender The creature hit; it is tested for a backstab.)
+  @param(phase Attack phase, 1 or 2, whose dice and modifier are used.) }
 procedure CalcWeaponDamage(attacker, defender: Types.PCreature; phase: Byte);
 begin
   GDVars.damage := FxEngine.RollDamageDice(attacker^.curRolls[phase], attacker^.curDice[phase])
@@ -366,14 +337,23 @@ begin
   if GDVars.damage < 0 then
     GDVars.damage := 0;
   if CbtActs.IsBackstab(attacker, defender) then
-    GDVars.damage := GDVars.damage *
-      ((attacker^.classLevels[C_Class.THIEF_LEVEL] +
-        attacker^.oldClassLevels[C_Class.THIEF_LEVEL] * ClassCal.EarlierClassActive(attacker) - 1) div 4 + 2);
+    GDVars.damage := GDVars.damage
+        * (Word(attacker^.classLevels[C_Class.THIEF_LEVEL] +
+                attacker^.oldClassLevels[C_Class.THIEF_LEVEL] * ClassCal.EarlierClassActive(attacker) - 1) div 4 + 2);
   GDVars.elementMask := 0;
   FxEngine.TriggerEffectsWithCondition(4, attacker);
   FxEngine.TriggerEffectsWithCondition(5, defender);
 end;
 
+{ Prints the attack message and inflicts the damage. Nonzero damage stops the defender casting this round and loses a
+  spell it is casting. A defender that goes down is reported as dying or killed, loses its hit-point-0 effects, runs its
+  condition-13 effects and, if still disabled, goes to CbtMap.CreatureDowned.
+  @param(attacker The creature attacking.)
+  @param(defender The creature attacked.)
+  @param(manner 1 from behind, 2 a backstab, 3 slays a helpless target; anything else is a plain attack.)
+  @param(damage Hit points inflicted on a hit.)
+  @param(shownDamage The damage figure printed.)
+  @param(isHit True for a hit, False for a miss.) }
 procedure ProcessAttackResult(attacker, defender: Types.PCreature; manner, damage, shownDamage: Byte; isHit: Boolean);
 var
   row: Byte;
@@ -651,6 +631,9 @@ begin
     Types.PCreature(creature)^.curAttacks[1] := attacks;
 end;
 
+{ Converts half-attacks to attacks: adds 1 on odd rounds, then halves.
+  @param(rate The rate in half-attacks.)
+  @returns(The whole attacks for this round.) }
 function AttacksFromRate(rate: Byte): Byte;
 var
   adjusted: Byte;
@@ -1000,6 +983,12 @@ begin
   end;
 end;
 
+{ Raises a defense value for range. With a ranged weapon the band is (range - 1) div 3 steps; a defender more than one
+  band away adds 2 and more than two bands away 3 more. A weapon of range 3 or less has a band of 0, so any distance
+  adds both. Melee adds nothing.
+  @param(attacker The creature attacking.)
+  @param(defender The creature attacked.)
+  @param(armorClass The defense value, raised in place.) }
 procedure ApplyRangePenalty(attacker, defender: Types.PCreature; var armorClass: Byte);
 var
   band: ShortInt;
@@ -1335,6 +1324,12 @@ begin
   end;
 end;
 
+{ Checks for a backstab: the attacker must be a thief (or have thief levels from an earlier class that is active), with
+  no weapon or one of item types 7, 8, 35..37 or 97; the defender must be small, have been attacked more than once this
+  round, and face away from the attacker.
+  @param(attacker The creature attacking.)
+  @param(defender The creature attacked.)
+  @returns(True for a backstab.) }
 function IsBackstab(attacker, defender: Types.PCreature): Boolean;
 var
   weapon: Types.PItem;
@@ -1401,6 +1396,12 @@ begin
   DirTowardTarget := dir;
 end;
 
+{ Flies a missile from attacker to defender. It plays the launch sound, then builds the icon for weapon's item type with
+  a sound for its kind: item types 9, $15, $1C, $1F, $49 and $64 get an icon drawn for the direction of flight, and the
+  others a fixed icon, some in four frames at a slower pace.
+  @param(attacker The creature shooting.)
+  @param(defender The creature shot at.)
+  @param(weapon The missile or thrown item.) }
 procedure AnimateMissile(attacker, defender: Types.PCreature; weapon: Types.PItem);
 var
   missileCellBase: Byte;

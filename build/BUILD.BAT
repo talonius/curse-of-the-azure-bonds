@@ -1,6 +1,7 @@
 @echo off
-rem Curse of the Azure Bonds v1.2 whole-image build.
-rem C: Turbo Pascal 5.5; D: this version tree; E: TASM.
+rem Curse of the Azure Bonds v1.3 whole-image build.
+rem C: Turbo Pascal 6.0 with the 1990 RTL; D: this version tree; E: TASM.
+rem F: Microsoft EXEPACK. Compiler and library hashes are pinned by the host.
 rem
 rem Keep the short PATH selected by gametools/build.sh; invoke other tools by drive.
 rem Compiler options come from src\TPC.CFG in the working directory:
@@ -36,8 +37,6 @@ if exist ..\obj\FIXMAIN.OVR del ..\obj\FIXMAIN.OVR
 if exist ..\obj\FIXMAIN.MAP del ..\obj\FIXMAIN.MAP
 if exist ..\obj\START.EXE del ..\obj\START.EXE
 if exist ..\obj\GAME.OVR del ..\obj\GAME.OVR
-if exist ..\obj\STAMP.EXE del ..\obj\STAMP.EXE
-if exist ..\obj\STAMP.MAP del ..\obj\STAMP.MAP
 
 rem Assemble the three implementations linked by the Pascal wrappers.
 e:\tasm blit,..\obj\blit > ..\build\logs\BUILD.OUT
@@ -51,9 +50,5 @@ tpc fixmain.pas /B /E..\obj /O..\obj >> ..\build\logs\BUILD.OUT
 rem Publish the overlay under its distributed filename.
 ren ..\obj\FIXMAIN.OVR GAME.OVR
 
-rem The raw MZ declares 70,304 bytes; the shipped file has a four-byte sum tail.
-rem Rebuild the reconstruction helper and append the little-endian byte sum.
-rem Removing stale STAMP.EXE above prevents reusing a helper that did not compile.
-ren ..\obj\FIXMAIN.EXE START.EXE
-tpc stamp.pas /E..\obj >> ..\build\logs\BUILD.OUT
-..\obj\stamp ..\obj\START.EXE >> ..\build\logs\BUILD.OUT
+rem The genuine packer produces the distributed packed executable.
+f:\exepack ..\obj\FIXMAIN.EXE ..\obj\START.EXE >> ..\build\logs\BUILD.OUT

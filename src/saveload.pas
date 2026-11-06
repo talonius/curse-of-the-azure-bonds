@@ -6,9 +6,9 @@ unit SaveLoad;
 
 interface
 
-uses Types, GDConsts, GDVars, C_Keys, C_Ifc, C_Status, C_Race, C_Class, C_Effect, C_Stat, C_Pic, C_Spell, C_Gbvm,
-  DaxIo, Dos, TextRend, GameIo, Blit, MenuCore, MapTiles, CharHlp, ClassCal, FxEngine, ViewChar, Portrait, View3D,
-  Money, EclTrace;
+uses Types, DaxIo, Dos, TextRend, GameIo, Blit, MenuCore, MapTiles, CharHlp, ClassCal, FxEngine, ViewChar, Portrait,
+  View3D, Money, EclTrace, GDConsts, GDVars, C_Keys, C_Ifc, C_Status, C_Race, C_Class, C_Effect, C_Stat,
+  C_Pic, C_Spell, C_Gbvm;
 
 { Lists the characters that can be loaded in the current import mode: 0 Curse (*.guy), 1 Pool (*.cha and saved games'
   *.sav), 2 Hillsfar (*.hil). Files of the mode's size are listed, leaving out characters already in the party and those
@@ -18,16 +18,6 @@ uses Types, GDConsts, GDVars, C_Keys, C_Ifc, C_Status, C_Race, C_Class, C_Effect
   @param(nameList Receives the stored names, padded, with "from saved game X" for a .sav.)
   @param(fileList Receives the matching file names, in the same order.) }
 procedure LoadCharlist(var nameList, fileList: Types.PItem);
-
-{ Makes sure the save directory can be reached, asking for the save disk on drives A and B; in mode 0 it also refuses
-  the game disk (volume CURSE) and creates a missing directory. An unexpected error on a hard disk is reported.
-  @returns(True when the directory is ready.) }
-function CheckSaveDir: Boolean;
-
-{ ORs one icon's pixels into another and ANDs its transparency mask into the other's.
-  @param(src The icon to add.)
-  @param(dest The icon that receives it.) }
-procedure MergeIcon(src, dest: Types.PImgBuf);
 
 { Builds the current character's combat icon in its slot (on disk 1): loads the body (CBODY) icon into the slot and the
   head (CHEAD) icon into scratch slot 11, both for its icon size, and ORs the head's two frames onto the body's.
@@ -84,9 +74,6 @@ procedure SaveGame;
   in zone 1's party size, and recalculates an NPC's THAC0.
   @param(cr The character.) }
 procedure AddCharToParty(cr: Types.PCharRecord);
-
-{ Does nothing. }
-procedure NoopSaveLoad;
 
 { Calls the priming entries of MapTiles, EclTrace, ClassCal, FxEngine and CharHlp (which prime MenuCore, Portrait and
   MapView in turn), so the overlay manager loads them; ViewChar, View3D, Money and CharGen are not primed. }
@@ -153,11 +140,11 @@ type
     fbb: Byte;
   end;
 
+function CheckSaveDir: Boolean; forward;
+
 function CStrToStr(var src): String; forward;
 
-procedure NoopSaveLoad;
-begin
-end;
+procedure MergeIcon(src, dest: Types.PImgBuf); forward;
 
 procedure PrimeSaveLoad;
 begin
@@ -266,22 +253,24 @@ begin
   if SaveLoad.CheckSaveDir then
     case GDVars.importMode of
       0: ScanSaveFiles(GDVars.savedGamePath + '*.guy', GDConsts.primaryNameOfs[GDVars.importMode],
-                       GDConsts.secondaryNameOfs[GDVars.importMode],
-                       GDConsts.charFileSizes[GDVars.importMode], nameList, fileList);
+                       GDConsts.secondaryNameOfs[GDVars.importMode], GDConsts.charFileSizes[GDVars.importMode],
+                       nameList, fileList);
       1: begin
            ScanSaveFiles(GDVars.savedGamePath + '*.cha', GDConsts.primaryNameOfs[GDVars.importMode],
-                         GDConsts.secondaryNameOfs[GDVars.importMode],
-                         GDConsts.charFileSizes[GDVars.importMode], nameList, fileList);
+                         GDConsts.secondaryNameOfs[GDVars.importMode], GDConsts.charFileSizes[GDVars.importMode],
+                         nameList, fileList);
            ScanSaveFiles(GDVars.savedGamePath + '*.sav', GDConsts.primaryNameOfs[GDVars.importMode],
-                         GDConsts.secondaryNameOfs[GDVars.importMode],
-                         GDConsts.charFileSizes[1], nameList, fileList);
+                         GDConsts.secondaryNameOfs[GDVars.importMode], GDConsts.charFileSizes[1], nameList, fileList);
          end;
       2: ScanSaveFiles(GDVars.savedGamePath + '*.hil', GDConsts.primaryNameOfs[GDVars.importMode],
-                       GDConsts.secondaryNameOfs[GDVars.importMode],
-                       GDConsts.charFileSizes[GDVars.importMode], nameList, fileList);
+                       GDConsts.secondaryNameOfs[GDVars.importMode], GDConsts.charFileSizes[GDVars.importMode],
+                       nameList, fileList);
     end;
 end;
 
+{ Makes sure the save directory can be reached, asking for the save disk on drives A and B; in mode 0 it also refuses
+  the game disk (volume CURSE) and creates a missing directory. An unexpected error on a hard disk is reported.
+  @returns(True when the directory is ready.) }
 function CheckSaveDir: Boolean;
 var
   err: Integer;
@@ -352,6 +341,9 @@ begin
   CheckSaveDir := True;
 end;
 
+{ ORs one icon's pixels into another and ANDs its transparency mask into the other's.
+  @param(src The icon to add.)
+  @param(dest The icon that receives it.) }
 procedure MergeIcon(src, dest: Types.PImgBuf);
 var
   { Unused in this version; see the other implementations of this routine. }
@@ -794,25 +786,24 @@ begin
            GDVars.curChar := Types.PCreature(cr);
            MergeHillsfarRecord;
            if hillsfarRec^.chimeCharges > 0 then begin
-             tail := Types.PItem(CharHlp.MakeItem(70, 168, 167, 87, 0, 0, 0, 0, 0, 0, 0,
-                                                  hillsfarRec^.chimeCharges * 200, hillsfarRec^.chimeCharges, 31, 0));
-             CharHlp.AddItemCopy(Types.PCreature(cr), Types.PItem(tail));
+             tail := CharHlp.MakeItem(70, 168, 167, 87, 0, 0, 0, 0, 0, 0, 0, hillsfarRec^.chimeCharges * 200,
+                                      hillsfarRec^.chimeCharges, 31, 0);
+             CharHlp.AddItemCopy(Types.PCreature(cr), tail);
            end;
            if hillsfarRec^.wandCharges > 0 then begin
-             tail := Types.PItem(CharHlp.MakeItem(79, 206, 167, 69, 1, 0, 0, 0, 0, 1, 0, hillsfarRec^.wandCharges * 350,
-                                                  hillsfarRec^.wandCharges, 65, 0));
-             CharHlp.AddItemCopy(Types.PCreature(cr), Types.PItem(tail));
+             tail := CharHlp.MakeItem(79, 206, 167, 69, 1, 0, 0, 0, 0, 1, 0, hillsfarRec^.wandCharges * 350,
+                                      hillsfarRec^.wandCharges, 65, 0);
+             CharHlp.AddItemCopy(Types.PCreature(cr), tail);
            end;
            if hillsfarRec^.ringCharges > 0 then begin
-             tail := Types.PItem(CharHlp.MakeItem(69, 168, 167, 66, 0, 0, 0, 0, 0, 0, 0, hillsfarRec^.ringCharges * 200,
-                                                  hillsfarRec^.ringCharges, 31, 0));
-             CharHlp.AddItemCopy(Types.PCreature(cr), Types.PItem(tail));
+             tail := CharHlp.MakeItem(69, 168, 167, 66, 0, 0, 0, 0, 0, 0, 0, hillsfarRec^.ringCharges * 200,
+                                      hillsfarRec^.ringCharges, 31, 0);
+             CharHlp.AddItemCopy(Types.PCreature(cr), tail);
            end;
            if hillsfarRec^.healingPotions > 0 then begin
-             tail := Types.PItem(CharHlp.MakeItem(70, 185, 167, 64, 0, 0, 0, 0, 0, hillsfarRec^.healingPotions * 10, 0,
-                                                  hillsfarRec^.healingPotions * 400, hillsfarRec^.healingPotions, 62,
-                                                  0));
-             CharHlp.AddItemCopy(Types.PCreature(cr), Types.PItem(tail));
+             tail := CharHlp.MakeItem(70, 185, 167, 64, 0, 0, 0, 0, 0, hillsfarRec^.healingPotions * 10, 0,
+                                      hillsfarRec^.healingPotions * 400, hillsfarRec^.healingPotions, 62, 0);
+             CharHlp.AddItemCopy(Types.PCreature(cr), tail);
            end;
          end else begin
            name15 := SaveLoad.CStrToStr(hillsfarRec^.name4);
@@ -836,7 +827,7 @@ begin
              with Types.PCreature(cr)^ do begin
                for GDVars.sharedLoopIdx := 1 to 6 do
                  iconColors[GDVars.sharedLoopIdx] := GDConsts.defaultIconColors[GDVars.sharedLoopIdx] +
-                     ((GDConsts.defaultIconColors[GDVars.sharedLoopIdx] + 8) * 16);
+                   ((GDConsts.defaultIconColors[GDVars.sharedLoopIdx] + 8) * 16);
                acBase := 50;
                thac0Base := 40;
                status := C_Status.OKAY;
@@ -1135,7 +1126,8 @@ begin
   Delete(menu, Length(menu), 1);
   repeat
     ch := MenuCore.MenuHorizontal('Load Which Game: ', menu, LightMagenta, LightGreen, White, False, False, ext);
-  until ((ch in ['A'..'J']) and DaxIo.FileExists(GDVars.savedGamePath + 'savgam' + ch + '.dat')) or (ch = C_Keys.NONE);
+  until ((ch in ['A'..'J']) and DaxIo.FileExists(GDVars.savedGamePath + 'savgam' + ch + '.dat')) or
+      (ch = C_Keys.NONE);
   if ch = C_Keys.NONE then Exit;
   openRes := DaxIo.OpenWithRetry(GDVars.savedGamePath + 'savgam' + ch + '.dat',
                                  'Put save disk in ' + GDVars.savedGamePath, #1, f);
@@ -1157,7 +1149,7 @@ begin
   BlockRead(f, partyRead, SizeOf(partyRead), res);
   BlockRead(f, names, SizeOf(names), res);
   Close(f);
-  GDVars.picsOn := GDVars.zone0^[SaveLoad.SAVED_PICTURE_FLAGS] div 2;
+  GDVars.picsOn := GDVars.zone0^[SaveLoad.SAVED_PICTURE_FLAGS] shr 1;
   GDVars.animOn := GDVars.zone0^[SaveLoad.SAVED_PICTURE_FLAGS] and 1;
   GDVars.gameDelay := Lo(GDVars.zone0^[SaveLoad.SAVED_SPEED]);
   GDVars.zone1^[C_Gbvm.PARTY_SIZE] := 0;

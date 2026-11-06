@@ -128,20 +128,6 @@ procedure RemoveAiEffects(creature: Types.PCreature);
   @returns(True when the creature had the effect.) }
 function RemoveEffectWithMessage(creature: Types.PCreature; effId: Byte): Boolean;
 
-{ Encodes a Strength as an effect strength: 18 with exceptional Strength excStr becomes excStr + 1 (1..101), any other
-  base Strength becomes baseStr + 100.
-  @param(baseStr Base Strength.)
-  @param(excStr Exceptional Strength, read when baseStr is 18.)
-  @returns(The encoded Strength.) }
-function StrengthModifier(baseStr, excStr: Byte): Byte;
-
-{ Decodes an effect's strength byte, bit 7 aside, into Strength: up to 101 is Strength 18 with exceptional Strength of
-  the value less 1, above it Strength of the value less 100 with no exceptional Strength.
-  @param(effect The Strength effect.)
-  @param(baseStr Receives Strength.)
-  @param(excStr Receives exceptional Strength.) }
-procedure StrengthEffectToStrength(effect: Types.PEffect; var baseStr, excStr: Byte);
-
 { Tells whether a Strength beats a creature's permanent one: a higher base Strength, or 18 with an exceptional Strength
   above its permanent exceptional Strength.
   @param(creature Creature compared against.)
@@ -745,6 +731,11 @@ begin
   end;
 end;
 
+{ Encodes a Strength as an effect strength: 18 with exceptional Strength excStr becomes excStr + 1 (1..101), any other
+  base Strength becomes baseStr + 100.
+  @param(baseStr Base Strength.)
+  @param(excStr Exceptional Strength, read when baseStr is 18.)
+  @returns(The encoded Strength.) }
 function StrengthModifier(baseStr, excStr: Byte): Byte;
 begin
   StrengthModifier := baseStr + 100;
@@ -752,6 +743,11 @@ begin
     StrengthModifier := excStr + 1;
 end;
 
+{ Decodes an effect's strength byte, bit 7 aside, into Strength: up to 101 is Strength 18 with exceptional Strength of
+  the value less 1, above it Strength of the value less 100 with no exceptional Strength.
+  @param(effect The Strength effect.)
+  @param(baseStr Receives Strength.)
+  @param(excStr Receives exceptional Strength.) }
 procedure StrengthEffectToStrength(effect: Types.PEffect; var baseStr, excStr: Byte);
 begin
   excStr := 0;

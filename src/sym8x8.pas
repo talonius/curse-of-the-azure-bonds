@@ -1,12 +1,9 @@
 { Loads the five 8x8 symbol sets and draws their wall, map and border glyphs, using TImgBuf image buffers. }
-{$O+,F+,A+}
-{$I-}
+{$O+,F+}
+{$I-,A+}
 unit Sym8x8;
 
 interface
-
-{ Empty routine with no callers. }
-procedure NoopSym8x8;
 
 { Loads a symbol set from a picture of the current disk's 8x8D archive, with color 13 transparent. An invalid set does
   nothing; a load failure quits.
@@ -29,10 +26,6 @@ procedure PrimeSym8x8;
 implementation
 
 uses Blit, GameIo, GDConsts, GDVars, C_Pic;
-
-procedure NoopSym8x8;
-begin
-end;
 
 procedure PrimeSym8x8;
 begin

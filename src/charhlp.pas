@@ -6,8 +6,8 @@ unit CharHlp;
 
 interface
 
-uses Types, GDConsts, GDVars, C_Keys, C_Status, C_Ifc, C_Race, C_Class, C_Stat, C_Pic, C_Spell, C_Gbvm, Crt,
-  TextRend, Border, Blit, SoundDrv, CbtMap, Portrait, MenuCore, ClassCal, Pathing, MapTiles, EclTrace, MapView;
+uses Types, GDConsts, GDVars, C_Keys, C_Status, C_Ifc, C_Race, C_Class, C_Stat, C_Pic, C_Spell, C_Gbvm,
+  Crt, TextRend, Border, Blit, SoundDrv, CbtMap, Portrait, MenuCore, ClassCal, Pathing, MapTiles, EclTrace, MapView;
 
 type
   { The armor-class parts RecalcStats adds up: 0 Dexterity, 1 the shield, 2 the pluses of protective items without an
@@ -85,18 +85,6 @@ function Uint8Str(value: Byte): String;
   @param(cr The creature.)
   @returns(The adjustment.) }
 function DexMissileAdjust(cr: Types.PCreature): ShortInt;
-
-{ Computes the Dexterity defensive adjustment from the current Dexterity: -4 at 1..3, -3..-1 at 4..6, +1..+4 at 15..18,
-  4 at 19..20, 5 at 21..23, 6 at 24..25, else 0.
-  @param(cr The creature.)
-  @returns(The adjustment.) }
-function DexterityArmorAdjustment(cr: Types.PCreature): ShortInt;
-
-{ Computes the Strength to-hit bonus on TranslatedStrength's scale (-3 at 1..3 up to +7 at 30), or 0 unless useStrength
-  is set.
-  @param(cr The creature.)
-  @returns(The to-hit bonus.) }
-function StrToHitAdjust(cr: Types.PCreature): ShortInt;
 
 { Computes the Strength damage bonus on TranslatedStrength's scale (-2 at 1..2 up to +14 at 30), or 0 unless the
   creature's Strength bonus applies.
@@ -319,15 +307,19 @@ const
   { Word index into the GBVM zone-0 variables (GDVars.zone0^) of the game clock's tens-of-minutes digit. }
   CLOCK_TEN_MINUTES = $4BC8;
 
-procedure WeaponAdjust(cr: Types.PCreature); forward;
+procedure WeaponAdjust(cr: Types.PCreature); far; forward;
 
-procedure ArmorMoveAdjust(cr: Types.PCreature; item: Types.PItem); forward;
+procedure ArmorMoveAdjust(cr: Types.PCreature; item: Types.PItem); far; forward;
 
-procedure AddItemArmorAdjust(cr: Types.PCreature; item: Types.PItem; var acc: TAcc5; var flagZ: Byte); forward;
+procedure AddItemArmorAdjust(cr: Types.PCreature; item: Types.PItem; var acc: TAcc5; var flagZ: Byte); far; forward;
 
-procedure EncumbranceAdjust(cr: Types.PCreature); forward;
+procedure EncumbranceAdjust(cr: Types.PCreature); far; forward;
 
-function TranslatedStrength(cr: Types.PCreature): Byte; forward;
+function StrToHitAdjust(cr: Types.PCreature): ShortInt; far; forward;
+
+function TranslatedStrength(cr: Types.PCreature): Byte; far; forward;
+
+function DexterityArmorAdjustment(cr: Types.PCreature): ShortInt; far; forward;
 
 procedure PrimeCharHlp;
 begin
@@ -727,10 +719,10 @@ begin
     cr^.acCur[0] := cr^.acCur[0] + acc[k];
   cr^.acCur[1] := acc[4] + acc[2] + acc[3] - 2;
   if ((cr^.classLevels[C_Class.FIGHTER_LEVEL] > 0) or
-      ((cr^.oldClassLevels[C_Class.FIGHTER_LEVEL] > 0) and (ClassCal.EarlierClassActive(Types.PCreature(cr)) <> 0)))
-     and (cr^.race > C_Race.MONSTER) then
+      ((cr^.oldClassLevels[C_Class.FIGHTER_LEVEL] > 0) and (ClassCal.EarlierClassActive(cr) <> 0))) and
+      (cr^.race > C_Race.MONSTER) then
     cr^.attackLevel := cr^.classLevels[C_Class.FIGHTER_LEVEL] +
-      ClassCal.EarlierClassActive(Types.PCreature(cr)) * cr^.oldClassLevels[C_Class.FIGHTER_LEVEL]
+      ClassCal.EarlierClassActive(cr) * cr^.oldClassLevels[C_Class.FIGHTER_LEVEL]
   else
     cr^.attackLevel := 1;
 end;
@@ -759,6 +751,10 @@ begin
   Int32Str := s;
 end;
 
+{ Computes the Dexterity defensive adjustment from the current Dexterity: -4 at 1..3, -3..-1 at 4..6, +1..+4 at 15..18,
+  4 at 19..20, 5 at 21..23, 6 at 24..25, else 0.
+  @param(cr The creature.)
+  @returns(The adjustment.) }
 function DexterityArmorAdjustment(cr: Types.PCreature): ShortInt;
 var
   t: Byte;
@@ -813,6 +809,10 @@ begin
   end;
 end;
 
+{ Computes the Strength to-hit bonus on TranslatedStrength's scale (-3 at 1..3 up to +7 at 30), or 0 unless useStrength
+  is set.
+  @param(cr The creature.)
+  @returns(The to-hit bonus.) }
 function StrToHitAdjust(cr: Types.PCreature): ShortInt;
 var
   s: Byte;
@@ -1216,8 +1216,8 @@ begin
     else
       cell := 23;
     CharHlp.BuildIconFacings(cell);
-    if Byte(CbtMap.CombatIconVisible(Types.PCreature(cr), 1)) = 0 then
-      CbtMap.ScrollView(CbtMap.CombatCellX(Types.PCreature(cr)), CbtMap.CombatCellY(Types.PCreature(cr)), 3, 8);
+    if Byte(CbtMap.CombatIconVisible(cr, 1)) = 0 then
+      CbtMap.ScrollView(CbtMap.CombatCellX(cr), CbtMap.CombatCellY(cr), 3, 8);
     if hit then
       SoundDrv.SoundCommand(GDConsts.sndParamHit)
     else
@@ -1227,8 +1227,8 @@ begin
       frameDelay := GDVars.gameDelay
     else
       frameDelay := 0;
-    targetX := GDVars.gridX[CbtMap.CombatSlot(Types.PCreature(cr))] * 3;
-    targetY := GDVars.gridY[CbtMap.CombatSlot(Types.PCreature(cr))] * 3;
+    targetX := GDVars.gridX[CbtMap.CombatSlot(cr)] * 3;
+    targetY := GDVars.gridY[CbtMap.CombatSlot(cr)] * 3;
     for i := 0 to frameDelay do
       for j := 0 to 3 do begin
         Blit.BlitTileClipped(targetX, targetY, j, 5, GDVars.combatEffectSprite, GDVars.viewBuffer);
@@ -1395,29 +1395,31 @@ begin
   else
     case GDConsts.spellProperties[spellId].castClass of
       C_Spell.CLERIC_LIST: begin
-           a := Types.PCreature(GDVars.curChar)^.classLevels[C_Class.CLERIC_LEVEL] +
-             Types.PCreature(GDVars.curChar)^.oldClassLevels[C_Class.CLERIC_LEVEL] *
-             ClassCal.EarlierClassActive(Types.PCreature(GDVars.curChar));
+           a := Types.PCreature(GDVars.curChar)^.classLevels[C_Class.CLERIC_LEVEL]
+                +
+                  Types.PCreature(GDVars.curChar)^.oldClassLevels[C_Class.CLERIC_LEVEL]
+                    * ClassCal.EarlierClassActive(Types.PCreature(GDVars.curChar));
            b := Types.PCreature(GDVars.curChar)^.classLevels[C_Class.PALADIN_LEVEL]
                 +
-                  Types.PCreature(GDVars.curChar)^.oldClassLevels[C_Class.PALADIN_LEVEL] *
+                    Types.PCreature(GDVars.curChar)^.oldClassLevels[C_Class.PALADIN_LEVEL] *
                     ClassCal.EarlierClassActive(Types.PCreature(GDVars.curChar)) - 8;
            if a > b then GetCasterLevel := a else GetCasterLevel := b;
          end;
       C_Spell.DRUID_LIST: begin
            a := Types.PCreature(GDVars.curChar)^.classLevels[C_Class.RANGER_LEVEL]
                 +
-                  Types.PCreature(GDVars.curChar)^.oldClassLevels[C_Class.RANGER_LEVEL] *
+                    Types.PCreature(GDVars.curChar)^.oldClassLevels[C_Class.RANGER_LEVEL] *
                     ClassCal.EarlierClassActive(Types.PCreature(GDVars.curChar)) - 7;
            if a > 0 then GetCasterLevel := a else GetCasterLevel := 0;
          end;
       C_Spell.MAGE_LIST: begin
-           a := Types.PCreature(GDVars.curChar)^.classLevels[C_Class.MAGE_LEVEL] +
-             Types.PCreature(GDVars.curChar)^.oldClassLevels[C_Class.MAGE_LEVEL] *
-             ClassCal.EarlierClassActive(Types.PCreature(GDVars.curChar));
+           a := Types.PCreature(GDVars.curChar)^.classLevels[C_Class.MAGE_LEVEL]
+                +
+                  Types.PCreature(GDVars.curChar)^.oldClassLevels[C_Class.MAGE_LEVEL]
+                    * ClassCal.EarlierClassActive(Types.PCreature(GDVars.curChar));
            b := Types.PCreature(GDVars.curChar)^.classLevels[C_Class.RANGER_LEVEL]
                 +
-                  Types.PCreature(GDVars.curChar)^.oldClassLevels[C_Class.RANGER_LEVEL] *
+                    Types.PCreature(GDVars.curChar)^.oldClassLevels[C_Class.RANGER_LEVEL] *
                     ClassCal.EarlierClassActive(Types.PCreature(GDVars.curChar)) - 8;
            if a > b then GetCasterLevel := a else GetCasterLevel := b;
          end;
@@ -1667,8 +1669,7 @@ begin
   found := False;
   pw := GDVars.partyHead;
   while pw <> nil do begin
-    if (pw^.combatAddr^.notPcNpc = 0) and (pw^.hostile = 0)
-       and (pw^.status = C_Status.DYING) then begin
+    if (pw^.combatAddr^.notPcNpc = 0) and (pw^.hostile = 0) and (pw^.status = C_Status.DYING) then begin
       found := True;
       if bandage then begin
         pw^.status := C_Status.UNCONSCIOUS;

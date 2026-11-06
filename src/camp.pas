@@ -6,7 +6,8 @@ unit Camp;
 interface
 
 uses Types, Magic, ViewChar, MenuCore, TextRend, GameTime, CharHlp, Border, SaveLoad, CharGen, GameIo, FxEngine,
-  Portrait, MapView, EclTrace, GDConsts, GDVars, C_Keys, C_Status, C_Effect, C_Ifc, C_Gbvm, C_Spell, Crt;
+  Portrait, MapView, EclTrace, GDConsts, GDVars, C_Keys, C_Status, C_Effect, C_Ifc, C_Gbvm,
+  C_Spell, Crt;
 
 { Runs the Camp menu (Save, which then offers to quit to DOS, View, Magic, Rest, Fix and Alter; extended keys change the
   current character) until Exit, Escape or an interrupted rest. On entry, saves the interface state, copies the portrait
@@ -925,7 +926,7 @@ var
         if healingNeeded > healPool then healingNeeded := healPool;
         if healingNeeded < 1 then healingNeeded := 0;
         if healingNeeded > 0 then
-          if FxEngine.RestoreHitPoints(Types.PCreature(character), healingNeeded, False) then
+          if FxEngine.RestoreHitPoints(character, healingNeeded, False) then
             if healingNeeded <= healPool then
               Dec(healPool, healingNeeded);
       end;

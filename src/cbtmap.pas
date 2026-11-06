@@ -11,9 +11,6 @@ interface
 uses Blit, Types, GDConsts, GDVars, C_Ifc, C_Terr, MapTiles, SoundDrv, Crt, TextRend,
   EclTrace;
 
-{ Empty routine with no callers. }
-procedure NoopCbtMap;
-
 { Finds where one tile of a creature icon lies relative to the icon's upper-left cell.
   @param(size The icon size; 0 for no icon.)
   @param(idx The tile, 0 to 3.)
@@ -22,21 +19,12 @@ procedure NoopCbtMap;
   @returns(True when the icon uses the tile; False for size 0 or an unused tile, whose column offset is negative.) }
 function GetIconTileDelta(size, idx: Byte; var dx, dy: ShortInt): Boolean;
 
-{ Recomputes each arena creature's view coordinates from its arena cell and the view's upper-left cell. }
-procedure CalcGridDeltas;
-
 { Exchanges palette registers 0 and 8 (black and dark gray) for combat on EGA and Tandy. }
 procedure SetCombatPalette;
 
 { Restores palette registers 0 and 8 after combat on EGA and Tandy. Note: on Tandy, register 0 is restored through the
   EGA palette call rather than the Tandy one. }
 procedure SetNoncombatPalette;
-
-{ Repaints the terrain under the cursor's footprint at an arena cell, draws the cursor there when it is on, then redraws
-  the creature standing on the cell if it is visible.
-  @param(x Arena column of the cell.)
-  @param(y Arena row of the cell.) }
-procedure DrawCursorCell(x, y: ShortInt);
 
 { Redraws one arena cell: repaints its terrain (the whole icon footprint when a creature stands there, through
   UpdateCombatMapTile), then the creature's sprite if it is visible.
@@ -161,10 +149,6 @@ var
     combatCreatures' slot 0, which never holds a creature. }
   creatureGrid: array[0..24, 0..49] of Byte absolute GDVars.combatGridCells;
 
-procedure NoopCbtMap;
-begin
-end;
-
 procedure PrimeCbtMap;
 begin
   MapTiles.PrimeMapTiles;
@@ -181,6 +165,7 @@ begin
     GetIconTileDelta := True;
 end;
 
+{ Recomputes each arena creature's view coordinates from its arena cell and the view's upper-left cell. }
 procedure CalcGridDeltas;
 var
   i: Byte;
@@ -207,6 +192,10 @@ begin
   end;
 end;
 
+{ Repaints the terrain under the cursor's footprint at an arena cell, draws the cursor there when it is on, then redraws
+  the creature standing on the cell if it is visible.
+  @param(x Arena column of the cell.)
+  @param(y Arena row of the cell.) }
 procedure DrawCursorCell(x, y: ShortInt);
 var
   relX: ShortInt;
@@ -419,7 +408,8 @@ begin
       p := GDVars.combatCreatures[i];
       if (p^.enabled <> 0) and (GDVars.arenaSlots[i].size > 0) then
         if CbtMap.CombatIconVisible(p, 0) then
-          MapTiles.DrawIconAnimSprite(GDVars.gridX[i], GDVars.gridY[i], p^.combatAddr^.direction, 0, p^.orderNumber);
+          MapTiles.DrawIconAnimSprite(GDVars.gridX[i], GDVars.gridY[i], p^.combatAddr^.direction, 0,
+                                      p^.orderNumber);
     end;
   end;
   CbtMap.RedrawArenaCell(x, y);

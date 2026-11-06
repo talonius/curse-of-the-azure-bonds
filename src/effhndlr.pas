@@ -9,37 +9,18 @@ interface
 uses Types, FxEngine, ViewChar, CbtMap, Pathing, CharHlp, CbtActs, ClassCal, EclTrace, TextRend, GDConsts, GDVars,
   C_Status, C_Effect, C_Ifc, C_Class, C_Race, C_Terr, C_Stat;
 
-{ Installs the handler of each effect id in the effect handler table. Five ids use CbtActs attack routines; ids 86, 88,
-  90, 128, 131 and 132 get no handler. EffGrantItemEffect becomes the override handler. }
+{ Installs the handler of each effect id in the effect handler table. Five ids use CbtActs attack routines; ids 83, 86,
+  88, 90, 126, 128, 131 and 132 get no handler. EffGrantItemEffect becomes the override handler. }
 procedure InitEffectHandlers;
 
 { Calls the priming entries of CharHlp, ClassCal, EclTrace and FxEngine, so the overlay manager loads those overlays. }
 procedure PrimeEffHndlr;
-
-{ Cancels the pending effect and the damage when effId is 0 or effId is the effect being applied.
-  @param(effId The effect to cancel, or 0 for whichever effect is pending.) }
-procedure NullifyAttack(effId: Byte);
-
-{ Adds effect effId again (with the given strength and duration, its handler called on removal) unless the effect lock
-  is set, so the effect repeats.
-  @param(cr The creature that carries the effect.)
-  @param(effId The effect to add.)
-  @param(strength The new effect's strength.)
-  @param(minutes The new effect's duration.)
-  @returns(True when the effect was added.) }
-function AddEffectIfNoLock(cr: Types.PCreature; effId, strength: Byte; minutes: Word): Boolean;
 
 { Effects 27, 31 and 51..53: the creature's actions end for the round (CharHlp.EndActions).
   @param(cr The creature that carries the effect.)
   @param(effect Unused.)
   @param(removed Unused.) }
 procedure EffHelpless(cr: Types.PCreature; effect: Pointer; removed: Boolean);
-
-{ Adds 1 to the saving-throw roll and to the attack roll.
-  @param(cr Unused.)
-  @param(effect Unused.)
-  @param(removed Unused.) }
-procedure AddRollBonus(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
 { Effect 1 (Bless): adds 5 to morale and 1 to the attack roll.
   @param(cr Unused.)
@@ -198,9 +179,6 @@ procedure EffInvisible(cr: Types.PCreature; effect: Pointer; removed: Boolean);
   @param(removed Unused.) }
 procedure EffDwarfHitBonus(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Empty routine with no callers. }
-procedure NoopEffHndlrA;
-
 { Effect 28 (Mirror Image): a spell aimed at this creature alone (not at several targets) strikes an image with chance 1
   - 1/(strength div 16 + 1): the spell is cancelled ("lost an image") and the strength drops by 1; the effect ends when
   the strength reaches 0.
@@ -277,19 +255,6 @@ procedure EffHasted(cr: Types.PCreature; effect: Pointer; removed: Boolean);
   @param(effect The effect's node on the creature.)
   @param(removed Unused.) }
 procedure EffClearStinkingCloud(cr: Types.PCreature; effect: Pointer; removed: Boolean);
-
-{ Lets defender avoid an attack by the current creature with chance percent, when that creature has a readied weapon and
-  CharHlp.CalcDistance from it to defender is above 1: "Avoids it", no damage, the attack misses and the primary hit
-  count drops by 1.
-  @param(defender The creature attacked.)
-  @param(chance The chance to avoid the attack, in percent.) }
-procedure AvoidMissile(defender: Types.PCreature; chance: Byte);
-
-{ Finds the item attacker attacks with.
-  @param(attacker The attacking creature.)
-  @returns(The item CharHlp.FindDamagingRangedWeapon finds, else attacker's readied weapon; nil when no weapon is
-    readied.) }
-function FindDamagingWeapon(attacker: Types.PCreature): Pointer;
 
 { Effect 41: attacks by the current creature with a nonmagical weapon are avoided (AvoidMissile at 100%).
   @param(cr The creature that carries the effect.)
@@ -399,17 +364,6 @@ procedure EffConRegeneration(cr: Types.PCreature; effect: Pointer; removed: Bool
   @param(effect Unused.)
   @param(removed Unused.) }
 procedure EffMinorGlobe(cr: Types.PCreature; effect: Pointer; removed: Boolean);
-
-{ The creature's target saves against poison (type 0) with modifier saveModifier, or is poisoned and killed.
-  @param(cr The attacking creature.)
-  @param(saveModifier The saving-throw modifier, read as a signed value.) }
-procedure PoisonTarget(cr: Types.PCreature; saveModifier: Byte);
-
-{ The creature's target saves (type 0), or is paralyzed (effect 52, strength 12) for duration.
-  @param(cr The attacking creature.)
-  @param(duration How long the paralysis lasts.)
-  @param(saveModifier Unused.) }
-procedure ParalyzeTarget(cr: Types.PCreature; duration: Word; saveModifier: Byte);
 
 { Effect 64: poison attack, saved against at +0.
   @param(cr The creature that carries the effect.)
@@ -531,14 +485,6 @@ procedure EffHalfDamage(cr: Types.PCreature; effect: Pointer; removed: Boolean);
   @param(removed Unused.) }
 procedure EffFireColdResistance(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Effect 83: a stoning gaze at the creature's target ("gazes..."). When the gazer has effect 127 ($7F), an equipped item
-  of the target with any name id $76 reflects it back at the gazer ("reflects it!"). Whoever it lands on saves (type 1)
-  or is stoned.
-  @param(cr The creature that carries the effect.)
-  @param(effect Unused.)
-  @param(removed Unused.) }
-procedure EffPetrifyingGaze(cr: Types.PCreature; effect: Pointer; removed: Boolean);
-
 { Effect 84: absorbs electricity: the effect and damage are cancelled and the creature gains 8 hit points, with no
   limit. Note: a d8 is rolled and its result discarded.
   @param(cr The creature that carries the effect.)
@@ -635,12 +581,6 @@ procedure EffFireDamageBonus(cr: Types.PCreature; effect: Pointer; removed: Bool
   @param(effect Unused.)
   @param(removed Unused.) }
 procedure EffDodgeMissiles(cr: Types.PCreature; effect: Pointer; removed: Boolean);
-
-{ Magic resistance: when a spell effect or magic damage is pending, a d100 at or below baseChance + 5 * (11 - the
-  current spell's caster level) cancels it. Note: the threshold is a Byte, so when a high caster level takes it below 0
-  it wraps to a large value and the resistance becomes certain.
-  @param(baseChance The resistance in percent against a level-11 caster.) }
-procedure MagicResistance(baseChance: Byte);
 
 { Effect 105: magic resistance with base 50.
   @param(cr Unused.)
@@ -771,13 +711,6 @@ procedure EffHalfElfResistance(cr: Types.PCreature; effect: Pointer; removed: Bo
   @param(removed Unused.) }
 procedure EffImmuneCharmSleepParalysisPoison(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Effect 126: a paralyzing gaze at the creature's target ("gazes..."), which saves (type 1) or is paralyzed (effect 52,
-  strength $FF).
-  @param(cr The creature that carries the effect.)
-  @param(effect Unused.)
-  @param(removed Unused.) }
-procedure EffParalyzingGaze(cr: Types.PCreature; effect: Pointer; removed: Boolean);
-
 { Effect 129: cancels any pending spell effect or magic damage.
   @param(cr Unused.)
   @param(effect Unused.)
@@ -864,9 +797,6 @@ procedure EffZapAttacker(cr: Types.PCreature; effect: Pointer; removed: Boolean)
   @param(removed Unused.) }
 procedure EffDispelEvilTouch(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 
-{ Empty routine with no callers. }
-procedure NoopEffHndlrB;
-
 { Effects 5, 19, 24, 92, 127, 140 and 146: nothing to do.
   @param(cr Unused.)
   @param(effect Unused.)
@@ -891,12 +821,21 @@ begin
   FxEngine.PrimeFxEngine;
 end;
 
+{ Cancels the pending effect and the damage when effId is 0 or effId is the effect being applied.
+  @param(effId The effect to cancel, or 0 for whichever effect is pending.) }
 procedure NullifyAttack(effId: Byte);
 begin
   if (effId = 0) or (GDVars.effectCheck = effId) then
   begin GDVars.damage := 0; GDVars.effectCheck := 0; end;
 end;
 
+{ Adds effect effId again (with the given strength and duration, its handler called on removal) unless the effect lock
+  is set, so the effect repeats.
+  @param(cr The creature that carries the effect.)
+  @param(effId The effect to add.)
+  @param(strength The new effect's strength.)
+  @param(minutes The new effect's duration.)
+  @returns(True when the effect was added.) }
 function AddEffectIfNoLock(cr: Types.PCreature; effId, strength: Byte; minutes: Word): Boolean;
 begin
   if GDVars.effectLock <> 0 then AddEffectIfNoLock := False
@@ -911,6 +850,10 @@ begin
   if Byte(CharHlp.EndActions(cr)) <> 0 then;
 end;
 
+{ Adds 1 to the saving-throw roll and to the attack roll.
+  @param(cr Unused.)
+  @param(effect Unused.)
+  @param(removed Unused.) }
 procedure AddRollBonus(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 begin
   Inc(GDVars.saveRoll);
@@ -971,20 +914,22 @@ end;
 
 procedure EffProtEvil(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 begin
-  if (GDVars.curChar^.alignment = 2) or (GDVars.curChar^.alignment = 5) or (GDVars.curChar^.alignment = 8) then
+  if (GDVars.curChar^.alignment = 2) or (GDVars.curChar^.alignment = 5) or
+      (GDVars.curChar^.alignment = 8) then
   begin Inc(GDVars.saveRoll, 2); Dec(GDVars.attackRoll, 2); end;
 end;
 
 procedure EffProtGood(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 begin
-  if (GDVars.curChar^.alignment = 0) or (GDVars.curChar^.alignment = 3) or (GDVars.curChar^.alignment = 6) then
+  if (GDVars.curChar^.alignment = 0) or (GDVars.curChar^.alignment = 3) or
+      (GDVars.curChar^.alignment = 6) then
   begin Inc(GDVars.saveRoll, 2); Dec(GDVars.attackRoll, 2); end;
 end;
 
 procedure EffResistCold(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 begin
   if (GDVars.elementMask and 2) <> 0 then
-  begin GDVars.damage := GDVars.damage div 2; Inc(GDVars.saveRoll, 3); end;
+  begin GDVars.damage := GDVars.damage shr 1; Inc(GDVars.saveRoll, 3); end;
 end;
 
 procedure EffCharm(cr: Types.PCreature; effect: Pointer; removed: Boolean);
@@ -1051,7 +996,7 @@ end;
 procedure EffResistFire(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 begin
   if (not removed) and ((GDVars.elementMask and 1) <> 0) then
-  begin GDVars.damage := GDVars.damage div 2; Inc(GDVars.saveRoll, 3); end;
+  begin GDVars.damage := GDVars.damage shr 1; Inc(GDVars.saveRoll, 3); end;
 end;
 
 procedure EffSilence(cr: Types.PCreature; effect: Pointer; removed: Boolean);
@@ -1285,12 +1230,16 @@ begin
     for i := 1 to 4 do
       if prev^.exists[i] <> 0 then
         GDVars.combatArena^.cells[prev^.ulY + GDConsts.directionDy[GDConsts.stinkingCloudDirections[i]],
-                                  prev^.ulX +
-                                  GDConsts.directionDx[GDConsts.stinkingCloudDirections[i]]] := C_Terr.STINKING_CLOUD;
+                     prev^.ulX + GDConsts.directionDx[GDConsts.stinkingCloudDirections[i]]] := C_Terr.STINKING_CLOUD;
     prev := prev^.next;
   end;
 end;
 
+{ Lets defender avoid an attack by the current creature with chance percent, when that creature has a readied weapon and
+  CharHlp.CalcDistance from it to defender is above 1: "Avoids it", no damage, the attack misses and the primary hit
+  count drops by 1.
+  @param(defender The creature attacked.)
+  @param(chance The chance to avoid the attack, in percent.) }
 procedure AvoidMissile(defender: Types.PCreature; chance: Byte);
 begin
   if GDVars.curChar^.equipped[0] <> nil then
@@ -1303,6 +1252,10 @@ begin
       end;
 end;
 
+{ Finds the item attacker attacks with.
+  @param(attacker The attacking creature.)
+  @returns(The item CharHlp.FindDamagingRangedWeapon finds, else attacker's readied weapon; nil when no weapon is
+    readied.) }
 function FindDamagingWeapon(attacker: Types.PCreature): Pointer;
 var item: Pointer; resolved: Byte;
 begin
@@ -1323,7 +1276,7 @@ end;
 
 procedure EffSlow(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 begin
-  GDVars.movementAttacks := GDVars.movementAttacks div 2;
+  GDVars.movementAttacks := GDVars.movementAttacks shr 1;
 end;
 
 procedure EffDiseaseStrength(cr: Types.PCreature; effect: Pointer; removed: Boolean);
@@ -1415,7 +1368,7 @@ var item: Types.PItem;
 begin
   item := Types.PItem(EffHndlr.FindDamagingWeapon(GDVars.curChar));
   if (item = nil) or (item^.plus = 0) then GDVars.damage := 0
-  else if (item <> nil) and (item^.plus < 3) then GDVars.damage := GDVars.damage div 2;
+  else if (item <> nil) and (item^.plus < 3) then GDVars.damage := GDVars.damage shr 1;
 end;
 
 procedure EffNormalFireImmunity(cr: Types.PCreature; effect: Pointer; removed: Boolean);
@@ -1440,9 +1393,13 @@ end;
 
 procedure EffMinorGlobe(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 begin
-  if (GDVars.spellId > 0) and (GDConsts.spellProperties[GDVars.spellId].level < 4) then EffHndlr.NullifyAttack(0);
+  if (GDVars.spellId > 0) and
+      (GDConsts.spellProperties[GDVars.spellId].level < 4) then EffHndlr.NullifyAttack(0);
 end;
 
+{ The creature's target saves against poison (type 0) with modifier saveModifier, or is poisoned and killed.
+  @param(cr The attacking creature.)
+  @param(saveModifier The saving-throw modifier, read as a signed value.) }
 procedure PoisonTarget(cr: Types.PCreature; saveModifier: Byte);
 begin
   GDVars.combatTarget := cr^.combatAddr^.other;
@@ -1454,6 +1411,10 @@ begin
   end;
 end;
 
+{ The creature's target saves (type 0), or is paralyzed (effect 52, strength 12) for duration.
+  @param(cr The attacking creature.)
+  @param(duration How long the paralysis lasts.)
+  @param(saveModifier Unused.) }
 procedure ParalyzeTarget(cr: Types.PCreature; duration: Word; saveModifier: Byte);
 begin
   GDVars.combatTarget := cr^.combatAddr^.other;
@@ -1594,7 +1555,7 @@ begin
 end;
 
 procedure EffHalfDamage(cr: Types.PCreature; effect: Pointer; removed: Boolean);
-begin GDVars.damage := GDVars.damage div 2; end;
+begin GDVars.damage := GDVars.damage shr 1; end;
 
 procedure EffFireColdResistance(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 begin
@@ -1602,39 +1563,7 @@ begin
     if FxEngine.RollSavingThrow(cr, 4, 0) and (GDConsts.spellProperties[GDVars.spellId].saveResult <> 0) then
       GDVars.damage := 0
     else
-      GDVars.damage := GDVars.damage div 2;
-end;
-
-procedure EffPetrifyingGaze(cr: Types.PCreature; effect: Pointer; removed: Boolean);
-var
-  item: Types.PItem;
-  reflected: Boolean;
-  existing: Types.PEffect;
-begin
-  GDVars.combatTarget := cr^.combatAddr^.other;
-  CharHlp.PrintCreatureMessage(cr, 'gazes...', 10, False);
-  CharHlp.BuildIconFacings(18);
-  CharHlp.CombatAnimateMovingIcon(CbtMap.CombatCellX(cr), CbtMap.CombatCellY(cr),
-                                  CbtMap.CombatCellX(GDVars.combatTarget), CbtMap.CombatCellY(GDVars.combatTarget), 4,
-                                  45);
-  if CharHlp.HasEffect(cr, 127, existing) then begin
-    reflected := False;
-    item := GDVars.combatTarget^.itemsAddr;
-    while (item <> nil) and (not reflected) do begin
-      if item^.equipped <> 0 then
-        if (item^.nameIds[1] = 118) or (item^.nameIds[2] = 118) or (item^.nameIds[3] = 118) then begin
-          CharHlp.PrintCreatureMessage(GDVars.combatTarget, 'reflects it!', 12, False);
-          CharHlp.CombatAnimateMovingIcon(CbtMap.CombatCellX(GDVars.combatTarget),
-                                          CbtMap.CombatCellY(GDVars.combatTarget), CbtMap.CombatCellX(cr),
-                                          CbtMap.CombatCellY(cr), 4, 45);
-          reflected := True;
-          GDVars.combatTarget := cr;
-        end;
-      item := item^.next;
-    end;
-  end;
-  if not FxEngine.RollSavingThrow(GDVars.combatTarget, 1, 0) then
-    FxEngine.KillCreature(GDVars.combatTarget, C_Status.STONED, 'is Stoned');
+      GDVars.damage := GDVars.damage shr 1;
 end;
 
 procedure EffAbsorbElectricity(cr: Types.PCreature; effect: Pointer; removed: Boolean);
@@ -1714,14 +1643,15 @@ begin
     for i := 1 to 9 do
       if prev^.exists[i] <> 0 then
         GDVars.combatArena^.cells[prev^.ulY + GDConsts.directionDy[GDConsts.cloudkillDirections[i]],
-                                 prev^.ulX + GDConsts.directionDx[GDConsts.cloudkillDirections[i]]] := C_Terr.CLOUDKILL;
+                                  prev^.ulX +
+                                  GDConsts.directionDx[GDConsts.cloudkillDirections[i]]] := C_Terr.CLOUDKILL;
     prev := prev^.next;
   end;
 end;
 
 procedure EffHalfFire(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 begin
-  if (GDVars.elementMask and 1) <> 0 then GDVars.damage := GDVars.damage div 2;
+  if (GDVars.elementMask and 1) <> 0 then GDVars.damage := GDVars.damage shr 1;
 end;
 
 procedure EffHalfPierceBash(cr: Types.PCreature; effect: Pointer; removed: Boolean);
@@ -1729,7 +1659,7 @@ var item: Types.PItem;
 begin
   item := Types.PItem(EffHndlr.FindDamagingWeapon(GDVars.curChar));
   if item <> nil then
-    if (GDVars.baseItems[item^.itemType].wpnClass and $81) <> 0 then GDVars.damage := GDVars.damage div 2;
+    if (GDVars.baseItems[item^.itemType].wpnClass and $81) <> 0 then GDVars.damage := GDVars.damage shr 1;
 end;
 
 procedure EffFightOn(cr: Types.PCreature; effect: Pointer; removed: Boolean);
@@ -1812,6 +1742,10 @@ begin
   EffHndlr.AvoidMissile(cr, 60);
 end;
 
+{ Magic resistance: when a spell effect or magic damage is pending, a d100 at or below baseChance + 5 * (11 - the
+  current spell's caster level) cancels it. Note: the threshold is a Byte, so when a high caster level takes it below 0
+  it wraps to a large value and the resistance becomes certain.
+  @param(baseChance The resistance in percent against a level-11 caster.) }
 procedure MagicResistance(baseChance: Byte);
 var
   casterLevel: Byte;
@@ -1882,7 +1816,7 @@ end;
 
 procedure EffHalfElectricity(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 begin
-  if (GDVars.elementMask and 4) <> 0 then GDVars.damage := GDVars.damage div 2;
+  if (GDVars.elementMask and 4) <> 0 then GDVars.damage := GDVars.damage shr 1;
 end;
 
 procedure EffHalfSlashPierce(cr: Types.PCreature; effect: Pointer; removed: Boolean);
@@ -1892,7 +1826,7 @@ begin
   if item <> nil then
     if (GDVars.baseItems[item^.itemType].wpnClass = 0) or
         ((GDVars.baseItems[item^.itemType].wpnClass and 1) <> 0) then
-      GDVars.damage := GDVars.damage div 2;
+      GDVars.damage := GDVars.damage shr 1;
 end;
 
 procedure EffHalfMagicWeapon(cr: Types.PCreature; effect: Pointer; removed: Boolean);
@@ -1900,7 +1834,7 @@ var item: Types.PItem;
 begin
   item := Types.PItem(EffHndlr.FindDamagingWeapon(GDVars.curChar));
   if item <> nil then
-    if item^.plus > 0 then GDVars.damage := GDVars.damage div 2;
+    if item^.plus > 0 then GDVars.damage := GDVars.damage shr 1;
 end;
 
 procedure EffHolyWater(cr: Types.PCreature; effect: Pointer; removed: Boolean);
@@ -1914,7 +1848,7 @@ end;
 
 procedure EffHalfCold(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 begin
-  if (GDVars.elementMask and 2) <> 0 then GDVars.damage := GDVars.damage div 2;
+  if (GDVars.elementMask and 2) <> 0 then GDVars.damage := GDVars.damage shr 1;
 end;
 
 procedure EffNeedMagicWeapon(cr: Types.PCreature; effect: Pointer; removed: Boolean);
@@ -1945,8 +1879,8 @@ begin
     CharHlp.PrintCreatureMessage(cr, 'Spits Acid', 10, True);
     CharHlp.BuildIconFacings(23);
     CharHlp.CombatAnimateMovingIcon(CbtMap.CombatCellX(cr), CbtMap.CombatCellY(cr),
-                                    CbtMap.CombatCellX(GDVars.combatTarget),
-                                    CbtMap.CombatCellY(GDVars.combatTarget), 1, 30);
+                                    CbtMap.CombatCellX(GDVars.combatTarget), CbtMap.CombatCellY(GDVars.combatTarget), 1,
+                                    30);
     FxEngine.InflictNonWeaponDamage(GDVars.combatTarget, FxEngine.RollDamageDice(8, 4), 2,
                                     FxEngine.RollSavingThrow(GDVars.combatTarget, 3, 0));
     FxEngine.RemoveEffect(cr, 121, effect);
@@ -1986,20 +1920,6 @@ begin
   EffHndlr.NullifyAttack(C_Effect.PARALYZED);
   EffHndlr.NullifyAttack(C_Effect.POISONED);
   if GDVars.saveType = 0 then GDVars.saveRoll := 100;
-end;
-
-procedure EffParalyzingGaze(cr: Types.PCreature; effect: Pointer; removed: Boolean);
-begin
-  GDVars.combatTarget := cr^.combatAddr^.other;
-  CharHlp.PrintCreatureMessage(cr, 'gazes...', 10, False);
-  CharHlp.BuildIconFacings(18);
-  CharHlp.CombatAnimateMovingIcon(CbtMap.CombatCellX(cr), CbtMap.CombatCellY(cr),
-                                  CbtMap.CombatCellX(GDVars.combatTarget), CbtMap.CombatCellY(GDVars.combatTarget), 4,
-                                  45);
-  if not FxEngine.RollSavingThrow(GDVars.combatTarget, 1, 0) then begin
-    FxEngine.AddEffect(GDVars.combatTarget, C_Effect.PARALYZED, 0, 255, False);
-    CharHlp.PrintCreatureMessage(GDVars.combatTarget, 'is paralyzed', 10, False);
-  end;
 end;
 
 procedure EffImmuneMagic(cr: Types.PCreature; effect: Pointer; removed: Boolean);
@@ -2136,14 +2056,6 @@ end;
 procedure EffNone(cr: Types.PCreature; effect: Pointer; removed: Boolean);
 begin end;
 
-procedure NoopEffHndlrA;
-begin
-end;
-
-procedure NoopEffHndlrB;
-begin
-end;
-
 procedure InitEffectHandlers;
 begin
   GDVars.effectHandlers[1] := EffHndlr.EffBless;
@@ -2228,7 +2140,6 @@ begin
   GDVars.effectHandlers[80] := EffHndlr.EffAcidTouch;
   GDVars.effectHandlers[81] := EffHndlr.EffHalfDamage;
   GDVars.effectHandlers[82] := EffHndlr.EffFireColdResistance;
-  GDVars.effectHandlers[83] := EffHndlr.EffPetrifyingGaze;
   GDVars.effectHandlers[84] := EffHndlr.EffAbsorbElectricity;
   GDVars.effectHandlers[85] := EffHndlr.EffResistPiercing;
   @GDVars.effectHandlers[87] := @CbtActs.AttackEyeRays;
@@ -2268,7 +2179,6 @@ begin
   GDVars.effectHandlers[123] := EffHndlr.EffColdTouch;
   GDVars.effectHandlers[C_Effect.HALF_ELF_RESISTANCE] := EffHndlr.EffHalfElfResistance;
   GDVars.effectHandlers[125] := EffHndlr.EffImmuneCharmSleepParalysisPoison;
-  GDVars.effectHandlers[126] := EffHndlr.EffParalyzingGaze;
   GDVars.effectHandlers[127] := EffHndlr.EffNone;
   GDVars.effectHandlers[129] := EffHndlr.EffImmuneMagic;
   GDVars.effectHandlers[130] := EffHndlr.EffBanishByWeapon;

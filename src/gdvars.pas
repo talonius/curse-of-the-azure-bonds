@@ -190,9 +190,8 @@ var
   { Total weight of the equipped items, summed by RecalcStats. It is the floor for the encumbrance in a branch of
     RecalcStats that never runs. }
   equippedWeight: Word;
-  { The new top of the heap's free list in Tandy mode, 16 KB lower, so the heap stays clear of the Tandy screen memory;
-    the free-list record is moved there. }
-  savedTop: Types.PFreeRec;
+  { The new end of the heap in Tandy mode, 16 KB lower, so the heap stays clear of the Tandy screen memory. }
+  savedTop: Pointer;
   { Last key or configuration letter read at startup: ReadDigit's key, then the adapter, sound and full-introduction
     letters read back from CURSE.CFG. }
   curKey: Char;
@@ -228,12 +227,15 @@ var
   driveLetter: Char;
 
 { Session settings and script state: the GBVM banks, the script entry points, the interface mode and the player's
-  display options; then video: the BIOS register block and the active display mode and pages. }
+  display options. }
 var
   { Points at the sound driver's forced-exit countdown, which its timer interrupt counts down. Sound command 15 arms it
     with 5000 ticks; when the count runs out the driver resets the video, prints its message and ends the program.
     SoundDrv's initialization aims it at the counter and clears the count. }
   timeoutPtr: ^Word;
+  { Set once a game can be under way: InitializeGame clears it and ResetGameState sets it. When an allocation fails,
+    HeapErrorHandler then offers the save menu before quitting instead of quitting at once. }
+  heapFailureSaveEnabled: Boolean;
   { Set when the fourth line of the configuration file is F. Introduction shows only the first title picture when it is
     clear and the rest of the title sequence when it is set. }
   fullIntro: Boolean;
@@ -309,6 +311,9 @@ var
     default; combat turns it off when it starts and back on when it ends, and some script commands set it while they
     print and clear it afterwards. }
   typingDelayOn: Boolean;
+
+{ Video: the BIOS register block and the active display mode and pages. }
+var
   { Register block for the BIOS video calls: setting the mode, selecting the EGA page, the palette, the cursor and
     character output in text-style messages, and single pixels in the ending. }
   videoRegs: Types.TRegisters;
@@ -930,10 +935,6 @@ var
   charSelectActive: Byte;
   { Set after the game is won: training is then free and needs no gold. Game start and loading clear it. }
   victoryStart: Boolean;
-  { The heap top recorded at boot in Tandy mode, after it is moved down below the Tandy video memory; never read. }
-  tandyHeapTop: Types.PFreeRec;
-  { Reserved, never read; sits between tandyHeapTop and debugFile. }
-  tandyHeapTopTail: array[0..1] of Byte;
   { The developer debug log, debug.txt, opened and closed with Ctrl-D in developer mode; the script trace and the effect
     dump write to it, and quitting closes it while logging is on. }
   debugFile: Text;

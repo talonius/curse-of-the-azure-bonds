@@ -15,18 +15,6 @@ uses Types, Blit, DaxIo, GDConsts, GDVars, TextRend, GameIo, Border, EclTrace, C
   @param(pic The picture, or nil.) }
 procedure DisplayImageBuf(col, row: Integer; anim: Boolean; pic: Types.PImgBuf);
 
-{ Draws a portrait head at a cell.
-  @param(col Column of the cell.)
-  @param(row Row of the cell.)
-  @param(pic The head picture.) }
-procedure DisplayPortraitHead(col, row: Byte; pic: Types.PImgBuf);
-
-{ Draws a portrait body 5 rows below a cell, under its head.
-  @param(col Column of the head's cell.)
-  @param(row Row of the head's cell.)
-  @param(pic The body picture.) }
-procedure DisplayPortraitBody(col, row: Byte; pic: Types.PImgBuf);
-
 { Loads an animation from <name><disk>.DAX, unless it is the one already loaded or picId is 255. PIC and FINAL
   animations store each later frame XORed with the first, and while the animation flag is off only their first frame is
   loaded. Frames stop loading when free memory drops below 3900 bytes; outside CGA, transparent frames are recolored
@@ -92,11 +80,19 @@ begin
       Blit.ShowPic(col, row, pic);
 end;
 
+{ Draws a portrait head at a cell.
+  @param(col Column of the cell.)
+  @param(row Row of the cell.)
+  @param(pic The head picture.) }
 procedure DisplayPortraitHead(col, row: Byte; pic: Types.PImgBuf);
 begin
   Portrait.DisplayImageBuf(col, row, False, pic);
 end;
 
+{ Draws a portrait body 5 rows below a cell, under its head.
+  @param(col Column of the head's cell.)
+  @param(row Row of the head's cell.)
+  @param(pic The body picture.) }
 procedure DisplayPortraitBody(col, row: Byte; pic: Types.PImgBuf);
 begin
   Portrait.DisplayImageBuf(col, row + 5, False, pic);
@@ -191,7 +187,7 @@ begin
   with anim do
     for GDVars.sharedLoopIdx := 1 to count do
       Blit.FreePic(frames[GDVars.sharedLoopIdx].pic);
-  FillChar(anim, SizeOf(anim), 0);
+  FillChar(anim, SizeOf(Types.TAnimRec), 0);
   GDVars.picArchiveName[0] := #0;
   GDVars.loadedPicId := 255;
 end;

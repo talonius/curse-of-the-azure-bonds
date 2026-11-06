@@ -7,9 +7,6 @@ interface
 
 uses Blit, GameIo, EclTrace, Types, GDConsts, GDVars;
 
-{ Empty routine with no callers. }
-procedure NoopMapTiles;
-
 { Loads a picture and copies its first frames, 24x24 tiles, into the first tile set from a frame slot on (skipped when
   the set is not allocated). A slot above 48 quits with a range error; the slot plus the tile count is not checked.
   Note: a picture that fails to load is used through its nil pointer.
@@ -57,10 +54,6 @@ var
   { The icon slots as the icon loaders index them: 26 slots, the last (the combat cursor sprite) running past iconImages
     over iconTail and arenaHead. }
   iconSlots: array[0..25, 0..1] of Types.PImgBuf absolute GDVars.iconImages;
-
-procedure NoopMapTiles;
-begin
-end;
 
 procedure PrimeMapTiles;
 begin

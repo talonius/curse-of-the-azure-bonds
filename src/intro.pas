@@ -10,16 +10,9 @@ interface
   with the flag off the first picture is left allocated. }
 procedure Introduction;
 
-{ Empty routine with no callers. }
-procedure NoopIntro;
-
 implementation
 
 uses Crt, TextRend, Blit, GameIo, SoundDrv, Border, Types, GDConsts, GDVars;
-
-procedure NoopIntro;
-begin
-end;
 
 { Waits a number of seconds or until a key is pressed, discarding the waiting keys before and after. Note: the clock is
   the time of day, so a wait across midnight lasts until a key is pressed.
