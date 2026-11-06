@@ -207,43 +207,43 @@ var
       open := 0;
     for k := 1 to 4 do
       case k of
-        1: case Char(GDVars.wallN) of
-             #0: case Char(GDVars.wallW) of
-                  #0: tile1 := 22;
-                  #3: tile1 := 13;
-                  #1: if open <> 0 then tile1 := 0 else tile1 := 13;
+        1: case GDVars.wallN of
+             0: case GDVars.wallW of
+                  0: tile1 := 22;
+                  3: tile1 := 13;
+                  1: if open <> 0 then tile1 := 0 else tile1 := 13;
                 end;
-             #3, #1: if GDVars.wallW = 0 then begin
+             3, 1: if GDVars.wallW = 0 then begin
                      if open <> 0 then tile1 := 15 else tile1 := 5;
                    end else begin
                      if open <> 0 then tile1 := 18 else tile1 := 2;
                    end;
            end;
-        2: case Char(GDVars.wallN) of
-             #0: tile2 := 22;
-             #3: tile2 := 17;
-             #1: tile2 := 5;
+        2: case GDVars.wallN of
+             0: tile2 := 22;
+             3: tile2 := 17;
+             1: tile2 := 5;
            end;
-        3: case Char(GDVars.wallW) of
-             #0: if GDVars.wallN = 0 then
+        3: case GDVars.wallW of
+             0: if GDVars.wallN = 0 then
                   tile3 := 22
                 else if open <> 0 then
                   tile3 := 16
                 else
                   tile3 := 10;
-             #3: if open <> 0 then tile3 := 20 else tile3 := 7;
-             #1: if open <> 0 then tile3 := 1 else tile3 := 3;
+             3: if open <> 0 then tile3 := 20 else tile3 := 7;
+             1: if open <> 0 then tile3 := 1 else tile3 := 3;
            end;
-        4: case Char(GDVars.wallW) of
-             #0, #3: case Char(GDVars.wallN) of
-                     #0: tile4 := 22;
-                     #3: tile4 := 23;
-                     #1: tile4 := 10;
+        4: case GDVars.wallW of
+             0, 3: case GDVars.wallN of
+                     0: tile4 := 22;
+                     3: tile4 := 23;
+                     1: tile4 := 10;
                    end;
-             #1: case Char(GDVars.wallN) of
-                  #0: tile4 := 13;
-                  #3: tile4 := 21;
-                  #1: tile4 := 6;
+             1: case GDVars.wallN of
+                  0: tile4 := 13;
+                  3: tile4 := 21;
+                  1: tile4 := 6;
                 end;
            end;
       end;
@@ -273,19 +273,19 @@ var
       open := 0;
     for k := 1 to 4 do
       case k of
-        1: case Char(GDVars.wallN) of
-             #0: if kN = 1 then tile1 := 4 else tile1 := 22;
-             #3: tile1 := 15;
-             #1: tile1 := 5;
+        1: case GDVars.wallN of
+             0: if kN = 1 then tile1 := 4 else tile1 := 22;
+             3: tile1 := 15;
+             1: tile1 := 5;
            end;
         2: if GDVars.wallN = 0 then begin
-             case Char(kN) of
-               #0: tile2 := 22;
-               #3: if (GDVars.wallE = 0) and (kE <> 0) then
+             case kN of
+               0: tile2 := 22;
+               3: if (GDVars.wallE = 0) and (kE <> 0) then
                     tile2 := 24
                   else
                     tile2 := 1;
-               #1: if GDVars.wallE = 0 then begin
+               1: if GDVars.wallE = 0 then begin
                     if kE <> 0 then tile2 := 11 else tile2 := 7;
                   end else
                     tile2 := 3;
@@ -300,10 +300,10 @@ var
              else
                tile2 := 19;
            end;
-        3: case Char(GDVars.wallN) of
-             #0: tile3 := 22;
-             #3: tile3 := 16;
-             #1: tile3 := 10;
+        3: case GDVars.wallN of
+             0: tile3 := 22;
+             3: tile3 := 16;
+             1: tile3 := 10;
            end;
         4: if GDVars.wallN = 0 then begin
              if kN = 0 then

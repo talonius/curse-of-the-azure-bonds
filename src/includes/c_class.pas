@@ -10,7 +10,11 @@ const
   RANGER = 4;
   MAGE = 5;
   CLERIC_FIGHTER = 8;
+  CLERIC_FIGHTER_MAGE = 9;
   CLERIC_RANGER = 10;
+  FIGHTER_THIEF = 14;
+  FIGHTER_MAGE_THIEF = 15;
+  MAGE_THIEF = 16;
 
   { Indices into TCreature.classLevels and oldClassLevels (one level per class). }
   CLERIC_LEVEL = 0;

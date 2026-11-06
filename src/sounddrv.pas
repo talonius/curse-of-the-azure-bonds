@@ -1,6 +1,5 @@
 { The interface to the sound driver in SOUNDDRV.OBJ: commands for the PC speaker and Tandy voices, and installing and
-  removing its timer interrupt. Sound mode 0 is the PC speaker, 1 Tandy, 2 off. Note: the initialization clears the
-  countdown through timeoutPtr before StartSound has pointed it at the driver. }
+  removing its timer interrupt. Sound mode 0 is the PC speaker, 1 Tandy, 2 off. }
 {$F+,I-,R-,S-}
 unit SoundDrv;
 
@@ -13,8 +12,8 @@ interface
   @param(cmd The command.) }
 procedure SoundCommand(cmd: Word);
 
-{ Starts sound: points timeoutPtr at the driver's countdown, remembers the sound mode and marks sound active, then,
-  unless sound is off, installs the driver's timer interrupt and silences both sets of voices. }
+{ Starts sound: remembers the sound mode and marks sound active, then, unless sound is off, installs the driver's timer
+  interrupt and silences both sets of voices. }
 procedure StartSound;
 
 implementation
@@ -60,11 +59,9 @@ begin
              GDVars.soundActive := False;
            end;
       2..14: if GDVars.soundMode <> C_Sound.OFF then
-               case Char(GDVars.soundMode) of
-                 { PC speaker }
-                 #0: SoundDrv.ProgramSpeakerVoices(cmd - 1);
-                 { Tandy voices }
-                 #1: SoundDrv.ProgramTandyVoices(cmd - 1);
+               case GDVars.soundMode of
+                 C_Sound.SPEAKER: SoundDrv.ProgramSpeakerVoices(cmd - 1);
+                 C_Sound.TANDY: SoundDrv.ProgramTandyVoices(cmd - 1);
                end;
       15: GDVars.timeoutPtr^ := 5000;
     end;
@@ -72,7 +69,6 @@ end;
 
 procedure StartSound;
 begin
-  GDVars.timeoutPtr := @SoundDrv.TimeoutCtr;
   GDVars.soundPrev := GDVars.soundMode;
   GDVars.soundActive := True;
   if GDVars.soundMode = C_Sound.OFF then Exit;
@@ -82,5 +78,6 @@ begin
 end;
 
 begin
+  GDVars.timeoutPtr := @SoundDrv.TimeoutCtr;
   GDVars.timeoutPtr^ := 0;
 end.

@@ -640,7 +640,7 @@ var
   ok: Boolean;
 begin
   zone := EclMenu.GbvmZone(address);
-  case ShortInt(zone) of
+  case zone of
     0: begin
       { Apply the write's side effects before storing the value. }
       case address - $4B00 of
@@ -766,7 +766,7 @@ var
 begin
   zone := EclMenu.GbvmZone(address);
   len := Length(value);
-  case ShortInt(zone) of
+  case zone of
     0: begin
       if len > 0 then
         for i := 0 to len - 1 do
@@ -855,7 +855,7 @@ begin
   zone := EclMenu.GbvmZone(address);
   GDVars.scriptStrings[strIdx] := '';
   i := 0;
-  case ShortInt(zone) of
+  case zone of
     0:
       while GDVars.zone0^[address + i] <> 0 do begin
         GDVars.scriptStrings[strIdx] := Concat(GDVars.scriptStrings[strIdx], Char(GDVars.zone0^[address + i]));

@@ -16,8 +16,8 @@ procedure PrimeTemple;
 
 implementation
 
-uses MenuCore, Border, ViewChar, FxEngine, TextRend, EclMenu, Magic, CharHlp, Money, EclTrace, ClassCal, GDConsts,
-  GDVars, C_Keys, Types, C_Status, C_Effect, C_Ifc, C_Class, C_Stat, Crt, C_Gbvm;
+uses MenuCore, Border, ViewChar, FxEngine, TextRend, EclMenu, Magic, CharHlp, Money, EclTrace, ClassCal,
+  GDConsts, GDVars, C_Keys, Types, C_Status, C_Effect, C_Ifc, C_Class, C_Stat, Crt, C_Gbvm;
 
 procedure PrimeTemple;
 begin
@@ -402,7 +402,7 @@ begin
   CharHlp.DisplayNoncombatInterface;
   GDVars.shopSession := True;
   CharHlp.DisplayParty(GDVars.curChar);
-  FillChar(GDVars.treasureMoney, SizeOf(GDVars.treasureMoney), 0);
+  FillChar(GDVars.treasureMoney, SizeOf(Types.TMoney), 0);
   GDVars.treasureMoneyFlag := False;
   done := False;
   repeat

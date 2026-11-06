@@ -392,8 +392,8 @@ begin
   with pic^ do begin
     dstOff := 0;
     maskOff := 0;
-    case Char(GDVars.displayMode) of
-      #0: begin
+    case GDVars.displayMode of
+      0: begin
         for frame := 1 to count do
           for row := 0 to height - 1 do
             for col := 0 to width - 1 do begin
@@ -433,7 +433,7 @@ begin
               Inc(srcOff, 4);
             end;
       end;
-      #1: begin
+      1: begin
         for frame := 1 to count do
           for row := 0 to height - 1 do
             for col := 0 to width - 1 do begin
@@ -458,7 +458,7 @@ begin
               Inc(srcOff, 4);
             end;
       end;
-      #2: begin
+      2: begin
         for frame := 1 to count do begin
           Move(imgData^[srcOff], data[dstOff], imgSize);
           if transp <> nil then
@@ -498,12 +498,12 @@ var
   maskOff: Word;
 begin
   useMask := ((flag and 1) <> 0) and (gfx^.transp <> nil);
-  case Char(GDVars.displayMode) of
-    #0: if useMask then Blit.BlitCellCgaMasked(screenX, screenY, tileIdx, gfx, dest)
+  case GDVars.displayMode of
+    0: if useMask then Blit.BlitCellCgaMasked(screenX, screenY, tileIdx, gfx, dest)
        else Blit.BlitCellCga(screenX, screenY, tileIdx, gfx, dest);
-    #1: if useMask then Blit.BlitCellEgaMasked(screenX, screenY, tileIdx, gfx, dest)
+    1: if useMask then Blit.BlitCellEgaMasked(screenX, screenY, tileIdx, gfx, dest)
        else Blit.BlitCellEga(screenX, screenY, tileIdx, gfx, dest);
-    #2: if useMask then Blit.BlitCellTandyMasked(screenX, screenY, tileIdx, gfx, dest)
+    2: if useMask then Blit.BlitCellTandyMasked(screenX, screenY, tileIdx, gfx, dest)
        else Blit.BlitCellTandy(screenX, screenY, tileIdx, gfx, dest);
   end;
 end;
@@ -537,10 +537,10 @@ var
   { Unused in this version; see the other implementations of this routine. }
   maskOff: Word;
 begin
-  case Char(GDVars.displayMode) of
-    #0: Blit.BlitClippedCga(GDVars.saveUnder, screenX, screenY, tileIdx, flag, gfx, dest);
-    #1: Blit.BlitClippedEga(GDVars.saveUnder, screenX, screenY, tileIdx, flag, gfx, dest);
-    #2: Blit.BlitClippedTandy(GDVars.saveUnder, screenX, screenY, tileIdx, flag, gfx, dest);
+  case GDVars.displayMode of
+    0: Blit.BlitClippedCga(GDVars.saveUnder, screenX, screenY, tileIdx, flag, gfx, dest);
+    1: Blit.BlitClippedEga(GDVars.saveUnder, screenX, screenY, tileIdx, flag, gfx, dest);
+    2: Blit.BlitClippedTandy(GDVars.saveUnder, screenX, screenY, tileIdx, flag, gfx, dest);
   end;
 end;
 
@@ -597,8 +597,8 @@ begin
   if (src = nil) or (dst = nil) then Exit;
   with src^ do begin
     Move(map, dst^.map, SizeOf(map));
-    case Char(GDVars.displayMode) of
-      #0: begin
+    case GDVars.displayMode of
+      0: begin
         rowBytes := width * 2;
         srcOff := rowBytes - 2;
         dstOff := 0;
@@ -618,7 +618,7 @@ begin
           Inc(srcOff, rowBytes);
         end;
       end;
-      #1: begin
+      1: begin
         rowBytes := width * 4;
         srcOff := rowBytes - 4;
         dstOff := 0;
@@ -635,7 +635,7 @@ begin
           Inc(srcOff, rowBytes);
         end;
       end;
-      #2: begin
+      2: begin
         rowBytes := width * 4;
         srcOff := rowBytes - 1;
         dstOff := 0;
@@ -668,8 +668,8 @@ var
 begin
   if pic = nil then Exit;
   with pic^ do
-    case Char(GDVars.displayMode) of
-      #0: begin
+    case GDVars.displayMode of
+      0: begin
         rowBytes := width * 2;
         dataOffset := 0;
         firstRow := row * 8;
@@ -680,7 +680,7 @@ begin
           Inc(dataOffset, rowBytes);
         end;
       end;
-      #1: begin
+      1: begin
         dataOffset := 0;
         firstRow := row * 8;
         lastRow := firstRow + height - 1;
@@ -700,7 +700,7 @@ begin
         Port[C_Ega.GC_ADDR_PORT] := C_Ega.GC_MODE_REG;
         Port[C_Ega.GC_DATA_PORT] := C_Ega.GC_WRITE_MODE_0;
       end;
-      #2: begin
+      2: begin
         rowBytes := width * 4;
         dataOffset := 0;
         firstRow := row * 8;
@@ -728,8 +728,8 @@ var
 begin
   if pic = nil then Exit;
   with pic^ do
-    case Char(GDVars.displayMode) of
-      #0: begin
+    case GDVars.displayMode of
+      0: begin
         rowBytes := width * 2;
         srcOff := 0;
         firstRow := screenY * 8;
@@ -740,7 +740,7 @@ begin
           Inc(srcOff, rowBytes);
         end;
       end;
-      #1: begin
+      1: begin
         srcOff := 0;
         firstRow := screenY * 8;
         lastRow := firstRow + height - 1;
@@ -756,7 +756,7 @@ begin
             end;
         Port[C_Ega.SEQ_DATA_PORT] := C_Ega.MAP_MASK_ALL_PLANES;
       end;
-      #2: begin
+      2: begin
         rowBytes := width * 4;
         srcOff := 0;
         firstRow := screenY * 8;
@@ -781,13 +781,13 @@ var
   { Unused in this version; see the other implementations of this routine. }
   spanBuf: array[1..256] of Byte;
 begin
-  case Char(GDVars.displayMode) of
-    #0: for row := 0 to SizeOf(GDVars.spanActive) - 1 do
+  case GDVars.displayMode of
+    0: for row := 0 to SizeOf(GDVars.spanActive) - 1 do
          if GDVars.spanActive[row] <> 0 then
            Move(GDVars.viewBuffer^.data[GDVars.spanFirstOfs[row]],
                 Mem[GDVars.cgaRowSeg[row + 8]:GDVars.spanScreenOfs[row] + 2],
                 GDVars.spanLastOfs[row] - GDVars.spanFirstOfs[row] + 1);
-    #1: begin
+    1: begin
       Port[C_Ega.SEQ_ADDR_PORT] := C_Ega.SEQ_MAP_MASK_REG;
       for row := 0 to SizeOf(GDVars.spanActive) - 1 do
         if GDVars.spanActive[row] <> 0 then begin
@@ -838,7 +838,7 @@ begin
       end;
       Port[C_Ega.GC_DATA_PORT] := C_Ega.GC_WRITE_MODE_0;
     end;
-    #2: for row := 0 to SizeOf(GDVars.spanActive) - 1 do
+    2: for row := 0 to SizeOf(GDVars.spanActive) - 1 do
          if GDVars.spanActive[row] <> 0 then
            Move(GDVars.viewBuffer^.data[GDVars.spanFirstOfs[row]],
                 Mem[GDVars.tandyRowSeg[row + 8]:GDVars.spanScreenOfs[row] + 4],
@@ -893,8 +893,8 @@ begin
     dstOff := 0;
     if fromColors[pairIdx] <> toColors[pairIdx] then
       with scratchPic^ do
-        case Char(GDVars.displayMode) of
-          #0: begin
+        case GDVars.displayMode of
+          0: begin
             rowBytes := width * 2;
             for GDVars.sharedLoopIdx := frame to nFrames + frame - 1 do
               for row := 1 to height do
@@ -909,7 +909,7 @@ begin
                   Inc(dstOff);
                 end;
           end;
-          #1: begin
+          1: begin
             for plane := 0 to 3 do
               if (fromColors[pairIdx] and GDConsts.egaPlaneBit[plane]) > 0 then
                 planeMask[plane] := 0
@@ -933,7 +933,7 @@ begin
                   Inc(dstOff, 4);
                 end;
           end;
-          #2: begin
+          2: begin
             rowBytes := width * 4;
             fromHigh := fromColors[pairIdx] shl 4;
             toHigh := toColors[pairIdx] shl 4;
@@ -1036,8 +1036,8 @@ begin
     else
       lastRow := height - 1;
   end;
-  case Char(GDVars.displayMode) of
-    #0, #2: begin
+  case GDVars.displayMode of
+    0, 2: begin
       if GDVars.displayMode = 0 then begin
         screenOfs := clampedX * 2;
         runLen := (width - clipLeft - clipRight) * 2;
@@ -1069,7 +1069,7 @@ begin
         Inc(absRow);
       end;
     end;
-    #1: begin
+    1: begin
       screenOfs := clampedX;
       runLen := width - clipLeft - clipRight;
       clampedX := clampedX * 4;

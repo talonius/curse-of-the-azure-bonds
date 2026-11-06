@@ -8,7 +8,8 @@ unit CbtMap;
 
 interface
 
-uses Blit, Types, GDConsts, GDVars, C_Ifc, C_Terr, MapTiles, SoundDrv, Crt, TextRend, EclTrace;
+uses Blit, Types, GDConsts, GDVars, C_Ifc, C_Terr, MapTiles, SoundDrv, Crt, TextRend,
+  EclTrace;
 
 { Empty routine with no callers. }
 procedure NoopCbtMap;
@@ -192,17 +193,17 @@ end;
 
 procedure SetCombatPalette;
 begin
-  case Char(GDVars.displayMode) of
-    #1: begin Blit.SetPaletteRegister(0, 8); Blit.SetPaletteRegister(8, 0); end;
-    #2: begin Blit.SetPaletteRegisterTandy(0, 8); Blit.SetPaletteRegisterTandy(8, 0); end;
+  case GDVars.displayMode of
+    1: begin Blit.SetPaletteRegister(0, 8); Blit.SetPaletteRegister(8, 0); end;
+    2: begin Blit.SetPaletteRegisterTandy(0, 8); Blit.SetPaletteRegisterTandy(8, 0); end;
   end;
 end;
 
 procedure SetNoncombatPalette;
 begin
-  case Char(GDVars.displayMode) of
-    #1: begin Blit.SetPaletteRegister(0, 0); Blit.SetPaletteRegister(8, 8); end;
-    #2: begin Blit.SetPaletteRegister(0, 0); Blit.SetPaletteRegisterTandy(8, 8); end;
+  case GDVars.displayMode of
+    1: begin Blit.SetPaletteRegister(0, 0); Blit.SetPaletteRegister(8, 8); end;
+    2: begin Blit.SetPaletteRegister(0, 0); Blit.SetPaletteRegisterTandy(8, 8); end;
   end;
 end;
 
@@ -563,7 +564,7 @@ begin
         if CbtMap.GetIconTileDelta(GDVars.arenaSlots[slot].size, m, tdx, tdy) then
           if CbtMap.ViewCoordsValid(GDVars.gridX[slot] + tdx, GDVars.gridY[slot] + tdy) then
             Blit.BlitTileClipped((GDVars.gridX[slot] + tdx) * 3, (GDVars.gridY[slot] + tdy) * 3, 0, 5,
-                                 GDVars.iconImages[24][frame mod 2], GDVars.viewBuffer);
+                                 GDVars.iconImages[24, frame mod 2], GDVars.viewBuffer);
       Blit.FlushView;
       Delay(10);
     end;

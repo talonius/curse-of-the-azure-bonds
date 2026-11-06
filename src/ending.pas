@@ -53,13 +53,13 @@ end;
 { Flashes palette register 9 to white and back on EGA and Tandy. }
 procedure SetFinalPalette;
 begin
-  case Char(GDVars.displayMode) of
-    #1: begin
+  case GDVars.displayMode of
+    1: begin
          Blit.SetPaletteRegister(9, 15);
          Delay(1);
          Blit.SetPaletteRegister(9, 9);
        end;
-    #2: begin
+    2: begin
          Blit.SetPaletteRegisterTandy(9, 15);
          Delay(1);
          Blit.SetPaletteRegisterTandy(9, 9);

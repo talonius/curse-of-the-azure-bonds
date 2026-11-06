@@ -131,6 +131,9 @@ begin
         Move(heapTop^, GDVars.savedTop^, SizeOf(GDVars.savedTop^));
         heapTop := GDVars.savedTop;
         Blit.SetVideoMode($09);
+        { Keep at least 80 bytes for the heap free list. }
+        FreeMin := 80;
+        GDVars.tandyHeapTop := heapTop;
       end;
   else begin
       GDVars.displayMode := 0;
@@ -159,9 +162,6 @@ begin
     'P': GDVars.soundMode := C_Sound.SPEAKER;
   else GDVars.soundMode := C_Sound.OFF;
   end;
-  { Keep at least 80 bytes for the heap free list. }
-  FreeMin := 80;
-  GDVars.tandyHeapTop := heapTop;
   ReadLn(GDVars.cfgFile, GDVars.savedGamePath);
   ReadLn(GDVars.cfgFile, GDVars.curKey);
   if GDVars.curKey = 'F' then GDVars.fullIntro := True

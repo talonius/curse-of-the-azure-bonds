@@ -85,13 +85,6 @@ procedure PrimeClassCal;
 
 implementation
 
-const
-  { race values (TCreature.race) }
-  DWARF = 1;
-  HALFLING = 5;
-  { The druid spell list (TSpellRec.castClass), which rangers cast. }
-  DRUID_LIST = 1;
-
 procedure PrimeClassCal;
 begin
   EclTrace.PrimeEclTrace;
@@ -126,8 +119,8 @@ begin
       else
         level := classLevels[i];
       if level > 0 then
-        case Char(i) of
-          #0: begin
+        case i of
+          C_Class.CLERIC_LEVEL: begin
                Inc(spellSlots[C_Spell.CLERIC_LIST, 1]);
                for j := 2 to level do
                  for k := 1 to 5 do
@@ -139,7 +132,7 @@ begin
                        (m <> 36) then
                      knownSpells[m] := 1;
              end;
-          #3: if level > 8 then begin
+          C_Class.PALADIN_LEVEL: if level > 8 then begin
                for j := 9 to level do
                  for k := 1 to 5 do
                    Inc(spellSlots[C_Spell.CLERIC_LIST, k], GDConsts.classExperience[C_Class.PALADIN].slots[j, k]);
@@ -148,20 +141,20 @@ begin
                    if (castClass = C_Spell.CLERIC_LIST) and (spellSlots[C_Spell.CLERIC_LIST, level] > 0) then
                      knownSpells[m] := 1;
              end;
-          #4: if level > 7 then begin
+          C_Class.RANGER_LEVEL: if level > 7 then begin
                for j := 8 to level do begin
                  for k := 1 to 3 do
-                   Inc(spellSlots[ClassCal.DRUID_LIST, k], GDConsts.classExperience[C_Class.RANGER].slots[j, k]);
+                   Inc(spellSlots[C_Spell.DRUID_LIST, k], GDConsts.classExperience[C_Class.RANGER].slots[j, k]);
                  for k := 4 to 5 do begin
                    tmp := k - 3;
                    Inc(spellSlots[C_Spell.MAGE_LIST, tmp], GDConsts.classExperience[C_Class.RANGER].slots[j, k]);
                  end;
                end;
                for m := 1 to 100 do
-                 if GDConsts.spellProperties[m].castClass = ClassCal.DRUID_LIST then
+                 if GDConsts.spellProperties[m].castClass = C_Spell.DRUID_LIST then
                    knownSpells[m] := 1;
              end;
-          #5: begin
+          C_Class.MAGE_LEVEL: begin
                Inc(spellSlots[C_Spell.MAGE_LIST, 1]);
                for j := 2 to level do
                  for k := 1 to 5 do
@@ -195,10 +188,10 @@ begin
     level := cr^.classLevels[i];
     if GDConsts.classThac0[i, level] > cr^.thac0Base then cr^.thac0Base := GDConsts.classThac0[i, level];
     if cr^.levelHighest < level then cr^.levelHighest := level;
-    case Char(i) of
-      #2: if level > 6 then cr^.attacks := 3;
-      #4: if level > 7 then cr^.attacks := 3;
-      #3: if level > 6 then cr^.attacks := 3;
+    case i of
+      C_Class.FIGHTER_LEVEL: if level > 6 then cr^.attacks := 3;
+      C_Class.RANGER_LEVEL: if level > 7 then cr^.attacks := 3;
+      C_Class.PALADIN_LEVEL: if level > 6 then cr^.attacks := 3;
     end;
   end;
   ClassCal.RecalcSpellSlots(cr);
@@ -216,9 +209,9 @@ begin
   if ClassCal.EarlierClassActive(cr) <> 0 then begin
     for i := 0 to 7 do begin
       level := cr^.oldClassLevels[i];
-      case Char(i) of
-        #2, #3: if level > 6 then cr^.attacks := 3;
-        #4: if level > 7 then cr^.attacks := 3;
+      case i of
+        C_Class.FIGHTER_LEVEL, C_Class.PALADIN_LEVEL: if level > 6 then cr^.attacks := 3;
+        C_Class.RANGER_LEVEL: if level > 7 then cr^.attacks := 3;
       end;
       if GDConsts.classThac0[i, level] > cr^.thac0Base then cr^.thac0Base := GDConsts.classThac0[i, level];
     end;
@@ -291,7 +284,7 @@ begin
       if cr^.saves[i] > GDConsts.classSavingThrows[j, cr^.oldClassLevels[j], i] then
         cr^.saves[i] := GDConsts.classSavingThrows[j, cr^.oldClassLevels[j], i];
     if i = 0 then begin
-      if (cr^.race = ClassCal.DWARF) or (cr^.race = ClassCal.HALFLING) or (flag <> 0) then begin
+      if (cr^.race = C_Race.DWARF) or (cr^.race = C_Race.HALFLING) or (flag <> 0) then begin
         case cr^.stats[C_Stat.CONSTITUTION].current of
           4..6: Inc(cr^.saves[i]);
           7..10: Inc(cr^.saves[i], 2);
@@ -448,9 +441,9 @@ begin
     cr^.classLevels[ShortInt(ClassCal.FirstCurrentClass(cr))] := 0;
     cr^.classLevels[classIdx] := 1;
     FillChar(cr^.spellSlots, SizeOf(cr^.spellSlots), 0);
-    case Char(classIdx) of
-      #0: cr^.spellSlots[C_Spell.CLERIC_LIST, 1] := 1;
-      #5: begin
+    case classIdx of
+      C_Class.CLERIC: cr^.spellSlots[C_Spell.CLERIC_LIST, 1] := 1;
+      C_Class.MAGE: begin
            cr^.spellSlots[C_Spell.MAGE_LIST, 1] := 1;
            cr^.knownSpells[11] := 1;
            cr^.knownSpells[18] := 1;

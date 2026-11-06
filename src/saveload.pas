@@ -6,9 +6,9 @@ unit SaveLoad;
 
 interface
 
-uses Types, GDConsts, GDVars, C_Keys, C_Ifc, C_Status, C_Race, C_Class, C_Effect, C_Stat, C_Pic, C_Spell, C_Gbvm, DaxIo,
-  Dos, TextRend, GameIo, Blit, MenuCore, MapTiles, CharHlp, ClassCal, FxEngine, ViewChar, Portrait, View3D, Money,
-  EclTrace;
+uses Types, GDConsts, GDVars, C_Keys, C_Ifc, C_Status, C_Race, C_Class, C_Effect, C_Stat, C_Pic, C_Spell, C_Gbvm,
+  DaxIo, Dos, TextRend, GameIo, Blit, MenuCore, MapTiles, CharHlp, ClassCal, FxEngine, ViewChar, Portrait, View3D,
+  Money, EclTrace;
 
 { Lists the characters that can be loaded in the current import mode: 0 Curse (*.guy), 1 Pool (*.cha and saved games'
   *.sav), 2 Hillsfar (*.hil). Files of the mode's size are listed, leaving out characters already in the party and those
@@ -264,11 +264,11 @@ begin
   nameList := nil;
   fileList := nil;
   if SaveLoad.CheckSaveDir then
-    case Char(GDVars.importMode) of
-      #0: ScanSaveFiles(GDVars.savedGamePath + '*.guy', GDConsts.primaryNameOfs[GDVars.importMode],
-                        GDConsts.secondaryNameOfs[GDVars.importMode],
-                        GDConsts.charFileSizes[GDVars.importMode], nameList, fileList);
-      #1: begin
+    case GDVars.importMode of
+      0: ScanSaveFiles(GDVars.savedGamePath + '*.guy', GDConsts.primaryNameOfs[GDVars.importMode],
+                       GDConsts.secondaryNameOfs[GDVars.importMode],
+                       GDConsts.charFileSizes[GDVars.importMode], nameList, fileList);
+      1: begin
            ScanSaveFiles(GDVars.savedGamePath + '*.cha', GDConsts.primaryNameOfs[GDVars.importMode],
                          GDConsts.secondaryNameOfs[GDVars.importMode],
                          GDConsts.charFileSizes[GDVars.importMode], nameList, fileList);
@@ -276,9 +276,9 @@ begin
                          GDConsts.secondaryNameOfs[GDVars.importMode],
                          GDConsts.charFileSizes[1], nameList, fileList);
          end;
-      #2: ScanSaveFiles(GDVars.savedGamePath + '*.hil', GDConsts.primaryNameOfs[GDVars.importMode],
-                        GDConsts.secondaryNameOfs[GDVars.importMode],
-                        GDConsts.charFileSizes[GDVars.importMode], nameList, fileList);
+      2: ScanSaveFiles(GDVars.savedGamePath + '*.hil', GDConsts.primaryNameOfs[GDVars.importMode],
+                       GDConsts.secondaryNameOfs[GDVars.importMode],
+                       GDConsts.charFileSizes[GDVars.importMode], nameList, fileList);
     end;
 end;
 
@@ -289,8 +289,8 @@ var
   key: Char;
 begin
   CheckSaveDir := False;
-  case Char(GDVars.importMode) of
-    #0: begin
+  case GDVars.importMode of
+    0: begin
          repeat
            { Prompt until the save disk is in an accepted drive. }
            while (DaxIo.GetVolumeLabel(GDVars.savedGamePath[1]) = 'CURSE') and (GDVars.savedGamePath[1] < 'C') do
@@ -322,7 +322,7 @@ begin
              until err in [0, 5];
          until err in [0, 5];
        end;
-    #1: begin
+    1: begin
          repeat
            FindFirst(Copy(GDVars.savedGamePath, 1, Length(GDVars.savedGamePath) - 1), Directory, sr);
            err := DosError;
@@ -335,7 +335,7 @@ begin
              end;
          until err = 0;
        end;
-    #2: begin
+    2: begin
          repeat
            FindFirst(Copy(GDVars.savedGamePath, 1, Length(GDVars.savedGamePath) - 1), Directory, sr);
            err := DosError;
@@ -575,8 +575,8 @@ var
       name := Types.PCharRecord(savedBuf)^.name;
       for i := 0 to 5 do begin
         stats[i].permanent := Types.PCharRecord(savedBuf)^.abilities[i];
-        case Char(i) of
-          #0: begin
+        case i of
+          C_Stat.STRENGTH: begin
                if stats[i].permanent <
                    GDConsts.raceAbilityLimits[race].strMin[gender] then
                  stats[i].permanent := GDConsts.raceAbilityLimits[race].strMin[gender];
@@ -584,31 +584,31 @@ var
                    GDConsts.raceAbilityLimits[race].strMax[gender] then
                  stats[i].permanent := GDConsts.raceAbilityLimits[race].strMax[gender];
              end;
-          #1: begin
+          C_Stat.INTELLIGENCE: begin
                if stats[i].permanent < GDConsts.raceAbilityLimits[race].intMin then
                  stats[i].permanent := GDConsts.raceAbilityLimits[race].intMin;
                if stats[i].permanent > GDConsts.raceAbilityLimits[race].intMax then
                  stats[i].permanent := GDConsts.raceAbilityLimits[race].intMax;
              end;
-          #2: begin
+          C_Stat.WISDOM: begin
                if stats[i].permanent < GDConsts.raceAbilityLimits[race].wisMin then
                  stats[i].permanent := GDConsts.raceAbilityLimits[race].wisMin;
                if stats[i].permanent > GDConsts.raceAbilityLimits[race].wisMax then
                  stats[i].permanent := GDConsts.raceAbilityLimits[race].wisMax;
              end;
-          #3: begin
+          C_Stat.DEXTERITY: begin
                if stats[i].permanent < GDConsts.raceAbilityLimits[race].dexMin then
                  stats[i].permanent := GDConsts.raceAbilityLimits[race].dexMin;
                if stats[i].permanent > GDConsts.raceAbilityLimits[race].dexMax then
                  stats[i].permanent := GDConsts.raceAbilityLimits[race].dexMax;
              end;
-          #4: begin
+          C_Stat.CONSTITUTION: begin
                if stats[i].permanent < GDConsts.raceAbilityLimits[race].conMin then
                  stats[i].permanent := GDConsts.raceAbilityLimits[race].conMin;
                if stats[i].permanent > GDConsts.raceAbilityLimits[race].conMax then
                  stats[i].permanent := GDConsts.raceAbilityLimits[race].conMax;
              end;
-          #5: begin
+          C_Stat.CHARISMA: begin
                if stats[i].permanent < GDConsts.raceAbilityLimits[race].chaMin then
                  stats[i].permanent := GDConsts.raceAbilityLimits[race].chaMin;
                if stats[i].permanent > GDConsts.raceAbilityLimits[race].chaMax then
@@ -749,8 +749,8 @@ begin
   ok := Byte(DaxIo.OpenWithRetry(GDVars.savedGamePath + name, msg, #0, f));
   TextRend.DisplayString(0, 24, LightGreen, 0, 'Loading...Please Wait');
   FillChar(cr^, SizeOf(Types.TCreature), 0);
-  case Char(GDVars.importMode) of
-    #0: begin
+  case GDVars.importMode of
+    0: begin
          BlockRead(f, cr^, SizeOf(Types.TCreature), res);
          Close(f);
          Types.PCreature(cr)^.itemsAddr := nil;
@@ -758,7 +758,7 @@ begin
          Types.PCreature(cr)^.combatAddr := nil;
          Types.PCreature(cr)^.next := nil;
        end;
-    #1: begin
+    1: begin
          GetMem(savedBuf, SizeOf(Types.TCharRecord));
          BlockRead(f, savedBuf^, SizeOf(Types.TCharRecord), res);
          Close(f);
@@ -769,7 +769,7 @@ begin
          ConvertPoolRecord;
          FreeMem(savedBuf, SizeOf(Types.TCharRecord));
        end;
-    #2: begin
+    2: begin
          GetMem(hillsfarRec, SizeOf(hillsfarRec^));
          BlockRead(f, hillsfarRec^, SizeOf(hillsfarRec^), res);
          Close(f);
@@ -863,34 +863,29 @@ begin
                race := hillsfarRec^.race + 1;
                if race = C_Race.HALF_ORC then
                  race := C_Race.HUMAN;
-               case Char(race) of
-                 { halfling }
-                 #5: begin
+               case race of
+                 C_Race.HALFLING: begin
                       iconSize := 1;
                       FxEngine.AddEffect(Types.PCreature(cr), C_Effect.CONSTITUTION_SAVE_BONUS, 0, 255, False);
                     end;
-                 { dwarf }
-                 #1: begin
+                 C_Race.DWARF: begin
                       iconSize := 1;
                       FxEngine.AddEffect(Types.PCreature(cr), C_Effect.CONSTITUTION_SAVE_BONUS, 0, 255, False);
                       FxEngine.AddEffect(Types.PCreature(cr), C_Effect.DWARF_ATTACK_BONUS, 0, 255, False);
                       FxEngine.AddEffect(Types.PCreature(cr), C_Effect.DWARF_GIANT_DEFENSE, 0, 255, False);
                     end;
-                 { gnome }
-                 #3: begin
+                 C_Race.GNOME: begin
                       iconSize := 1;
                       FxEngine.AddEffect(Types.PCreature(cr), C_Effect.CONSTITUTION_SAVE_BONUS, 0, 255, False);
                       FxEngine.AddEffect(Types.PCreature(cr), C_Effect.GNOME_ATTACK_BONUS, 0, 255, False);
                       FxEngine.AddEffect(Types.PCreature(cr), C_Effect.DWARF_GIANT_DEFENSE, 0, 255, False);
                       FxEngine.AddEffect(Types.PCreature(cr), C_Effect.GNOME_BUGBEAR_DEFENSE, 0, 255, False);
                     end;
-                 { elf }
-                 #2: begin
+                 C_Race.ELF: begin
                       iconSize := 2;
                       FxEngine.AddEffect(Types.PCreature(cr), C_Effect.ELF_RESISTANCE, 0, 255, False);
                     end;
-                 { half-elf }
-                 #4: begin
+                 C_Race.HALF_ELF: begin
                       iconSize := 2;
                       FxEngine.AddEffect(Types.PCreature(cr), C_Effect.HALF_ELF_RESISTANCE, 0, 255, False);
                     end;

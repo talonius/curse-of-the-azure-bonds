@@ -1,6 +1,6 @@
 { Loads the five 8x8 symbol sets and draws their wall, map and border glyphs, using TImgBuf image buffers. }
-{$O+,F+}
-{$I-,A+}
+{$O+,F+,A+}
+{$I-}
 unit Sym8x8;
 
 interface

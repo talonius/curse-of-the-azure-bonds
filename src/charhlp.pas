@@ -6,7 +6,7 @@ unit CharHlp;
 
 interface
 
-uses Types, GDConsts, GDVars, C_Keys, C_Status, C_Ifc, C_Race, C_Class, C_Stat, C_Pic, C_Gbvm, Crt,
+uses Types, GDConsts, GDVars, C_Keys, C_Status, C_Ifc, C_Race, C_Class, C_Stat, C_Pic, C_Spell, C_Gbvm, Crt,
   TextRend, Border, Blit, SoundDrv, CbtMap, Portrait, MenuCore, ClassCal, Pathing, MapTiles, EclTrace, MapView;
 
 type
@@ -318,8 +318,6 @@ const
   CLOCK_MINUTES = $4BC7;
   { Word index into the GBVM zone-0 variables (GDVars.zone0^) of the game clock's tens-of-minutes digit. }
   CLOCK_TEN_MINUTES = $4BC8;
-  { The spell list (TSpellRec.castClass) of the special spells that no class casts. }
-  SPECIAL_LIST = 3;
 
 procedure WeaponAdjust(cr: Types.PCreature); forward;
 
@@ -914,7 +912,7 @@ var
   cur: Types.PItem;
   newItem: Types.PItem;
 begin
-  New(newItem);
+  newItem := New(Types.PItem);
   Move(it^, newItem^, SizeOf(newItem^));
   newItem^.next := nil;
   cur := tgt^.itemsAddr;
@@ -1395,8 +1393,8 @@ begin
       (Types.PCreature(GDVars.curChar)^.classLevels[C_Class.RANGER_LEVEL] < 8) then
     GetCasterLevel := 6
   else
-    case Char(GDConsts.spellProperties[spellId].castClass) of
-      #0: begin
+    case GDConsts.spellProperties[spellId].castClass of
+      C_Spell.CLERIC_LIST: begin
            a := Types.PCreature(GDVars.curChar)^.classLevels[C_Class.CLERIC_LEVEL] +
              Types.PCreature(GDVars.curChar)^.oldClassLevels[C_Class.CLERIC_LEVEL] *
              ClassCal.EarlierClassActive(Types.PCreature(GDVars.curChar));
@@ -1406,14 +1404,14 @@ begin
                     ClassCal.EarlierClassActive(Types.PCreature(GDVars.curChar)) - 8;
            if a > b then GetCasterLevel := a else GetCasterLevel := b;
          end;
-      #1: begin
+      C_Spell.DRUID_LIST: begin
            a := Types.PCreature(GDVars.curChar)^.classLevels[C_Class.RANGER_LEVEL]
                 +
                   Types.PCreature(GDVars.curChar)^.oldClassLevels[C_Class.RANGER_LEVEL] *
                     ClassCal.EarlierClassActive(Types.PCreature(GDVars.curChar)) - 7;
            if a > 0 then GetCasterLevel := a else GetCasterLevel := 0;
          end;
-      #2: begin
+      C_Spell.MAGE_LIST: begin
            a := Types.PCreature(GDVars.curChar)^.classLevels[C_Class.MAGE_LEVEL] +
              Types.PCreature(GDVars.curChar)^.oldClassLevels[C_Class.MAGE_LEVEL] *
              ClassCal.EarlierClassActive(Types.PCreature(GDVars.curChar));
@@ -1423,19 +1421,18 @@ begin
                     ClassCal.EarlierClassActive(Types.PCreature(GDVars.curChar)) - 8;
            if a > b then GetCasterLevel := a else GetCasterLevel := b;
          end;
-      #3: GetCasterLevel := 12;
+      C_Spell.SPECIAL_LIST: GetCasterLevel := 12;
     end;
-  if GDVars.usingItem and (GDConsts.spellProperties[spellId].castClass <> CharHlp.SPECIAL_LIST) then
+  if GDVars.usingItem and (GDConsts.spellProperties[spellId].castClass <> C_Spell.SPECIAL_LIST) then
     GetCasterLevel := 6;
 end;
 
 procedure DisplayNoncombatInterface;
 begin
   GDVars.mapRedrawPending := 1;
-  case Char(GDVars.ifcState) of
-    #0: Border.DrawWindowFrame;
-    { shop or temple }
-    #1: begin
+  case GDVars.ifcState of
+    0: Border.DrawWindowFrame;
+    C_Ifc.SHOP_TEMPLE: begin
          if GDVars.shopSession then
            Border.DrawViewFrame;
          if GDVars.loadedPicId = C_Pic.VILLAGE then
@@ -1447,26 +1444,22 @@ begin
          CharHlp.DisplayParty(GDVars.curChar);
          CharHlp.PrintPositionAndTime;
        end;
-    { camp }
-    #2: begin
+    C_Ifc.CAMPING: begin
          Border.DrawViewFrame;
          Portrait.LoadAnimation('PIC', 29, 0, GDVars.animData);
          CharHlp.DisplayParty(GDVars.curChar);
          CharHlp.PrintPositionAndTime;
        end;
-    { 3D view }
-    #4: begin
+    C_Ifc.VIEW_3D: begin
          Border.DrawViewFrame;
          MapView.DisplayMapView;
          CharHlp.DisplayParty(GDVars.curChar);
          CharHlp.PrintPositionAndTime;
          GDVars.charSelectActive := 0;
        end;
-    { overland }
-    #3: if GDVars.loadedPicId <> C_Pic.VILLAGE then
+    C_Ifc.OVERLAND: if GDVars.loadedPicId <> C_Pic.VILLAGE then
          MapView.DisplayMapView;
-    { treasure screen }
-    #6: begin
+    C_Ifc.LOOT: begin
          Border.DrawViewFrame;
          Portrait.LoadAnimation('PIC', 1, 0, GDVars.animData);
          CharHlp.DisplayParty(GDVars.curChar);
@@ -1536,13 +1529,13 @@ begin
                                         Boolean(reinterpret), Boolean(valid)));
     cursor := chosen;
     if valid <> 0 then begin
-      case Char(key) of
-        C_Keys.END_KEY: begin
+      case key of
+        Ord(C_Keys.END_KEY): begin
                cursor := cursor^.next;
                if cursor = nil then
                  cursor := GDVars.partyHead;
              end;
-        C_Keys.HOME: begin
+        Ord(C_Keys.HOME): begin
                cursor := GDVars.partyHead;
                if chosen <> GDVars.partyHead then
                  while cursor^.next <> chosen do
@@ -1610,33 +1603,28 @@ begin
   with cr^ do begin
     lev := classLevels[cls];
     if lev > 0 then begin
-      case Char(race) of
-        { dwarf }
-        #1:
+      case race of
+        C_Race.DWARF:
           if (cls = C_Class.FIGHTER_LEVEL) and
               (((lev = 8) and (stats[C_Stat.STRENGTH].current = 17)) or
                ((lev = 7) and (stats[C_Stat.STRENGTH].current < 17))) then
             AtLevelCap := True;
-        { elf }
-        #2:
+        C_Race.ELF:
           if (cls = C_Class.FIGHTER_LEVEL) and
               ((lev = 7) or ((lev = 6) and (stats[C_Stat.STRENGTH].current = 17)) or
                ((lev = 5) and (stats[C_Stat.STRENGTH].current < 17))) then
             AtLevelCap := True;
-        { gnome }
-        #3:
+        C_Race.GNOME:
           if (cls = C_Class.FIGHTER_LEVEL) and ((lev = 6) or ((lev = 5) and (stats[C_Stat.STRENGTH].current < 18))) then
             AtLevelCap := True;
-        { half-elf }
-        #4:
+        C_Race.HALF_ELF:
           if (cls = C_Class.CLERIC_LEVEL) and (lev = 5) then
             AtLevelCap := True
           else if (cls = C_Class.FIGHTER_LEVEL) and
             ((lev = 8) or ((lev = 7) and (stats[C_Stat.STRENGTH].current = 17)) or
              ((lev = 6) and (stats[C_Stat.STRENGTH].current < 17))) then
             AtLevelCap := True;
-        { halfling }
-        #5:
+        C_Race.HALFLING:
           if (cls = C_Class.FIGHTER_LEVEL) and
               ((lev = 6) or ((lev = 5) and (stats[C_Stat.STRENGTH].current = 17)) or
                ((lev = 4) and (stats[C_Stat.STRENGTH].current < 17))) then
@@ -1651,7 +1639,7 @@ function MakeItem(itemType, name1, name2, name3, plus, saveBonus, equipped, unid
 var
   p: Types.PItem;
 begin
-  New(p);
+  p := New(Types.PItem);
   FillChar(p^, SizeOf(p^), 0);
   p^.itemType := itemType;
   p^.nameIds[1] := name1;

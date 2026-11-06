@@ -177,13 +177,13 @@ begin
   s := GDConsts.classNames[GDVars.sheetChar^.charClass];
   TextRend.DisplayString(1, 5, White, 0, s);
   for i := 0 to 5 do begin
-    case Char(i) of
-      #0: s := 'STR ';
-      #1: s := 'INT ';
-      #2: s := 'WIS ';
-      #3: s := 'DEX ';
-      #4: s := 'CON ';
-      #5: s := 'CHA ';
+    case i of
+      C_Stat.STRENGTH: s := 'STR ';
+      C_Stat.INTELLIGENCE: s := 'INT ';
+      C_Stat.WISDOM: s := 'WIS ';
+      C_Stat.DEXTERITY: s := 'DEX ';
+      C_Stat.CONSTITUTION: s := 'CON ';
+      C_Stat.CHARISMA: s := 'CHA ';
     end;
     TextRend.DisplayString(1, i + 7, LightGreen, 0, s);
     ViewChar.PrintStat(i, False);

@@ -1640,14 +1640,13 @@ end;
 procedure EclCall;
 var
   address: Word;
-  { An Integer, so the keys $AE11 and $E804 appear as the case labels -20975 and -6140. }
-  magicKey: Integer;
+  magicKey: Word;
 begin
   EclMenu.LoadEclVars(1);
   address := EclMenu.CombineBytesToWord(GDVars.varLo[1], GDVars.varHi[1]);
   magicKey := address - $7FFF;
   case magicKey of
-    -20975: begin
+    $AE11: begin
              GDVars.partyPos.eventAtCell := View3D.GetMapEvent(GDVars.partyPos.mapX, GDVars.partyPos.mapY);
              if GDVars.filesLoaded then
                if GDVars.eclGraphics or GDVars.spriteShown or GDVars.redrawViewColors or GDVars.movedParty or
@@ -1676,7 +1675,7 @@ begin
     $4019: if GDVars.zone0^[C_Gbvm.VIEW_3D] = 0 then
              GDVars.partyPos.wallAhead := View3D.GetWallType(GDVars.partyPos.mapX, GDVars.partyPos.mapY,
                                                              GDVars.partyPos.facing);
-    -6140: begin
+    $E804: begin
              Portrait.DisplayImageBuf(3, 3, True, GDVars.animData.frames[GDVars.animData.current].pic);
              Inc(GDVars.animData.current);
              if GDVars.animData.current > GDVars.animData.count then
@@ -1762,7 +1761,8 @@ begin
   end;
 end;
 
-{ PROTECTION: runs the copy-protection question and redraws the noncombat screen. }
+{ PROTECTION: runs the copy-protection question, then the executable checksum check (a sound plays when it fails), and
+  redraws the noncombat screen. }
 procedure EclProtection;
 var
   { Unused in this version; see the other implementations of this routine. }
@@ -1772,6 +1772,7 @@ begin
   GDVars.eclGraphics := False;
   EclMenu.LoadEclVars(1);
   CopyProt.CopyProtection;
+  if not CopyProt.VerifyChecksum then SoundDrv.SoundCommand(GDConsts.sndStartCountdown);
   CharHlp.DisplayNoncombatInterface;
 end;
 

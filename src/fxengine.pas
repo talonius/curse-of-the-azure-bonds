@@ -231,9 +231,8 @@ end;
 procedure KillCreature(cr: Types.PCreature; status: Byte; msg: Types.TStr40);
 begin
   CharHlp.PrintCreatureMessage(Pointer(cr), msg, 10, False);
-  case Char(cr^.status) of
-    { stoned, dead or gone }
-    #7, #6, #8: ;
+  case cr^.status of
+    C_Status.STONED, C_Status.DEAD_STATUS, C_Status.GONE: ;
   else begin
     cr^.status := status;
     cr^.enabled := 0;
@@ -529,8 +528,6 @@ begin
 end;
 
 procedure ConsiderTerrainEffects(creature: Types.PCreature; flag: Byte);
-type
-  TTerr = (tt0, tt1, tt2, tt3, tt4, tt5, tt6, tt7);
 var
   terrIdx: Byte;
   crIdx: Byte;
@@ -575,20 +572,20 @@ begin
             end;
   if adjCloudkill <> 0 then
     if creature^.enabled <> 0 then
-      case TTerr(creature^.levelHighest) of
-        tt0..tt4: begin
+      case creature^.levelHighest of
+        0..4: begin
                 CharHlp.PrintCreatureMessage(Pointer(creature), 'is Poisoned', 10, False);
                 TextRend.PauseOnly;
                 FxEngine.AddEffect(creature, C_Effect.POISONED, 0, 255, False);
                 FxEngine.KillCreature(creature, C_Status.DEAD_STATUS, 'is killed');
               end;
-        tt5: if not FxEngine.RollSavingThrow(creature, 0, -4) then begin
+        5: if not FxEngine.RollSavingThrow(creature, 0, -4) then begin
                 CharHlp.PrintCreatureMessage(Pointer(creature), 'is Poisoned', 10, False);
                 TextRend.PauseOnly;
                 FxEngine.AddEffect(creature, C_Effect.POISONED, 0, 255, False);
                 FxEngine.KillCreature(creature, C_Status.DEAD_STATUS, 'is killed');
               end;
-        tt6: if not FxEngine.RollSavingThrow(creature, 0, 0) then begin
+        6: if not FxEngine.RollSavingThrow(creature, 0, 0) then begin
                 CharHlp.PrintCreatureMessage(Pointer(creature), 'is Poisoned', 10, False);
                 TextRend.PauseOnly;
                 FxEngine.AddEffect(creature, C_Effect.POISONED, 0, 255, False);
@@ -846,8 +843,8 @@ begin
   while p <> nil do begin
     if (p^.special > $80) and (p^.equipped <> 0) then begin
       enc := p^.special and $7F;
-      case Char(ability) of
-        #0: begin
+      case ability of
+        C_Stat.STRENGTH: begin
              case enc of
                5: case p^.effect of
                     0: begin baseStr := 18; excStr := 100; end;
@@ -866,13 +863,13 @@ begin
              end;
              StrClamp;
            end;
-        #4: begin
+        C_Stat.CONSTITUTION: begin
              if enc = 6 then Inc(statVal)
              else if enc = 8 then
                if (cr^.stats[C_Stat.CONSTITUTION].permanent < 18)
                    and (p^.effect = C_Stat.CONSTITUTION) then Inc(statVal);
            end;
-        #1: begin
+        C_Stat.INTELLIGENCE: begin
              case enc of
                8: if (cr^.stats[C_Stat.INTELLIGENCE].permanent < 18) and
                       (p^.effect = C_Stat.INTELLIGENCE) then Inc(statVal);
@@ -880,9 +877,9 @@ begin
                13: statOverride := 3;
              end;
            end;
-        #2: if enc = 8 then
+        C_Stat.WISDOM: if enc = 8 then
              if (p^.effect = C_Stat.WISDOM) and (cr^.stats[C_Stat.WISDOM].permanent < 18) then Inc(statVal);
-        #3: begin
+        C_Stat.DEXTERITY: begin
              case enc of
                2: case cr^.stats[C_Stat.DEXTERITY].permanent of
                     0..6: Inc(statVal, 4);
@@ -894,7 +891,7 @@ begin
                10: Dec(statVal, 2);
              end;
            end;
-        #5: begin
+        C_Stat.CHARISMA: begin
              case enc of
                6: Dec(statVal);
                8: if (cr^.stats[C_Stat.CHARISMA].permanent < 18) and (p^.effect = C_Stat.CHARISMA) then Inc(statVal);
@@ -904,8 +901,8 @@ begin
     end;
     p := p^.next;
   end;
-  case Char(ability) of
-    #0: begin
+  case ability of
+    C_Stat.STRENGTH: begin
          if CharHlp.HasEffect(Pointer(cr), C_Effect.STRENGTH, eff) then begin
            FxEngine.StrengthEffectToStrength(eff, baseStr, excStr);
            if (statVal <= 18) and (strExc < 100) then begin
@@ -942,7 +939,7 @@ begin
            cr^.exStrCur := strExc;
          end;
        end;
-    #4: begin
+    C_Stat.CONSTITUTION: begin
          count := 0;
          hpSave := cr^.hpMax;
          cr^.hpMax := cr^.hpRolled;
@@ -974,7 +971,7 @@ begin
          end else
            FxEngine.RemoveEffect(cr, 62, nil);
        end;
-    #1: begin
+    C_Stat.INTELLIGENCE: begin
          if CharHlp.HasEffect(Pointer(cr), 68, eff) then
            if statOverride > 7 then statOverride := 3;
          if statOverride <> 255 then
@@ -982,7 +979,7 @@ begin
          else
            cr^.stats[C_Stat.INTELLIGENCE].current := statVal;
        end;
-    #2: begin
+    C_Stat.WISDOM: begin
          if CharHlp.HasEffect(Pointer(cr), 68, eff) then
            if statOverride > 7 then statOverride := 3;
          if statOverride <> 255 then
@@ -990,11 +987,11 @@ begin
          else
            cr^.stats[C_Stat.WISDOM].current := statVal;
        end;
-    #3: if statOverride <> 255 then
+    C_Stat.DEXTERITY: if statOverride <> 255 then
          cr^.stats[C_Stat.DEXTERITY].current := statOverride
        else
          cr^.stats[C_Stat.DEXTERITY].current := statVal;
-    #5: begin
+    C_Stat.CHARISMA: begin
          if CharHlp.HasEffect(Pointer(cr), 14, eff) then
            Inc(statVal, eff^.strength);
          cr^.stats[C_Stat.CHARISMA].current := statVal;
@@ -1009,9 +1006,9 @@ begin
   GDVars.damage := damage;
   FxEngine.TriggerEffectsWithCondition(6, creature);
   if saved then
-    case Char(saveReduction) of
-      #1: GDVars.damage := 0;
-      #2: GDVars.damage := GDVars.damage div 2;
+    case saveReduction of
+      1: GDVars.damage := 0;
+      2: GDVars.damage := GDVars.damage div 2;
     end else
     FxEngine.TriggerEffectsWithCondition(20, creature);
   if GDVars.damage > 0 then begin

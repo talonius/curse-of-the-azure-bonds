@@ -34,11 +34,6 @@ const
   NO_COMBAT_ITEMS = $7EE3;
   { class value (TCreature.charClass) }
   CLASS_THIEF = 6;
-  { multi-class values (TCreature.charClass) }
-  CLERIC_FIGHTER_MAGE = 9;
-  FIGHTER_THIEF = 14;
-  FIGHTER_MAGE_THIEF = 15;
-  MAGE_THIEF = 16;
 
 procedure PrimePostCbt;
 begin
@@ -143,9 +138,9 @@ begin
               (p^.stats[C_Stat.WISDOM].current > 15) then share := xp div 10 + xp;
         C_Class.MAGE: if p^.stats[C_Stat.INTELLIGENCE].current > 15 then share := xp div 10 + xp;
         PostCbt.CLASS_THIEF: if p^.stats[C_Stat.DEXTERITY].current > 15 then share := xp div 10 + xp;
-        C_Class.CLERIC_FIGHTER, C_Class.CLERIC_RANGER..PostCbt.FIGHTER_THIEF,
-          PostCbt.MAGE_THIEF: share := xp div 2;
-        PostCbt.CLERIC_FIGHTER_MAGE, PostCbt.FIGHTER_MAGE_THIEF: share := xp div 3;
+        C_Class.CLERIC_FIGHTER, C_Class.CLERIC_RANGER..C_Class.FIGHTER_THIEF,
+          C_Class.MAGE_THIEF: share := xp div 2;
+        C_Class.CLERIC_FIGHTER_MAGE, C_Class.FIGHTER_MAGE_THIEF: share := xp div 3;
       end;
       Inc(p^.experience, share);
     end;
@@ -218,21 +213,18 @@ begin
     if not GDVars.partyDefeated then begin
       while (p <> nil) and (p^.combatAddr^.notPcNpc <> 1) do begin
         if not GDVars.partyFled then begin
-          case Char(p^.status) of
-            { running }
-            #3: begin
+          case p^.status of
+            C_Status.RUNNING: begin
                  p^.status := C_Status.OKAY;
                  p^.enabled := 1;
                end;
-            { dying }
-            #5: if GDVars.zone1^[C_Gbvm.MIRROR_DUEL] <> 0 then begin
+            C_Status.DYING: if GDVars.zone1^[C_Gbvm.MIRROR_DUEL] <> 0 then begin
                  p^.status := C_Status.OKAY;
                  p^.enabled := 1;
                  p^.hpCur := 1;
                end else
                  p^.status := C_Status.UNCONSCIOUS;
-            { unconscious }
-            #4: if p^.hpCur > 0 then begin
+            C_Status.UNCONSCIOUS: if p^.hpCur > 0 then begin
                  p^.status := C_Status.OKAY;
                  p^.enabled := 1;
                end else if GDVars.zone1^[C_Gbvm.MIRROR_DUEL] <> 0 then begin

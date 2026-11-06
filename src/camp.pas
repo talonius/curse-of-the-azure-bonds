@@ -247,10 +247,10 @@ begin
     row := 3;
     for typ := 0 to 2 do begin
       if canDo[typ] <> 0 then begin
-        case Char(typ) of
-          #0: s := '    Cleric Spells:';
-          #1: s := '     Druid Spells:';
-          #2: s := 'Magic-User Spells:';
+        case typ of
+          C_Spell.CLERIC_LIST: s := '    Cleric Spells:';
+          C_Spell.DRUID_LIST: s := '     Druid Spells:';
+          C_Spell.MAGE_LIST: s := 'Magic-User Spells:';
         end;
         TextRend.DisplayString(1, row + 17, LightGreen, 0, s);
         col := 19;

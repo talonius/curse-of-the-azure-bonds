@@ -4,10 +4,12 @@ unit C_Spell;
 interface
 
 const
-  { The spell list a spell belongs to (TSpellRec.castClass), also the first index of a character's spell slots: 0
-    cleric, 1 druid (cast by rangers), 2 magic-user, 3 special spells that no class casts. }
+  { The spell list a spell belongs to (TSpellRec.castClass), also the first index of a character's spell slots: cleric,
+    druid (cast by rangers), magic-user, and special spells that no class casts. }
   CLERIC_LIST = 0;
+  DRUID_LIST = 1;
   MAGE_LIST = 2;
+  SPECIAL_LIST = 3;
   { Spell bytes hold the spell ID in bits 0..6; bit 7 marks a pending memorize or scribe request. }
   PENDING_FLAG = $80;
   ID_MASK = $7F;

@@ -123,18 +123,18 @@ function ClassCanCastSpell(cr: Types.PCreature; spell: Byte): Boolean;
 begin
   spell := spell and C_Spell.ID_MASK;
   ClassCanCastSpell := False;
-  case Char(GDConsts.spellProperties[spell].castClass) of
-    #0: ClassCanCastSpell := Boolean(cr^.stats[C_Stat.WISDOM].current > 8) and
+  case GDConsts.spellProperties[spell].castClass of
+    C_Spell.CLERIC_LIST: ClassCanCastSpell := Boolean(cr^.stats[C_Stat.WISDOM].current > 8) and
       ((cr^.classLevels[C_Class.CLERIC_LEVEL] > 0) or
        (Boolean(ClassCal.EarlierClassActive(Types.PCreature(cr))) and
         (cr^.oldClassLevels[C_Class.CLERIC_LEVEL] > 0)) or (cr^.classLevels[C_Class.PALADIN_LEVEL] > 8) or
       ((cr^.oldClassLevels[C_Class.PALADIN_LEVEL] > 8) and
        Boolean(ClassCal.EarlierClassActive(Types.PCreature(cr)))));
-    #1: ClassCanCastSpell := Boolean(cr^.stats[C_Stat.WISDOM].current > 8) and
+    C_Spell.DRUID_LIST: ClassCanCastSpell := Boolean(cr^.stats[C_Stat.WISDOM].current > 8) and
       ((cr^.classLevels[C_Class.RANGER_LEVEL] > 6) or
        (Boolean(ClassCal.EarlierClassActive(Types.PCreature(cr))) and
         (cr^.oldClassLevels[C_Class.RANGER_LEVEL] > 6)));
-    #2: ClassCanCastSpell := (cr^.stats[C_Stat.INTELLIGENCE].current > 8) and
+    C_Spell.MAGE_LIST: ClassCanCastSpell := (cr^.stats[C_Stat.INTELLIGENCE].current > 8) and
       ((cr^.race <> C_Race.HUMAN) or (cr^.equipped[2] = nil) or (GDVars.ifcState <> C_Ifc.IN_COMBAT) or
        (cr^.classLevels[C_Class.RANGER_LEVEL] > 8) or
        (Boolean(ClassCal.EarlierClassActive(Types.PCreature(cr))) and
@@ -142,7 +142,7 @@ begin
         ((cr^.classLevels[C_Class.MAGE_LEVEL] > 0) or
          (Boolean(ClassCal.EarlierClassActive(Types.PCreature(cr))) and
           (cr^.oldClassLevels[C_Class.MAGE_LEVEL] > 0)))));
-    #3: ClassCanCastSpell := False;
+    C_Spell.SPECIAL_LIST: ClassCanCastSpell := False;
   end;
 end;
 
@@ -1016,8 +1016,6 @@ end;
 { Spell 21 (Sleep): 4d4 hit dice of targets fall asleep in list order, each costing 1, 2, 4, 6 or 20 by attack level (a
   level-5 monster 10); animated creatures and sleepers are skipped. }
 procedure SpellSleep;
-type
-  THdLvl = (hd0, hd1, hd2, hd3, hd4, hd5, hd6, hd7);
 var
   i: Byte;
   eff: Types.PEffect;
@@ -1025,12 +1023,12 @@ begin
   GDVars.multiTarget := 1;
   GDVars.spellAmount := FxEngine.RollDice(4, 4);
   for i := 1 to GDVars.spellTargetCount do begin
-    case THdLvl(GDVars.spellTargets[i]^.levelHighest) of
-      hd0..hd1: GDVars.spellCost := 1;
-      hd2: GDVars.spellCost := 2;
-      hd3: GDVars.spellCost := 4;
-      hd4: GDVars.spellCost := 6;
-      hd5: if GDVars.spellTargets[i]^.race = C_Race.MONSTER then
+    case GDVars.spellTargets[i]^.levelHighest of
+      0..1: GDVars.spellCost := 1;
+      2: GDVars.spellCost := 2;
+      3: GDVars.spellCost := 4;
+      4: GDVars.spellCost := 6;
+      5: if GDVars.spellTargets[i]^.race = C_Race.MONSTER then
               GDVars.spellCost := 10
             else
               GDVars.spellCost := 20;
@@ -1555,7 +1553,7 @@ begin
 end;
 
 { Applies Haste or Slow to up to caster-level targets on side hostFlag; a target with the opposite effect (removeId)
-  only loses that instead. Then the targets' condition-18 effects run.
+  only loses that instead.
   @param(removeId The opposite effect.)
   @param(hostFlag The side affected.)
   @param(msg Reports the effect on each target.) }
@@ -1577,8 +1575,6 @@ begin
       GDVars.spellTargets[i] := nil;
   end;
   Magic.ResolveSpell(GDVars.spellId, 0, False, 0, 0, msg);
-  for i := 1 to GDVars.spellTargetCount do
-    FxEngine.TriggerEffectsWithCondition(18, Pointer(GDVars.spellTargets[i]));
 end;
 
 { Spell 48 (Haste) on the caster's side; it removes Slow instead where there is one. }
@@ -2306,9 +2302,9 @@ var
 begin
   tgt := GDVars.spellTargets[1];
   oldSpellSave := tgt^.saves[4];
-  case Char(tgt^.charClass) of
-    #0: Dec(tgt^.saves[4]);
-    #5: Inc(tgt^.saves[4], 4);
+  case tgt^.charClass of
+    0: Dec(tgt^.saves[4]);
+    5: Inc(tgt^.saves[4], 4);
   else
     Inc(tgt^.saves[4], 2);
   end;

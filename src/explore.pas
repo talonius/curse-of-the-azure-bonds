@@ -29,8 +29,7 @@ procedure PrimeExplore;
 implementation
 
 uses FxEngine, ClassCal, CharHlp, Types, MenuCore, Portrait, TextRend, GameTime, SoundDrv, Crt, Blit, ViewChar, Camp,
-  View3D, MapView, SaveLoad, MapTiles, EclTrace, Border, GDConsts, GDVars,
-  C_Keys, C_Status, C_Stat, C_Gbvm;
+  View3D, MapView, SaveLoad, MapTiles, EclTrace, Border, GDConsts, GDVars, C_Keys, C_Status, C_Stat, C_Gbvm, C_Ifc;
 
 procedure PrimeExplore;
 begin
@@ -54,7 +53,7 @@ end;
 procedure ChangeBarrierImpassable(x, y, facing: ShortInt);
 begin
   Exit;
-  case Byte(facing) of
+  case facing of
     6: GDVars.map3d^.feat[y, x] := GDVars.map3d^.feat[y, x] and $3F;
     4: GDVars.map3d^.feat[y, x] := GDVars.map3d^.feat[y, x] and $CF;
     2: GDVars.map3d^.feat[y, x] := GDVars.map3d^.feat[y, x] and $F3;
@@ -69,7 +68,7 @@ end;
 procedure ChangeBarrierPassable(x, y, facing: ShortInt);
 begin
   if (x < 0) or (x > 15) or (y < 0) or (y > 15) then Exit;
-  case Byte(facing) of
+  case facing of
     6: GDVars.map3d^.feat[y, x] := GDVars.map3d^.feat[y, x] and $3F or $40;
     4: GDVars.map3d^.feat[y, x] := GDVars.map3d^.feat[y, x] and $CF or $10;
     2: GDVars.map3d^.feat[y, x] := GDVars.map3d^.feat[y, x] and $F3 or $4;
@@ -295,9 +294,8 @@ var
   oldZone: Pointer;
 begin
   GDVars.zone1^[C_Gbvm.MOVE_LOCK] := 0;
-  case Char(GDVars.ifcState) of
-  { 3D view }
-  #4: begin
+  case GDVars.ifcState of
+  C_Ifc.VIEW_3D: begin
     done := False;
     repeat
       c := MenuCore.MenuHorizontal('', GDConsts.menu3D, LightMagenta, LightGreen, White, True, False, ext);
@@ -363,8 +361,7 @@ begin
       CharHlp.PrintPositionAndTime;
     until done;
     end;
-  { overland }
-  #3: ;
+  C_Ifc.OVERLAND: ;
   end;
   if not GDVars.bottomMessageCleared then begin
     Border.ClearBox(1, 17, 38, 22);
@@ -381,9 +378,8 @@ var
   lockedKey: Char;
 begin
   moved := False;
-  case Char(GDVars.ifcState) of
-  { 3D view }
-  #4:
+  case GDVars.ifcState of
+  C_Ifc.VIEW_3D:
     if GDVars.zone1^[C_Gbvm.MOVE_LOCK] < 255 then begin
       GDVars.mapRedrawPending := 1;
       case View3D.GetBarrierType(GDVars.partyPos.mapX, GDVars.partyPos.mapY, GDVars.partyPos.facing) of

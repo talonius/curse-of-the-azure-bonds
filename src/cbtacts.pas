@@ -727,9 +727,6 @@ begin
 end;
 
 procedure CombatTurnUndead(creature: Types.PCreature);
-type
-  TTuBucket = (tu0, tu1, tu2, tu3, tu4, tu5, tu6, tu7,
-               tu8, tu9, tu10, tu11, tu12, tu13);
 var
   { d20 turning roll }
   roll: Byte;
@@ -753,11 +750,11 @@ begin
   minimumLeft := 6;
   affectedLeft := FxEngine.RollDice(1, 12);
   roll := FxEngine.RollDice(1, 20);
-  case TTuBucket(Types.PCreature(creature)^.classLevels[C_Class.CLERIC_LEVEL] +
-                 Types.PCreature(creature)^.oldClassLevels[C_Class.CLERIC_LEVEL] *
-                 ClassCal.EarlierClassActive(Types.PCreature(creature))) of
-    tu1..tu8: tableColumn := Types.PCreature(creature)^.classLevels[C_Class.CLERIC_LEVEL];
-    tu9..tu13: tableColumn := 9;
+  case ShortInt(Types.PCreature(creature)^.classLevels[C_Class.CLERIC_LEVEL] +
+                Types.PCreature(creature)^.oldClassLevels[C_Class.CLERIC_LEVEL] *
+                ClassCal.EarlierClassActive(Types.PCreature(creature))) of
+    1..8: tableColumn := Types.PCreature(creature)^.classLevels[C_Class.CLERIC_LEVEL];
+    9..13: tableColumn := 9;
   else
     tableColumn := 10;
   end;
@@ -1196,10 +1193,10 @@ begin
               GDVars.spellTargetY := CbtMap.CombatCellY(res.cr);
               Inc(GDVars.spellTargetCount);
               if spell <> 79 then begin
-                case Char(GDVars.spellTargets[found]^.levelHighest) of
-                  #0, #1: Inc(vote);
-                  #2: Inc(vote, 2);
-                  #3: Inc(vote, 4);
+                case GDVars.spellTargets[found]^.levelHighest of
+                  0, 1: Inc(vote);
+                  2: Inc(vote, 2);
+                  3: Inc(vote, 4);
                 else
                   Inc(vote, 8);
                 end;

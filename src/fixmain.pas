@@ -57,10 +57,8 @@ uses
 
 const
   STING_KEYWORD = 'STING';
-  BANNER = 'Curse of the Azure Bonds v1.1 ';
+  BANNER = 'Curse of the Azure Bonds v1.2 ';
   PLAY_DEMO = 'Play Demo';
-  { Shown instead of BANNER when a demo run returns to the menu. }
-  BANNER_V10 = 'Curse of the Azure Bonds v1.0 ';
 
 begin
   SoundDrv.StartSound;
@@ -121,8 +119,8 @@ begin
       GameIo.DiscardPendingKeys;
       GDVars.menuTimeout := 1000;
       GDVars.menuDefaultKey := 'D';
-      GDVars.menuResult := MenuCore.MenuHorizontal(BANNER_V10, PLAY_DEMO, LightMagenta, LightGreen, White, False,
-                                                   False, GDVars.titleMenuExtendedKey);
+      GDVars.menuResult := MenuCore.MenuHorizontal(BANNER, PLAY_DEMO, LightMagenta, LightGreen, White, False, False,
+                                                   GDVars.titleMenuExtendedKey);
       GDVars.menuTimeout := 0;
       GDVars.menuDefaultKey := #0;
       GDVars.demoMode := (GDVars.menuResult = 'D');

@@ -1087,7 +1087,7 @@ begin
   if removed and (item <> nil) then
     CharHlp.RemoveItem(cr, item);
   if (not removed) and (found = 0) and (cr^.numberOfItems < 16) then begin
-    New(item);
+    item := New(Types.PItem);
     FillChar(item^, SizeOf(item^), 0);
     item^.itemType := 20;
     item^.nameIds[2] := 20;

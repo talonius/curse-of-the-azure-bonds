@@ -263,20 +263,20 @@ begin
   else
     charIdx := ch;
   Move(GDVars.gameFont^[charIdx], GDVars.glyphBits, SizeOf(GDVars.glyphBits));
-  case Char(GDVars.displayMode) of
-    #0: begin
+  case GDVars.displayMode of
+    0: begin
       for i := 1 to count do begin
         TextRend.CgaGlyph(col, row, fg, bg, charIdx);
         Inc(col);
       end;
     end;
-    #1: begin
+    1: begin
       for i := 1 to count do begin
         TextRend.EgaGlyph(col, row, fg, bg, charIdx);
         Inc(col);
       end;
     end;
-    #2: begin
+    2: begin
       for i := 1 to count do begin
         TextRend.TandyGlyph(col, row, fg, bg, charIdx);
         Inc(col);
@@ -452,16 +452,16 @@ end;
 
 procedure ClearScreen;
 begin
-  case Char(GDVars.displayMode) of
-    #0: begin
+  case GDVars.displayMode of
+    0: begin
       FillChar(cgaBank1, SizeOf(cgaBank1), 0);
       FillChar(cgaBank0, SizeOf(cgaBank0), 0);
     end;
-    #1: begin
+    1: begin
       TextRend.FillRectEga(0, 0, 39, 24, 0, 0);
       TextRend.FillRectEga(0, 0, 39, 24, 1, 0);
     end;
-    #2: begin
+    2: begin
       FillChar(tandyBank0, SizeOf(tandyBank0), 0);
       FillChar(tandyBank1, SizeOf(tandyBank1), 0);
       FillChar(tandyBank2, SizeOf(tandyBank2), 0);
@@ -491,8 +491,8 @@ var
   byteCount: Word;
   row: Word;
 begin
-  case Char(GDVars.displayMode) of
-    #0: begin
+  case GDVars.displayMode of
+    0: begin
       firstRow := ulRow * 4;
       lastRow := lrRow * 4 + 3;
       byteCount := (lrCol - ulCol + 1) * 2;
@@ -501,11 +501,11 @@ begin
         FillChar(cgaBank1.words[row][ulCol], byteCount, 0);
       end;
     end;
-    #1: begin
+    1: begin
       TextRend.FillRectEga(ulCol, ulRow, lrCol, lrRow, 0, 0);
       TextRend.FillRectEga(ulCol, ulRow, lrCol, lrRow, 1, 0);
     end;
-    #2: begin
+    2: begin
       firstRow := ulRow * 2;
       lastRow := lrRow * 2 + 1;
       firstByteColumn := ulCol * 4;

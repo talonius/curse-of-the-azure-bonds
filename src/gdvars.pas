@@ -232,7 +232,7 @@ var
 var
   { Points at the sound driver's forced-exit countdown, which its timer interrupt counts down. Sound command 15 arms it
     with 5000 ticks; when the count runs out the driver resets the video, prints its message and ends the program.
-    StartSound aims it at the counter each time sound starts. }
+    SoundDrv's initialization aims it at the counter and clears the count. }
   timeoutPtr: ^Word;
   { Set when the fourth line of the configuration file is F. Introduction shows only the first title picture when it is
     clear and the rest of the title sequence when it is set. }
@@ -836,7 +836,8 @@ var
   breathAim: Boolean;
   { Loop counter that several routines keep here instead of in a local: the color-remap and run-fill loops of picture
     drawing, freeing an animation's frames, the cure-effect loops, the race and class qualification loop, pruning
-    duplicate targets along a spell's center ray, and the 3x3 cell scan of a spell's area. }
+    duplicate targets along a spell's center ray, the 3x3 cell scan of a spell's area, and setting up a loaded
+    character's combat colors. }
   sharedLoopIdx: ShortInt;
   { Decoded string arguments of the script command being run, numbered in the order the arguments appear; LoadEclVars
     fills one per string argument, converting inline strings and fetching those stored at GBVM addresses. }
@@ -929,7 +930,7 @@ var
   charSelectActive: Byte;
   { Set after the game is won: training is then free and needs no gold. Game start and loading clear it. }
   victoryStart: Boolean;
-  { The heap top recorded at boot, after the free-list minimum is set; never read. }
+  { The heap top recorded at boot in Tandy mode, after it is moved down below the Tandy video memory; never read. }
   tandyHeapTop: Types.PFreeRec;
   { Reserved, never read; sits between tandyHeapTop and debugFile. }
   tandyHeapTopTail: array[0..1] of Byte;

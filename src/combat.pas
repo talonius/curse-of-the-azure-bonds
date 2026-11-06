@@ -19,8 +19,7 @@ procedure PrimeCombat;
 implementation
 
 uses Crt, Types, MenuCore, CbtMap, Pathing, FxEngine, Blit, GameIo, CharHlp, CbtActs, CombatSt, CombatAi, GameTime,
-  Magic, ViewChar, MapTiles, EclTrace, Border, ClassCal, GDConsts, GDVars, C_Keys,
-  C_Status, C_Ifc, C_Gbvm, C_Class;
+  Magic, ViewChar, MapTiles, EclTrace, Border, ClassCal, GDConsts, GDVars, C_Keys, C_Status, C_Ifc, C_Gbvm, C_Class;
 
 const
   { Alt-Q and Alt-R, extended codes (the letter key's scan code) }

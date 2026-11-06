@@ -159,8 +159,8 @@ var
   cgaColOff: Word;
   r: Word;
 begin
-  case Char(GDVars.displayMode) of
-    #0: begin
+  case GDVars.displayMode of
+    0: begin
       top := ulRow * 4;
       bot := lrRow * 4 + 3;
       rowBytes := (lrCol - ulCol + 1) * 2;
@@ -169,11 +169,11 @@ begin
         FillChar(TextRend.cgaBank1.bytes[r][Word(ulCol) * 2], rowBytes, 0);
       end;
     end;
-    #1: begin
+    1: begin
       TextRend.FillRectEga(ulCol, ulRow, lrCol, lrRow, 0, 0);
       TextRend.FillRectEga(ulCol, ulRow, lrCol, lrRow, 1, 0);
     end;
-    #2: begin
+    2: begin
       top := ulRow * 2;
       bot := lrRow * 2 + 1;
       colOff := ulCol * 4;
